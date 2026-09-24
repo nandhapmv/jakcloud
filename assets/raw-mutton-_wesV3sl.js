@@ -1,0 +1,1 @@
+var e=`/assets/raw-chicken-DwlAyfBd.jpg`,t=`/assets/raw-mutton-ePMoN4m0.jpg`;export{e as n,t};

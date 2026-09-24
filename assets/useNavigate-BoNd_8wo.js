@@ -1,0 +1,1 @@
+import{i as e}from"./jsx-runtime-Cx0BB4qO.js";import{S as t}from"./dist-9lh_RX7J.js";import{r as n}from"./link-ZYT68lhI.js";var r=e(t(),1);function i(e){let t=n();return r.useCallback(n=>t.navigate({...n,from:n.from??e?.from}),[e?.from,t])}export{i as t};

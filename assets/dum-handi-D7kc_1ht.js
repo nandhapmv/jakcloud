@@ -1,0 +1,1 @@
+var e=`/assets/dum-handi--RyrthPJ.jpg`;export{e as t};

@@ -1,0 +1,1 @@
+var e=`/assets/logo-C4sVv9h7.png`;export{e as t};
