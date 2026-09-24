@@ -1,0 +1,251 @@
+import { MENU_ITEMS, type ProteinId } from "./menu.model.js";
+import { config } from "../config/index.js";
+
+export interface OrderItem {
+  proteinId: ProteinId;
+  name: string;
+  aloo: boolean;
+  extraSpicy: boolean;
+  notes?: string;
+  qty: number;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export type FulfilmentType = "pickup" | "delivery";
+export type OrderStatus = "pending" | "confirmed" | "preparing" | "ready" | "completed" | "cancelled";
+
+export interface CustomerDetails {
+  name: string;
+  email: string;
+  phone: string;
+  address?: string;
+  city?: string;
+  zipCode?: string;
+  deliveryInstructions?: string;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  status: OrderStatus;
+  fulfilmentType: FulfilmentType;
+  fulfilmentDate: string;
+  fulfilmentTime: string;
+  customer: CustomerDetails;
+  items: OrderItem[];
+  subtotal: number;
+  tax: number;
+  deliveryFee: number;
+  total: number;
+  specialInstructions?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// In-memory order store
+const orders = new Map<string, Order>();
+
+// Seed sample orders for demonstration
+const sampleOrders: Order[] = [
+  {
+    id: "ord_demo_1",
+    orderNumber: "JK-2026-8821",
+    status: "preparing",
+    fulfilmentType: "delivery",
+    fulfilmentDate: "Tomorrow",
+    fulfilmentTime: "2:00 PM",
+    customer: {
+      name: "Marcus Vance",
+      email: "marcus.v@example.com",
+      phone: "417-555-3921",
+      address: "1420 E Sunshine St",
+      city: "Springfield",
+      zipCode: "65804",
+      deliveryInstructions: "Ring bell at side entrance",
+    },
+    items: [
+      {
+        proteinId: "mutton",
+        name: "Mutton Dum Biryani",
+        aloo: true,
+        extraSpicy: true,
+        notes: "Heavy on roasted cashews and fried onions",
+        qty: 1,
+        unitPrice: 164.99,
+        lineTotal: 164.99,
+      },
+    ],
+    subtotal: 164.99,
+    tax: 14.19,
+    deliveryFee: 10.0,
+    total: 174.99,
+    specialInstructions: "Occasion order for family celebration.",
+    createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 3).toISOString(),
+  },
+  {
+    id: "ord_demo_2",
+    orderNumber: "JK-2026-7452",
+    status: "confirmed",
+    fulfilmentType: "pickup",
+    fulfilmentDate: "Tomorrow",
+    fulfilmentTime: "12:00 PM",
+    customer: {
+      name: "Ananya Patel",
+      email: "ananya.patel@example.com",
+      phone: "417-555-8492",
+    },
+    items: [
+      {
+        proteinId: "chicken",
+        name: "Chicken Dum Biryani",
+        aloo: false,
+        extraSpicy: false,
+        notes: "",
+        qty: 2,
+        unitPrice: 101.99,
+        lineTotal: 203.98,
+      },
+    ],
+    subtotal: 203.98,
+    tax: 17.54,
+    deliveryFee: 0,
+    total: 203.98,
+    specialInstructions: "Will arrive right at noon.",
+    createdAt: new Date(Date.now() - 3600000 * 6).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 6).toISOString(),
+  },
+  {
+    id: "ord_demo_3",
+    orderNumber: "JK-2026-4190",
+    status: "ready",
+    fulfilmentType: "pickup",
+    fulfilmentDate: "Today",
+    fulfilmentTime: "4:00 PM",
+    customer: {
+      name: "David Sterling",
+      email: "david.s@example.com",
+      phone: "417-555-1104",
+    },
+    items: [
+      {
+        proteinId: "beef",
+        name: "Beef Dum Biryani",
+        aloo: true,
+        extraSpicy: true,
+        notes: "Extra lime wedges",
+        qty: 1,
+        unitPrice: 129.99,
+        lineTotal: 129.99,
+      },
+    ],
+    subtotal: 129.99,
+    tax: 11.18,
+    deliveryFee: 0,
+    total: 129.99,
+    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+  },
+];
+
+sampleOrders.forEach((o) => orders.set(o.id, o));
+
+export function generateOrderNumber(): string {
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+  return `JK-${dateStr}-${randomSuffix}`;
+}
+
+export function calculateOrderTotals(
+  items: { proteinId: ProteinId; aloo: boolean; extraSpicy: boolean; notes?: string; qty: number }[],
+  fulfilmentType: FulfilmentType,
+): {
+  orderItems: OrderItem[];
+  subtotal: number;
+  tax: number;
+  deliveryFee: number;
+  total: number;
+} {
+  const orderItems: OrderItem[] = items.map((item) => {
+    const menuItem = MENU_ITEMS.find((m) => m.id === item.proteinId);
+    if (!menuItem) {
+      throw new Error(`Invalid protein ID: ${item.proteinId}`);
+    }
+    const unitPrice = item.aloo ? menuItem.priceWithAloo : menuItem.price;
+    const lineTotal = Math.round(unitPrice * item.qty * 100) / 100;
+
+    return {
+      proteinId: item.proteinId,
+      name: menuItem.name,
+      aloo: item.aloo,
+      extraSpicy: item.extraSpicy,
+      notes: item.notes || "",
+      qty: item.qty,
+      unitPrice,
+      lineTotal,
+    };
+  });
+
+  const subtotal = Math.round(orderItems.reduce((sum, item) => sum + item.lineTotal, 0) * 100) / 100;
+  const tax = Math.round(subtotal * config.business.taxRate * 100) / 100;
+  const deliveryFee = fulfilmentType === "delivery" ? config.business.deliveryFee : 0;
+  const total = Math.round((subtotal + deliveryFee) * 100) / 100;
+
+  return {
+    orderItems,
+    subtotal,
+    tax,
+    deliveryFee,
+    total,
+  };
+}
+
+export function saveOrder(order: Order): Order {
+  orders.set(order.id, order);
+  return order;
+}
+
+export function updateOrderStatus(id: string, status: OrderStatus): Order | undefined {
+  const order = orders.get(id) || findOrderByNumber(id);
+  if (!order) return undefined;
+  order.status = status;
+  order.updatedAt = new Date().toISOString();
+  orders.set(order.id, order);
+  return order;
+}
+
+export function findOrderById(id: string): Order | undefined {
+  return orders.get(id);
+}
+
+export function findOrderByNumber(orderNumber: string): Order | undefined {
+  for (const order of orders.values()) {
+    if (order.orderNumber.toUpperCase() === orderNumber.toUpperCase()) {
+      return order;
+    }
+  }
+  return undefined;
+}
+
+export function listAllOrders(): Order[] {
+  return Array.from(orders.values()).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+}
+
+export function getAdminStats() {
+  const all = Array.from(orders.values());
+  const totalRevenue = all.reduce((sum, o) => sum + (o.status !== "cancelled" ? o.total : 0), 0);
+  const totalTrays = all.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
+  const activeOrders = all.filter((o) => o.status === "confirmed" || o.status === "preparing").length;
+  const readyOrders = all.filter((o) => o.status === "ready").length;
+
+  return {
+    totalRevenue: Math.round(totalRevenue * 100) / 100,
+    totalTrays,
+    totalOrders: all.length,
+    activeOrders,
+    readyOrders,
+  };
+}

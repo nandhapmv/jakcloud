@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production builds
+dist/
+*/dist/
+.output/
+*/.output/
+.tanstack/
+*/.tanstack/
+.nitro/
+*/.nitro/
+.vinxi/
+*/.vinxi/
+
+# Environment
+.env
+.env.local
+.env.*.local
+*/.env
+*/.env.local
+*/.env.*.local
+
+# Logs & temp
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS & IDE Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
