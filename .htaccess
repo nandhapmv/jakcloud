@@ -1,12 +1,17 @@
-# Hostinger Apache / LiteSpeed Node.js Handler
-DirectoryIndex index.html index.php server.js app.js index.js
+# Disable directory indexing
+Options -Indexes
 
+# Standard directory index
+DirectoryIndex index.html index.php
+
+# Protect source and config files from direct static access
+<FilesMatch "^(server|app|index)\.js$|package\.json|\.env|\.git">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Phusion Passenger configuration (Hostinger Cloud / Web Hosting)
 <IfModule mod_passenger.c>
   PassengerAppType node
   PassengerStartupFile server.js
-</IfModule>
-
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
 </IfModule>
