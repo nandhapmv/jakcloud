@@ -2,6 +2,8 @@
   "name": "jakcloud-workspace",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
+  "main": "server.js",
   "workspaces": [
     "frontend",
     "backend"
@@ -15,6 +17,6 @@
     "build:frontend": "npm run build --prefix frontend",
     "build:backend": "npm run build --prefix backend",
     "build": "npm run build:frontend && npm run build:backend",
-    "start": "node backend/dist/server.js"
+    "start": "node server.js"
   }
 }
