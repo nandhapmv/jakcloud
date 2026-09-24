@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import http from "node:http";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -8,7 +9,7 @@ const publicOutputDir = path.resolve(rootDir, "frontend/.output/public");
 const assetsOutputDir = path.resolve(publicOutputDir, "assets");
 const rootAssetsDir = path.resolve(rootDir, "assets");
 
-console.log("📦 Preparing production assets and index.html...");
+console.log("📦 Preparing production assets and full SSR index.html...");
 
 // 1. Copy assets to root ./assets
 if (fs.existsSync(assetsOutputDir)) {
@@ -35,46 +36,53 @@ for (const file of staticFiles) {
   }
 }
 
-// 3. Find latest CSS and JS asset hashes
-let cssFile = "styles-LZT9IXFb.css";
-let jsFile = "index-Ba8v5GIc.js";
+// 3. Render and save the complete production SSR HTML to index.html
+async function prerenderIndexHtml() {
+  const nitroServerPath = path.resolve(rootDir, "frontend/.output/server/index.mjs");
+  if (!fs.existsSync(nitroServerPath)) {
+    console.warn("⚠️ Nitro server output not found. Skipping SSR prerender.");
+    return;
+  }
 
-if (fs.existsSync(assetsOutputDir)) {
-  const allAssets = fs.readdirSync(assetsOutputDir);
-  const foundCss = allAssets.find((f) => f.startsWith("styles-") && f.endsWith(".css"));
-  const foundJs = allAssets.find((f) => f.startsWith("index-") && f.endsWith(".js"));
-  if (foundCss) cssFile = foundCss;
-  if (foundJs) jsFile = foundJs;
+  // Set ephemeral port
+  const port = 3099;
+  process.env.PORT = String(port);
+
+  try {
+    const serverUrl = pathToFileURL(nitroServerPath).href;
+    await import(serverUrl);
+    console.log(`🚀 Prerendering SSR HTML from http://127.0.0.1:${port}/...`);
+
+    // Give server 600ms to bind
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    const html = await new Promise((resolve, reject) => {
+      const req = http.get(`http://127.0.0.1:${port}/`, (res) => {
+        let body = "";
+        res.on("data", (chunk) => (body += chunk));
+        res.on("end", () => resolve(body));
+      });
+      req.on("error", reject);
+      req.setTimeout(5000, () => {
+        req.destroy();
+        reject(new Error("Timeout fetching prerendered HTML"));
+      });
+    });
+
+    if (html && html.includes("<html")) {
+      fs.writeFileSync(path.join(rootDir, "index.html"), html, "utf-8");
+      console.log(`✅ Successfully generated full SSR pre-rendered index.html (${html.length} bytes)`);
+    }
+  } catch (err) {
+    console.warn("⚠️ SSR Prerender info:", err.message);
+    const fallbackPath = path.join(rootDir, "production_rendered_index.html");
+    if (fs.existsSync(fallbackPath)) {
+      fs.copyFileSync(fallbackPath, path.join(rootDir, "index.html"));
+      console.log("✅ Applied production SSR HTML to index.html");
+    }
+  }
 }
 
-// 4. Generate root index.html
-const indexHtmlContent = `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>JAKLOUD – Spice King Dum Biryani | Made To Order Handi Trays</title>
-    <meta name="description" content="Authentic royal dum biryani handi trays serving 4–5 adults. Made fresh to order in Springfield, Missouri." />
-    <meta name="author" content="JAKLOUD Spice King" />
-    <meta name="theme-color" content="#1a120b" />
-    <meta property="og:site_name" content="JAKLOUD Spice King" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="JAKLOUD – Spice King Dum Biryani | Made To Order Handi Trays" />
-    <meta property="og:description" content="Authentic royal dum biryani handi trays serving 4–5 adults. Made fresh to order in Springfield, Missouri." />
-    <meta name="twitter:card" content="summary_large_image" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&family=Poppins:wght@400;500;600;700;800&family=Marcellus&family=Inter:wght@400;500;600;700&display=swap" />
-    <link rel="stylesheet" href="/assets/${cssFile}" />
-  </head>
-  <body class="bg-[#080503] font-sans text-cream">
-    <div id="root"></div>
-    <script type="module" src="/assets/${jsFile}"></script>
-  </body>
-</html>
-`;
-
-fs.writeFileSync(path.join(rootDir, "index.html"), indexHtmlContent, "utf-8");
-console.log("✅ Generated root index.html");
+await prerenderIndexHtml();
+console.log("🎉 Production preparation complete!");
+process.exit(0);
