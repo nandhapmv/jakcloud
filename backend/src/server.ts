@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { config } from "./config/index.js";
+import { initDatabase } from "./config/database.js";
 import { apiRouter } from "./routes/api.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware.js";
 
@@ -14,11 +15,11 @@ const port = config.port;
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, server-to-server) or matching origins
+      // Allow requests with no origin or matching origins
       if (!origin || config.corsOrigins.includes(origin) || config.corsOrigins.includes("*")) {
         callback(null, true);
       } else {
-        callback(null, true); // Permissive in dev, adjust as needed
+        callback(null, true);
       }
     },
     credentials: true,
@@ -43,7 +44,7 @@ app.use("/api", apiRouter);
 app.get("/", (_req, res) => {
   res.json({
     message: "JAKLOUD Spice King Dum Biryani API",
-    documentation: "/api/health, /api/menu, /api/orders, /api/contact",
+    documentation: "/api/health, /api/db/status, /api/db/init, /api/menu, /api/orders, /api/contact",
     status: "online",
   });
 });
@@ -51,6 +52,11 @@ app.get("/", (_req, res) => {
 // 404 & Error handlers
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+// Auto-initialize MySQL Database tables on boot
+initDatabase().catch((err) => {
+  console.warn("⚠️ Initial DB connection attempt completed:", err.message);
+});
 
 app.listen(port, () => {
   console.log(`🚀 JAKLOUD Spice King Backend running on http://localhost:${port}`);

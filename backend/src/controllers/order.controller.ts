@@ -12,9 +12,9 @@ import {
   type OrderStatus,
 } from "../models/order.model.js";
 
-export function createOrder(req: Request, res: Response) {
+export async function createOrder(req: Request, res: Response) {
   try {
-    const { items, fulfilmentType, fulfilmentDate, fulfilmentTime, customer, specialInstructions } = req.body;
+    const { items, fulfilmentType, fulfilmentDate, fulfilmentTime, customer, specialInstructions, paymentMethod } = req.body;
 
     const { orderItems, subtotal, tax, deliveryFee, total } = calculateOrderTotals(
       items,
@@ -38,12 +38,14 @@ export function createOrder(req: Request, res: Response) {
       tax,
       deliveryFee,
       total,
+      paymentMethod: paymentMethod || "Instant UPI QR",
+      paymentStatus: "pending",
       specialInstructions: specialInstructions || "",
       createdAt: now,
       updatedAt: now,
     };
 
-    saveOrder(order);
+    await saveOrder(order);
 
     console.log(`[Order Created] ${orderNumber} for ${customer.name} - Total: $${total}`);
 
@@ -81,7 +83,7 @@ export function getOrders(_req: Request, res: Response) {
   });
 }
 
-export function updateStatus(req: Request, res: Response) {
+export async function updateStatus(req: Request, res: Response) {
   const idParam = req.params.id;
   const id = Array.isArray(idParam) ? idParam[0] : idParam;
   const { status } = req.body as { status: OrderStatus };
@@ -90,12 +92,12 @@ export function updateStatus(req: Request, res: Response) {
     return res.status(400).json({ error: "Order ID and status are required" });
   }
 
-  const validStatuses: OrderStatus[] = ["pending", "confirmed", "preparing", "ready", "completed", "cancelled"];
+  const validStatuses: OrderStatus[] = ["pending", "confirmed", "dum_cooking", "preparing", "ready", "completed", "cancelled"];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
   }
 
-  const updated = updateOrderStatus(id, status);
+  const updated = await updateOrderStatus(id, status);
   if (!updated) {
     return res.status(404).json({ error: "Order not found" });
   }

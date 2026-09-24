@@ -1,3 +1,5 @@
+import { getPool, isDatabaseConnected } from "../config/database.js";
+
 export interface ContactMessage {
   id: string;
   name: string;
@@ -10,13 +12,26 @@ export interface ContactMessage {
 
 const contactMessages: ContactMessage[] = [];
 
-export function saveContactMessage(msg: Omit<ContactMessage, "id" | "createdAt">): ContactMessage {
+export async function saveContactMessage(msg: Omit<ContactMessage, "id" | "createdAt">): Promise<ContactMessage> {
   const newMsg: ContactMessage = {
     id: `MSG-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
     ...msg,
     createdAt: new Date().toISOString(),
   };
   contactMessages.push(newMsg);
+
+  const pool = getPool();
+  if (pool && isDatabaseConnected()) {
+    try {
+      await pool.query(
+        "INSERT INTO contact_messages (id, name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?, ?)",
+        [newMsg.id, newMsg.name, newMsg.email, newMsg.phone || "", newMsg.subject || "", newMsg.message],
+      );
+    } catch (err: any) {
+      console.warn("⚠️ MySQL saveContactMessage warning:", err.message);
+    }
+  }
+
   return newMsg;
 }
 

@@ -7,7 +7,14 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || "development",
   corsOrigins: process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(",")
-    : ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+    : ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000", "*"],
+  database: {
+    host: process.env.DB_HOST || "localhost",
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
+    user: process.env.DB_USER || "u573776957_Jackloud",
+    password: process.env.DB_PASSWORD || process.env.DB_PASS || "Jackloud@123",
+    name: process.env.DB_NAME || "u573776957_Jackloud",
+  },
   business: {
     name: "JAKLOUD Spice King Dum Biryani",
     phone: "417-897-9754",

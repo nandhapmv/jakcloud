@@ -1,5 +1,6 @@
 import { MENU_ITEMS, type ProteinId } from "./menu.model.js";
 import { config } from "../config/index.js";
+import { getPool, isDatabaseConnected } from "../config/database.js";
 
 export interface OrderItem {
   proteinId: ProteinId;
@@ -13,7 +14,7 @@ export interface OrderItem {
 }
 
 export type FulfilmentType = "pickup" | "delivery";
-export type OrderStatus = "pending" | "confirmed" | "preparing" | "ready" | "completed" | "cancelled";
+export type OrderStatus = "pending" | "confirmed" | "preparing" | "ready" | "completed" | "cancelled" | "dum_cooking";
 
 export interface CustomerDetails {
   name: string;
@@ -38,7 +39,10 @@ export interface Order {
   tax: number;
   deliveryFee: number;
   total: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
   specialInstructions?: string;
+  staffNotes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -116,37 +120,6 @@ const sampleOrders: Order[] = [
     createdAt: new Date(Date.now() - 3600000 * 6).toISOString(),
     updatedAt: new Date(Date.now() - 3600000 * 6).toISOString(),
   },
-  {
-    id: "ord_demo_3",
-    orderNumber: "JK-2026-4190",
-    status: "ready",
-    fulfilmentType: "pickup",
-    fulfilmentDate: "Today",
-    fulfilmentTime: "4:00 PM",
-    customer: {
-      name: "David Sterling",
-      email: "david.s@example.com",
-      phone: "417-555-1104",
-    },
-    items: [
-      {
-        proteinId: "beef",
-        name: "Beef Dum Biryani",
-        aloo: true,
-        extraSpicy: true,
-        notes: "Extra lime wedges",
-        qty: 1,
-        unitPrice: 129.99,
-        lineTotal: 129.99,
-      },
-    ],
-    subtotal: 129.99,
-    tax: 11.18,
-    deliveryFee: 0,
-    total: 129.99,
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
 ];
 
 sampleOrders.forEach((o) => orders.set(o.id, o));
@@ -201,17 +174,110 @@ export function calculateOrderTotals(
   };
 }
 
-export function saveOrder(order: Order): Order {
+export async function saveOrder(order: Order): Promise<Order> {
+  // Always update in-memory cache
   orders.set(order.id, order);
+
+  const pool = getPool();
+  if (pool && isDatabaseConnected()) {
+    try {
+      // 1. Insert/Update customer
+      await pool.query(
+        `INSERT INTO customers (id, name, email, phone, address, city, zip_code, delivery_instructions)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE name=VALUES(name), email=VALUES(email), address=VALUES(address), city=VALUES(city)`,
+        [
+          `cust_${order.customer.phone.replace(/\D/g, "")}`,
+          order.customer.name,
+          order.customer.email,
+          order.customer.phone,
+          order.customer.address || "",
+          order.customer.city || "Springfield",
+          order.customer.zipCode || "",
+          order.customer.deliveryInstructions || "",
+        ],
+      );
+
+      // 2. Insert order
+      await pool.query(
+        `INSERT INTO orders 
+          (id, order_number, status, fulfilment_type, fulfilment_date, fulfilment_time, 
+           customer_name, customer_email, customer_phone, customer_address, customer_city, customer_zip, 
+           customer_instructions, subtotal, tax, delivery_fee, total, payment_method, payment_status, special_instructions)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE status=VALUES(status), total=VALUES(total), updated_at=NOW()`,
+        [
+          order.id,
+          order.orderNumber,
+          order.status,
+          order.fulfilmentType,
+          order.fulfilmentDate,
+          order.fulfilmentTime,
+          order.customer.name,
+          order.customer.email,
+          order.customer.phone,
+          order.customer.address || "",
+          order.customer.city || "",
+          order.customer.zipCode || "",
+          order.customer.deliveryInstructions || "",
+          order.subtotal,
+          order.tax,
+          order.deliveryFee,
+          order.total,
+          order.paymentMethod || "Instant UPI QR",
+          order.paymentStatus || "pending",
+          order.specialInstructions || "",
+        ],
+      );
+
+      // 3. Insert items
+      for (const item of order.items) {
+        await pool.query(
+          `INSERT INTO order_items (id, order_id, protein_id, name, aloo, extra_spicy, notes, qty, unit_price, line_total)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            `item_${order.id}_${item.proteinId}_${Date.now()}`,
+            order.id,
+            item.proteinId,
+            item.name,
+            item.aloo ? 1 : 0,
+            item.extraSpicy ? 1 : 0,
+            item.notes || "",
+            item.qty,
+            item.unitPrice,
+            item.lineTotal,
+          ],
+        );
+      }
+    } catch (err: any) {
+      console.warn("⚠️ MySQL saveOrder warning:", err.message);
+    }
+  }
+
   return order;
 }
 
-export function updateOrderStatus(id: string, status: OrderStatus): Order | undefined {
+export async function updateOrderStatus(id: string, status: OrderStatus): Promise<Order | undefined> {
   const order = orders.get(id) || findOrderByNumber(id);
-  if (!order) return undefined;
-  order.status = status;
-  order.updatedAt = new Date().toISOString();
-  orders.set(order.id, order);
+  if (order) {
+    order.status = status;
+    order.updatedAt = new Date().toISOString();
+    orders.set(order.id, order);
+  }
+
+  const pool = getPool();
+  if (pool && isDatabaseConnected()) {
+    try {
+      await pool.query("UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ? OR order_number = ?", [
+        status,
+        id,
+        id,
+      ]);
+    } catch (err: any) {
+      console.warn("⚠️ MySQL updateOrderStatus warning:", err.message);
+    }
+  }
+
   return order;
 }
 

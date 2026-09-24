@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import { saveContactMessage, listContactMessages } from "../models/contact.model.js";
 
-export function handleContactMessage(req: Request, res: Response) {
+export async function handleContactMessage(req: Request, res: Response) {
   try {
     const { name, email, phone, subject, message } = req.body;
 
-    const saved = saveContactMessage({
+    const saved = await saveContactMessage({
       name,
       email,
       phone,
