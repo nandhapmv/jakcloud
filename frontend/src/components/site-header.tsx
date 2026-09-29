@@ -10,13 +10,8 @@ import { useCart } from "@/lib/cart";
 import { BUSINESS } from "@/lib/menu";
 
 const NAV = [
-  { to: "/", label: "Home" },
-  { to: "/proteins", label: "Proteins & Halal" },
-  { to: "/trays", label: "Tray Sizing" },
-  { to: "/menu", label: "Handi Menu" },
-  { to: "/validation", label: "Availability" },
-  { to: "/delivery", label: "Pickup & Delivery" },
-  { to: "/about", label: "Royal Story" },
+  { to: "/about", label: "About" },
+  { to: "/menu", label: "Food" },
   { to: "/contact", label: "Contact" },
 ] as const;
 
@@ -30,7 +25,7 @@ export function SiteHeader() {
   )}`;
 
   return (
-    <>
+    <div className="hidden lg:block">
       {/* Top Royal Announcement Bar */}
       <Link
         to="/validation"
@@ -205,6 +200,6 @@ export function SiteHeader() {
 
       {/* Cart Drawer */}
       <CartSheet open={cartOpen} onOpenChange={setCartOpen} />
-    </>
+    </div>
   );
 }

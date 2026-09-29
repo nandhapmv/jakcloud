@@ -24,7 +24,7 @@ export function SiteFooter() {
   )}`;
 
   return (
-    <footer className="mt-20 border-t border-gold/25 bg-[#0a0705] text-cream selection:bg-gold/30 selection:text-gold relative overflow-hidden">
+    <footer className="hidden lg:block mt-20 border-t border-gold/25 bg-[#0a0705] text-cream selection:bg-gold/30 selection:text-gold relative overflow-hidden">
       {/* Background Ambience Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-gold/5 blur-3xl pointer-events-none" />
 

@@ -44,6 +44,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { MobileAppView } from "@/components/mobile-app-view";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -156,7 +157,14 @@ function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#080503] font-sans text-cream selection:bg-gold/30 selection:text-gold">
+    <>
+      {/* Mobile-First App Design (Screens 1 & 2 - Matching User Mockup) */}
+      <div className="block lg:hidden">
+        <MobileAppView />
+      </div>
+
+      {/* Desktop Rich Brand Experience */}
+      <div className="hidden lg:block min-h-screen bg-[#080503] font-sans text-cream selection:bg-gold/30 selection:text-gold">
       {/* ------------------------------------------------------------- */}
       {/* 1. CINEMATIC FULL-WIDTH HERO BANNER                           */}
       {/* ------------------------------------------------------------- */}
@@ -674,6 +682,7 @@ function HomePage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 }

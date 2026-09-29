@@ -40,6 +40,7 @@ import dumHandiImg from "@/assets/dum-handi.jpg";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { BUSINESS, formatDate, nextAvailableDate, formatMoney, MENU } from "@/lib/menu";
+import { MobileAppView } from "@/components/mobile-app-view";
 
 export const Route = createFileRoute("/qr")({
   head: () => ({
@@ -137,7 +138,14 @@ export function QrWelcomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#080503] font-sans text-cream selection:bg-gold/30 selection:text-gold relative overflow-hidden pb-16">
+    <>
+      {/* Mobile-First App Design (Screen 2 - Bonuses & QR Matching User Mockup) */}
+      <div className="block lg:hidden">
+        <MobileAppView initialTab="qr" />
+      </div>
+
+      {/* Desktop Rich Brand QR Hub */}
+      <div className="hidden lg:block min-h-screen bg-[#080503] font-sans text-cream selection:bg-gold/30 selection:text-gold relative overflow-hidden pb-16">
       {/* Background Ambience Photography with Dark Gold/Crimson Vignette */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <img
@@ -525,5 +533,6 @@ export function QrWelcomePage() {
         )}
       </div>
     </div>
+    </>
   );
 }
