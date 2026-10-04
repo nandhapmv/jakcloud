@@ -73,6 +73,7 @@ function DailyOrderControlPage() {
   const [todayOrdersClosed, setTodayOrdersClosed] = useState(!settings.isKitchenOpen);
   const [dailyLimit, setDailyLimit] = useState<number>(settings.dailyTrayLimit);
   const [cutoffHour, setCutoffHour] = useState<number>(settings.orderCutoffHour);
+  const [horizonDays, setHorizonDays] = useState<number>(settings.bookingHorizonDays || 7);
   const [tomorrowLimit, setTomorrowLimit] = useState<number>(settings.dailyTrayLimit);
   const [autoRollTomorrow, setAutoRollTomorrow] = useState(true);
   const [tomorrowOrdersOpen, setTomorrowOrdersOpen] = useState(true);
@@ -158,9 +159,10 @@ function DailyOrderControlPage() {
     updateSettings({
       dailyTrayLimit: dailyLimit,
       orderCutoffHour: cutoffHour,
+      bookingHorizonDays: horizonDays,
       isKitchenOpen: onlineOrderingActive && !todayOrdersClosed,
     });
-    toast.success("Kitchen capacity & automated schedule successfully synchronized!");
+    toast.success("Kitchen capacity, 3:00 PM cutoff & slot booking horizon successfully saved!");
   };
 
   return (
@@ -436,9 +438,11 @@ function DailyOrderControlPage() {
                 {/* Preset Pills */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {[
-                    { label: "20 Trays (Slow Day)", val: 20 },
-                    { label: "25 Trays (Standard)", val: 25 },
-                    { label: "35 Trays (Weekend)", val: 35 },
+                    { label: "10 Trays (10 Limit - Default)", val: 10 },
+                    { label: "15 Trays", val: 15 },
+                    { label: "20 Trays", val: 20 },
+                    { label: "25 Trays", val: 25 },
+                    { label: "35 Trays (Weekend Feast)", val: 35 },
                   ].map((preset) => (
                     <button
                       key={preset.val}
@@ -513,9 +517,10 @@ function DailyOrderControlPage() {
                   >
                     <option value={12}>12:00 PM (Noon Cutoff)</option>
                     <option value={13}>1:00 PM</option>
-                    <option value={14}>2:00 PM (Standard Roll)</option>
-                    <option value={15}>3:00 PM</option>
+                    <option value={14}>2:00 PM</option>
+                    <option value={15}>3:00 PM (Standard 3 PM Cutoff)</option>
                     <option value={16}>4:00 PM</option>
+                    <option value={17}>5:00 PM</option>
                   </select>
                 </div>
 
@@ -527,9 +532,44 @@ function DailyOrderControlPage() {
                     id="tmrw-limit"
                     type="number"
                     value={tomorrowLimit}
-                    onChange={(e) => setTomorrowLimit(parseInt(e.target.value, 10) || 25)}
+                    onChange={(e) => setTomorrowLimit(parseInt(e.target.value, 10) || 10)}
                     className="h-8 rounded-lg border-gold/25 bg-black/60 text-xs font-mono font-bold text-cream"
                   />
+                </div>
+              </div>
+
+              {/* Dynamic Booking Slot Horizon Window */}
+              <div className="rounded-2xl border border-gold/20 bg-black/40 p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="horizon-input" className="text-xs text-gold font-semibold flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-gold" /> Advance Slot Booking Horizon:
+                  </Label>
+                  <span className="font-mono text-xs text-cream/70">{horizonDays} Days Open</span>
+                </div>
+
+                <p className="text-[0.65rem] text-cream/60">
+                  Control how far in advance diners can select Dum dates (1 week, 10 days, or 1 month). Dates beyond this are automatically locked in the customer calendar.
+                </p>
+
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {[
+                    { label: "7 Days (1 Week - Default)", val: 7 },
+                    { label: "10 Days Window", val: 10 },
+                    { label: "30 Days (1 Month)", val: 30 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.val}
+                      type="button"
+                      onClick={() => setHorizonDays(preset.val)}
+                      className={`rounded-lg px-3 py-1 text-xs font-medium transition-all ${
+                        horizonDays === preset.val
+                          ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
+                          : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/40"
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 

@@ -89,7 +89,8 @@ export interface DynamicOrder {
 
 export interface KitchenSettings {
   dailyTrayLimit: number;
-  orderCutoffHour: number; // e.g. 14 for 2:00 PM
+  orderCutoffHour: number; // e.g. 15 for 3:00 PM
+  bookingHorizonDays: number; // 7 (1 week), 10, or 30 (1 month)
   isKitchenOpen: boolean;
   emergencyPauseReason?: string;
   closedWeekdays: number[]; // e.g. [3] for Wednesday
@@ -390,16 +391,17 @@ export const INITIAL_ORDERS: DynamicOrder[] = [
 ];
 
 export const INITIAL_KITCHEN_SETTINGS: KitchenSettings = {
-  dailyTrayLimit: 25,
-  orderCutoffHour: 14, // 2:00 PM
+  dailyTrayLimit: 10, // Default 10 orders per day
+  orderCutoffHour: 15, // 3:00 PM (15:00) cutoff
+  bookingHorizonDays: 7, // 7 days (1 week) default horizon
   isKitchenOpen: true,
   emergencyPauseReason: "",
   closedWeekdays: [3], // Wednesday
   deliveryFee: 10,
   freeDeliveryTrayThreshold: 5,
-  alooCharge: 7,
+  alooCharge: 0, // Free aloo ($0)
   deliveryRadiusMiles: 10,
-  heroAnnouncement: "🔥 Made-to-Order Authentic Hyderabadi Dum Biryani · 24-Hour Advance Booking Required · 25 Handis Daily Limit",
+  heroAnnouncement: "🔥 Made-to-Order Authentic Hyderabadi Dum Biryani · 10 Handi Trays Daily Limit · Order by 3:00 PM",
   announcementActive: true,
   salesTaxRate: 0.086,
 };
@@ -727,7 +729,15 @@ export const jakloudStore = {
 
   // KITCHEN & CAPACITY SETTINGS
   getSettings(): KitchenSettings {
-    return getStored<KitchenSettings>(KEYS.SETTINGS, INITIAL_KITCHEN_SETTINGS);
+    const s = getStored<KitchenSettings>(KEYS.SETTINGS, INITIAL_KITCHEN_SETTINGS);
+    const merged = { ...INITIAL_KITCHEN_SETTINGS, ...s };
+    if (merged.dailyTrayLimit === 25 && !s.bookingHorizonDays) {
+      merged.dailyTrayLimit = 10;
+      merged.orderCutoffHour = 15;
+      merged.bookingHorizonDays = 7;
+      setStored(KEYS.SETTINGS, merged);
+    }
+    return merged;
   },
 
   updateSettings(updates: Partial<KitchenSettings>): KitchenSettings {
@@ -736,6 +746,8 @@ export const jakloudStore = {
     setStored(KEYS.SETTINGS, next);
     return next;
   },
+
+
 
   // PROTEINS & HALAL MATRIX
   getProteins(): ProteinMatrixItem[] {
@@ -861,6 +873,77 @@ export const jakloudStore = {
       activeOrders,
       readyOrders,
       todayTraysBooked,
+    };
+  },
+
+  // CAPACITY & TRAFFIC LIGHT COMPUTATION FOR DUM DATES
+  getCapacityForDate(target: string | Date) {
+    const settings = this.getSettings();
+    const limit = settings.dailyTrayLimit || 10;
+
+    let targetNormalized = "";
+    if (target instanceof Date) {
+      targetNormalized = target
+        .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+        .toLowerCase();
+    } else {
+      targetNormalized = (target || "").toLowerCase();
+    }
+
+    const orders = this.getOrders();
+    const matchingOrders = orders.filter((o) => {
+      if (o.status === "cancelled") return false;
+      const fDate = (o.fulfilmentDate || "").toLowerCase();
+      const createdDate = new Date(o.createdAt);
+      const createdShort = createdDate
+        .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+        .toLowerCase();
+
+      return (
+        fDate.includes(targetNormalized) ||
+        targetNormalized.includes(fDate) ||
+        createdShort.includes(targetNormalized) ||
+        targetNormalized.includes(createdShort)
+      );
+    });
+
+    const bookedCount = matchingOrders.length;
+    const remainingSlots = Math.max(0, limit - bookedCount);
+    const percent = Math.min(100, Math.round((bookedCount / limit) * 100));
+
+    // Traffic light logic: 7-10 Green, 4-6 Yellow, 1-3 Red, 0 Sold Out
+    let status: "green" | "yellow" | "red" | "sold_out" = "green";
+    let statusLabel = `Slots Available (${remainingSlots} left)`;
+    let statusColor = "#10b981"; // Emerald green
+
+    if (remainingSlots <= 0) {
+      status = "sold_out";
+      statusLabel = `Batch Sold Out (${limit}/${limit} Orders)`;
+      statusColor = "#ef4444";
+    } else if (remainingSlots <= 3) {
+      status = "red";
+      statusLabel = `Limited Handis (${remainingSlots} left)`;
+      statusColor = "#f43f5e";
+    } else if (remainingSlots <= 6) {
+      status = "yellow";
+      statusLabel = `Filling Fast (${remainingSlots} left)`;
+      statusColor = "#eab308";
+    } else {
+      status = "green";
+      statusLabel = `Slots Available (${remainingSlots} left)`;
+      statusColor = "#10b981";
+    }
+
+    return {
+      dateStr: typeof target === "string" ? target : target.toISOString(),
+      limit,
+      bookedCount,
+      remainingSlots,
+      percent,
+      status,
+      statusLabel,
+      statusColor,
+      isSoldOut: remainingSlots <= 0,
     };
   },
 };

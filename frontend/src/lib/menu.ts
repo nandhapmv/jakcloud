@@ -14,7 +14,7 @@ export type MenuItem = {
 
 export const ALOO_CHARGE = 0;
 export const DELIVERY_FEE = 10;
-export const ORDER_CUTOFF_HOUR = 14;
+export const ORDER_CUTOFF_HOUR = 15; // 3:00 PM (Default Cutoff)
 
 export const MENU: MenuItem[] = [
   {

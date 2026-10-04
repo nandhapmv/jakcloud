@@ -20,7 +20,7 @@ export const config = {
     phone: "417-897-9754",
     email: "sales@jakloud.com",
     address: "3625 S Bedford Ave., Springfield, MO 65809",
-    cutoffHour: 14, // 2:00 PM
+    cutoffHour: 15, // 3:00 PM (Updated per requirement)
     deliveryFee: 10.0,
     alooCharge: 7.0,
     taxRate: 0.086, // 8.6%

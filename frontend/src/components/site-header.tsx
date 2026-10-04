@@ -14,7 +14,6 @@ import {
   Info,
   MapPin,
   Clock,
-  Compass,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -23,19 +22,28 @@ import { Button } from "@/components/ui/button";
 import { CartSheet } from "@/components/cart-sheet";
 import { useCart } from "@/lib/cart";
 import { BUSINESS } from "@/lib/menu";
+import { useKitchenSettings } from "@/lib/store";
 
-const NAV = [
+// Desktop Navigation matching Live Site (Image 2): About, Food, Contact
+const DESKTOP_NAV = [
+  { to: "/about", label: "About", icon: Info },
+  { to: "/menu", label: "Food", icon: UtensilsCrossed },
+  { to: "/contact", label: "Contact", icon: MapPin },
+] as const;
+
+// Full Mobile Drawer Navigation
+const MOBILE_NAV = [
   { to: "/", label: "Home", icon: Home },
   { to: "/menu", label: "Handi Menu", icon: UtensilsCrossed },
-  { to: "/customize", label: "Customizer", icon: Sparkles },
-  { to: "/proteins", label: "Proteins Guide", icon: Shield },
-  { to: "/delivery", label: "Delivery Info", icon: Truck },
-  { to: "/about", label: "Our Story", icon: Info },
-  { to: "/contact", label: "Contact & Kitchen", icon: MapPin },
+  { to: "/about", label: "About Our Kitchen", icon: Info },
+  { to: "/contact", label: "Contact & Location", icon: MapPin },
+  { to: "/delivery", label: "Springfield Delivery Zones", icon: Truck },
+  { to: "/proteins", label: "Zabiha Halal Matrix", icon: Shield },
 ] as const;
 
 export function SiteHeader() {
   const { count } = useCart();
+  const { settings } = useKitchenSettings();
   const [cartOpen, setCartOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -49,133 +57,148 @@ export function SiteHeader() {
     "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKLOUD.",
   )}`;
 
+  const cutoffLabel =
+    settings?.orderCutoffHour === 12
+      ? "12:00 PM"
+      : (settings?.orderCutoffHour ?? 15) > 12
+      ? `${(settings?.orderCutoffHour ?? 15) - 12}:00 PM`
+      : `${settings?.orderCutoffHour ?? 15}:00 AM`;
+
+  const dailyLimit = settings?.dailyTrayLimit ?? 10;
+
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/[0.08] bg-[#09090b]/95 text-zinc-100 backdrop-blur-2xl shadow-lg">
-        {/* Top Announcement Bar (Desktop only) */}
+      <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-amber-500/20 bg-[#09090b]/98 text-zinc-100 backdrop-blur-2xl shadow-xl">
+        {/* Top Announcement Bar (Desktop only - Image 2) */}
         <Link
           to="/validation"
-          className="hidden lg:flex bg-[#121217]/95 border-b border-white/[0.06] py-1.5 px-4 text-center text-xs text-zinc-300 items-center justify-center gap-3 sm:gap-4 overflow-hidden hover:bg-[#181820] transition-colors group cursor-pointer"
+          className="hidden lg:flex bg-[#0f0e0c]/98 border-b border-white/[0.06] py-1.5 px-4 text-center text-xs text-zinc-300 items-center justify-center gap-3 sm:gap-4 overflow-hidden hover:bg-[#181614] transition-colors group cursor-pointer"
         >
-          <span className="flex items-center gap-1.5 text-amber-400 font-medium text-xs">
-            <Sparkles className="h-3 w-3 text-amber-400" /> Limited to 25 Handi Trays Daily
+          <span className="flex items-center gap-1.5 text-amber-400 font-semibold text-xs uppercase tracking-wider">
+            <Sparkles className="h-3 w-3 text-amber-400" /> LIMITED TO {dailyLimit} HANDI TRAYS DAILY
           </span>
           <span className="text-zinc-600">•</span>
-          <span className="text-xs text-zinc-400 group-hover:text-zinc-200 transition-colors">
-            Order by 2:00 PM for Next-Day Springfield Pickup & Delivery
+          <span className="text-xs text-zinc-300 group-hover:text-amber-200 transition-colors">
+            Order by {cutoffLabel} for Next-Day Springfield Pickup & Delivery (Check Live Capacity →)
           </span>
           <span className="text-zinc-600">•</span>
-          <span className="text-xs text-emerald-400 font-medium flex items-center gap-1">
-            <Shield className="h-3 w-3" /> 100% Zabiha Halal
+          <span className="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-emerald-500/30" /> 100% Zabiha Halal
           </span>
         </Link>
 
         {/* Main Navbar Container */}
         <div className="mx-auto flex max-w-7xl items-center justify-between px-3.5 py-2.5 sm:px-6 lg:px-8">
-          {/* Brand Logo & Name */}
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+          {/* Brand Logo & Name (Image 1 on Mobile, Image 2 on Desktop) */}
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group">
             <div className="relative shrink-0">
               <img
                 src={logoImg}
                 alt="JAKLOUD Spice King Dum Biryani"
-                className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-amber-500/30 bg-zinc-900 p-0.5 object-cover group-hover:scale-105 transition-transform shadow-sm"
+                className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-amber-500/40 bg-zinc-900 p-0.5 object-cover group-hover:scale-105 transition-transform shadow-md"
                 width={40}
                 height={40}
               />
             </div>
-            <div className="min-w-0 leading-tight">
-              <span className="block font-display text-sm sm:text-base tracking-normal text-zinc-100 font-semibold group-hover:text-amber-400 transition-colors">
-                JAKLOUD <span className="text-amber-400 font-serif italic font-normal text-xs sm:text-sm">Spice King</span>
+
+            {/* Desktop Brand text (Matching Live Image 2: JAKLOUD / SPICE KING · DUM BIRYANI) */}
+            <div className="hidden lg:block min-w-0 leading-tight">
+              <span className="block font-display text-lg tracking-wide text-zinc-100 font-bold group-hover:text-amber-400 transition-colors">
+                JAKLOUD
               </span>
-              <span className="block text-[10px] font-normal text-zinc-400 truncate max-w-[160px] sm:max-w-none">
-                Dum Biryani · Springfield, MO
+              <span className="block text-[10px] font-semibold text-amber-400/90 tracking-[0.2em] uppercase font-sans">
+                SPICE KING · DUM BIRYANI
+              </span>
+            </div>
+
+            {/* Mobile Brand text (Matching Live Image 1: JAKLOUD Spice King / ARTISANAL DUM BIRYANI) */}
+            <div className="block lg:hidden min-w-0 leading-tight">
+              <span className="block text-sm font-bold tracking-tight text-white group-hover:text-amber-400 transition-colors">
+                JAKLOUD Spice King
+              </span>
+              <span className="block text-[9px] font-semibold text-zinc-400 tracking-wider uppercase">
+                ARTISANAL DUM BIRYANI
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links (Laptop / Desktop only) */}
-          <nav className="hidden items-center gap-1 lg:flex">
-            {NAV.map((item) => (
+          {/* Desktop Navigation Links (Matching Live Image 2: About, Food, Contact) */}
+          <nav className="hidden items-center gap-6 lg:flex">
+            {DESKTOP_NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                activeOptions={{ exact: item.to === "/" }}
-                activeProps={{ className: "text-amber-400 bg-amber-500/10 border-amber-500/20" }}
-                className="rounded-xl px-3 py-1.5 text-xs font-medium text-zinc-300 transition-all hover:bg-white/[0.06] hover:text-white border border-transparent"
+                activeProps={{ className: "text-amber-400 font-semibold" }}
+                className="text-sm font-medium text-zinc-300 transition-colors hover:text-white"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          {/* Desktop Action Buttons (Laptop / Desktop only) */}
-          <div className="hidden lg:flex items-center gap-2.5">
+          {/* Desktop Action Buttons (Matching Live Image 2: WhatsApp Order, Phone, Handi Tray) */}
+          <div className="hidden lg:flex items-center gap-3">
             {/* WhatsApp Quick Order Button */}
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20 transition-all shadow-sm"
+              className="flex items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 transition-all shadow-sm"
               title="Order on WhatsApp"
             >
               <MessageSquare className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="text-xs font-medium">WhatsApp Order</span>
+              <span>WhatsApp Order</span>
             </a>
 
             {/* Call Hotline */}
             <a
               href={`tel:${BUSINESS.phone}`}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-amber-400 hover:border-amber-500/30 transition-all shadow-sm"
+              className="flex items-center gap-1.5 text-xs font-medium text-zinc-300 hover:text-amber-400 transition-colors px-1"
               title="Call Kitchen Hotline"
             >
               <Phone className="h-3.5 w-3.5 text-amber-400" />
               <span>{BUSINESS.phone}</span>
             </a>
 
-            {/* Cart Button with Live Counter Badge */}
+            {/* Handi Tray Cart Button (Image 2) */}
             <Button
-              variant="outline"
               size="sm"
               onClick={() => setCartOpen(true)}
-              className="relative rounded-xl border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-medium text-xs shadow-sm hover:scale-[1.02] transition-all gap-1.5 px-3.5 py-1.5 cursor-pointer h-8"
-              aria-label={`Open cart, ${count} tray${count === 1 ? "" : "s"}`}
+              className="relative rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs shadow-md hover:scale-[1.02] transition-all gap-1.5 px-4 py-1.5 cursor-pointer h-9 border border-amber-400/50"
+              aria-label={`Open Handi Tray cart, ${count} tray${count === 1 ? "" : "s"}`}
             >
-              <ShoppingBag className="h-3.5 w-3.5" />
-              <span>Cart</span>
+              <ShoppingBag className="h-3.5 w-3.5 text-zinc-950" />
+              <span>Handi Tray</span>
               {count > 0 && (
-                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-400 text-zinc-950 text-[10px] font-semibold px-1">
+                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-950 text-amber-400 text-[10px] font-extrabold px-1 ml-0.5">
                   {count}
                 </span>
               )}
             </Button>
           </div>
 
-          {/* Mobile Right Action Bar (Mobile Screens Only) */}
-          <div className="flex items-center gap-1.5 lg:hidden">
+          {/* Mobile Right Action Bar (Mobile Screens Only - Matching Image 1) */}
+          <div className="flex items-center gap-2 lg:hidden">
             {/* WhatsApp Quick Icon */}
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-all active:scale-95"
+              className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition-all active:scale-95"
               aria-label="WhatsApp Chef"
             >
               <MessageSquare className="h-4 w-4" />
             </a>
 
-            {/* Mobile Cart Button */}
+            {/* Mobile Handi Tray / Cart Button with Badge */}
             <button
               type="button"
               onClick={() => setCartOpen(true)}
-              className="relative flex h-8 items-center gap-1.5 px-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-semibold hover:bg-amber-500/25 transition-all active:scale-95 cursor-pointer"
+              className="relative flex h-8 items-center gap-1.5 px-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-semibold hover:bg-amber-500/35 transition-all active:scale-95 cursor-pointer"
               aria-label="Open Cart"
             >
-              <ShoppingBag className="h-4 w-4" />
-              {count > 0 && (
-                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-400 text-black text-[10px] font-bold px-1">
-                  {count}
-                </span>
-              )}
+              <ShoppingBag className="h-3.5 w-3.5 text-amber-400" />
+              <span className="font-bold">{count}</span>
             </button>
 
             {/* Hamburger Menu Toggle Button */}
@@ -202,7 +225,7 @@ export function SiteHeader() {
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
               <span className="flex items-center gap-1.5 font-medium">
                 <Sparkles className="h-3 w-3 text-amber-400 shrink-0" />
-                Limited to 25 Handi Trays Daily
+                Limited to {dailyLimit} Handi Trays Daily
               </span>
               <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
                 100% Halal
@@ -211,7 +234,7 @@ export function SiteHeader() {
 
             {/* Navigation Links Grid */}
             <nav className="grid grid-cols-1 gap-1">
-              {NAV.map((item) => {
+              {MOBILE_NAV.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.to;
                 return (
@@ -219,13 +242,13 @@ export function SiteHeader() {
                     key={item.to}
                     to={item.to}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between p-3 rounded-xl text-xs font-medium transition-all ${
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
                       isActive
-                        ? "bg-amber-500/15 border border-amber-500/30 text-amber-300 font-semibold"
-                        : "bg-zinc-900/40 border border-white/[0.04] text-zinc-300 hover:bg-zinc-900 hover:text-white"
+                        ? "bg-amber-500/15 text-amber-300 border border-amber-500/30 font-semibold"
+                        : "text-zinc-300 hover:bg-white/[0.05] hover:text-white"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                       <Icon className={`h-4 w-4 ${isActive ? "text-amber-400" : "text-zinc-400"}`} />
                       <span>{item.label}</span>
                     </div>
@@ -235,41 +258,31 @@ export function SiteHeader() {
               })}
             </nav>
 
-            {/* Springfield Kitchen Info & Direct Contact */}
-            <div className="pt-2 border-t border-white/[0.06] space-y-2">
-              <div className="flex items-start gap-2 text-[11px] text-zinc-400 px-1">
-                <MapPin className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
-                <span>3625 S Bedford Ave, Springfield, MO 65809</span>
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-zinc-400 px-1">
-                <Clock className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                <span>Pickup Lunch: 11:00 AM – 2:00 PM</span>
-              </div>
+            {/* Mobile Direct Hotline & WhatsApp CTA */}
+            <div className="pt-2 border-t border-white/[0.08] space-y-2">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 w-full rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 font-medium py-2.5 text-xs hover:bg-emerald-600/30 transition-all shadow-sm"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>WhatsApp Master Chef Kartheek</span>
+              </a>
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <a
-                  href={`tel:${BUSINESS.phone}`}
-                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl bg-zinc-900 border border-white/10 text-xs font-medium text-zinc-200 hover:text-amber-300 transition-all"
-                >
-                  <Phone className="h-3.5 w-3.5 text-amber-400" />
-                  <span>Call Hotline</span>
-                </a>
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium shadow-sm transition-all"
-                >
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  <span>WhatsApp</span>
-                </a>
-              </div>
+              <a
+                href={`tel:${BUSINESS.phone}`}
+                className="flex items-center justify-center gap-2 w-full rounded-xl bg-zinc-900 border border-white/10 text-zinc-200 font-medium py-2 text-xs hover:text-amber-400 transition-colors"
+              >
+                <Phone className="h-3.5 w-3.5 text-amber-400" />
+                <span>Kitchen Hotline: {BUSINESS.phone}</span>
+              </a>
             </div>
           </div>
         )}
       </header>
 
-      {/* Cart Drawer */}
+      {/* Cart Slider Drawer */}
       <CartSheet open={cartOpen} onOpenChange={setCartOpen} />
     </>
   );
