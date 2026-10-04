@@ -12,7 +12,7 @@ export type MenuItem = {
   kcalAloo: number;
 };
 
-export const ALOO_CHARGE = 7;
+export const ALOO_CHARGE = 0;
 export const DELIVERY_FEE = 10;
 export const ORDER_CUTOFF_HOUR = 14;
 
@@ -22,7 +22,7 @@ export const MENU: MenuItem[] = [
     name: "Royal Chicken Dum Biryani",
     category: "Signature Trays",
     price: 101.99,
-    priceWithAloo: 108.99,
+    priceWithAloo: 101.99,
     note: "Chef's Classic Signature",
     description:
       "Our house specialty. 1.6–1.8 kg marinated bone-in chicken thighs layered with aged saffron basmati rice, fried onions, and roasted cashews, sealed on dum.",
@@ -34,7 +34,7 @@ export const MENU: MenuItem[] = [
     name: "Hyderabadi Shahi Mutton Dum",
     category: "Premium & Occasion",
     price: 157.99,
-    priceWithAloo: 164.99,
+    priceWithAloo: 157.99,
     note: "Royal Nizami Feast",
     description:
       "Tender baby goat cuts slow-braised for 4 hours in pure desi ghee, mint, and whole roasted spices. Fall-apart succulent meat.",
@@ -46,7 +46,7 @@ export const MENU: MenuItem[] = [
     name: "Slow-Braised Spiced Beef Dum",
     category: "Signature Trays",
     price: 122.99,
-    priceWithAloo: 129.99,
+    priceWithAloo: 122.99,
     note: "Bold & Hearty Flavor",
     description:
       "Prime tender beef cooked long and low so rich caramelized spiced juices settle deeply through every single basmati grain.",
@@ -58,7 +58,7 @@ export const MENU: MenuItem[] = [
     name: "Springfield Signature Pork Dum",
     category: "Signature Trays",
     price: 108.99,
-    priceWithAloo: 115.99,
+    priceWithAloo: 108.99,
     note: "Ozarks Fusion Special",
     description:
       "Slow-cooked succulent pork shoulder with a deeper, richer roasted masala base, finished with desi ghee, fresh mint, and toasted spices.",
@@ -70,7 +70,7 @@ export const MENU: MenuItem[] = [
     name: "Royal Shahi Paneer Dum (Veg)",
     category: "Vegetarian Royal",
     price: 98.99,
-    priceWithAloo: 105.99,
+    priceWithAloo: 98.99,
     note: "Vegetarian Delicacy",
     description:
       "Fresh golden paneer cubes slow-simmered with aromatic saffron gravy, baby potatoes, roasted cashews, and caramelized onions.",
@@ -82,7 +82,7 @@ export const MENU: MenuItem[] = [
     name: "Jumbo King Tiger Prawn Dum",
     category: "Seafood Specialty",
     price: 139.99,
-    priceWithAloo: 146.99,
+    priceWithAloo: 139.99,
     note: "Coastal Saffron Special",
     description:
       "Succulent ocean king tiger prawns marinated in coastal roasted spices, layered with aged basmati, and steamed on gentle dum.",
@@ -127,11 +127,6 @@ export const PICKUP_TIMES = [
   "11:00 AM",
   "12:00 PM",
   "1:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-  "5:00 PM",
-  "6:00 PM",
 ];
 
 export const DELIVERY_TIMES = ["2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM"];

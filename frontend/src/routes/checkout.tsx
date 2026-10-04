@@ -58,6 +58,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DumDateTimePicker } from "@/components/dum-date-time-picker";
+import {
+  formatUsPhone,
+  isValidUsPhone,
+  sanitizeName,
+  isValidName,
+  sanitizeZipCode,
+  formatCardNumber,
+  formatCardExpiry,
+  sanitizeDigits,
+} from "@/lib/validation";
+import { openRazorpayCheckout } from "@/lib/razorpay";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -364,13 +376,13 @@ function CheckoutPage() {
       return;
     }
 
-    if (!name.trim()) {
-      toast.error("Please enter your full name.");
+    if (!isValidName(name)) {
+      toast.error("Please enter a valid full name (letters only, min 2 characters).");
       return;
     }
 
-    if (!phone.trim()) {
-      toast.error("Please enter your mobile phone number for kitchen SMS updates.");
+    if (!isValidUsPhone(phone)) {
+      toast.error("Please enter a valid 10-digit US mobile number, e.g. (417) 897-9754.");
       return;
     }
 
@@ -392,6 +404,33 @@ function CheckoutPage() {
 
     try {
       setIsSubmitting(true);
+
+      let razorpayPaymentId: string | null = null;
+      if (paymentMethod === "card") {
+        try {
+          const paymentResult = await openRazorpayCheckout({
+            amount: calculations.grandTotal,
+            customerName: name.trim(),
+            customerPhone: phone.trim(),
+            customerEmail: email.trim(),
+            description: `Handcrafted Dum Biryani (${count} tray${count > 1 ? "s" : ""})`,
+            notes: {
+              fulfilmentType,
+              date: selectedDate,
+              time: fulfilmentTime,
+            },
+          });
+          razorpayPaymentId = paymentResult.razorpay_payment_id;
+          toast.success(`Payment verified! ID: ${paymentResult.razorpay_payment_id}`);
+        } catch (payErr: any) {
+          setIsSubmitting(false);
+          if (payErr?.message?.includes("cancelled") || payErr?.message?.includes("dismissed")) {
+            return;
+          }
+          toast.error(payErr?.message || "Razorpay payment failed. Please try again.");
+          return;
+        }
+      }
 
       const response = await api.createOrder({
         items: lines.map((l) => ({
@@ -415,6 +454,8 @@ function CheckoutPage() {
             deliveryInstructions: landmark.trim() || undefined,
           }),
         },
+        paymentMethod: paymentMethod === "card" ? "Razorpay Online" : (paymentMethod === "whatsapp" ? "WhatsApp Direct" : "Pay on Pickup / Delivery"),
+        paymentStatus: paymentMethod === "card" ? "paid" : "pending",
         specialInstructions: instructions.trim() || undefined,
       });
 
@@ -580,19 +621,15 @@ function CheckoutPage() {
   // MAIN CHECKOUT FORM SCREEN
   // -------------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-[#080503] font-sans text-cream selection:bg-gold/30 selection:text-gold py-10 px-4 sm:px-8 relative overflow-hidden pb-28">
-      {/* Ambient background glow */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-gold/10 blur-[140px] pointer-events-none" />
-      <div className="absolute top-1/2 left-0 w-80 h-80 rounded-full bg-chili/10 blur-[140px] pointer-events-none" />
-
-      <div className="mx-auto max-w-7xl space-y-8 relative z-10">
+    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 py-10 px-4 sm:px-8 relative overflow-hidden pb-28">
+      <div className="mx-auto max-w-7xl space-y-6 relative z-10">
         {/* Top Header & Breadcrumbs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gold/15 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
           <Button
             asChild
             variant="ghost"
             size="sm"
-            className="gap-1.5 text-gold hover:bg-gold/15 rounded-xl text-xs font-bold w-fit"
+            className="gap-1.5 text-amber-400 hover:bg-white/[0.06] rounded-xl text-xs font-medium w-fit"
           >
             <Link to="/cart">
               <ArrowLeft className="h-4 w-4" /> Back to Shopping Cart
@@ -600,49 +637,49 @@ function CheckoutPage() {
           </Button>
 
           {/* Checkout Progress Pills */}
-          <div className="flex items-center gap-2 text-[0.68rem] font-bold uppercase tracking-wider text-cream/60">
+          <div className="flex items-center gap-2 text-[0.68rem] font-medium uppercase tracking-wider text-zinc-400">
             <span className="text-emerald-400">1. Menu</span>
-            <span className="text-gold/40">›</span>
+            <span className="text-zinc-600">›</span>
             <span className="text-emerald-400">2. Customizer</span>
-            <span className="text-gold/40">›</span>
+            <span className="text-zinc-600">›</span>
             <span className="text-emerald-400">3. Cart</span>
-            <span className="text-gold/40">›</span>
-            <span className="rounded-full bg-gold px-2.5 py-0.5 text-black font-extrabold shadow-sm">
+            <span className="text-zinc-600">›</span>
+            <span className="rounded-full bg-amber-500/20 border border-amber-500/40 px-2.5 py-0.5 text-amber-300 font-semibold shadow-sm">
               4. Checkout & Details
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-gold">
+          <div className="flex items-center gap-1.5 text-xs text-amber-400">
             <Lock className="h-3.5 w-3.5" />
             <span>256-Bit SSL Secure Checkout</span>
           </div>
         </div>
 
-        <div className="grid gap-10 lg:grid-cols-12 items-start">
+        <div className="grid gap-8 lg:grid-cols-12 items-start">
           {/* ========================================================= */}
           {/* LEFT: CHECKOUT DETAILS FORM (7-8 COLS)                    */}
           {/* ========================================================= */}
-          <div className="lg:col-span-7 xl:col-span-8 space-y-8">
+          <div className="lg:col-span-7 xl:col-span-8 space-y-6">
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-black/60 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-gold shadow-md">
-                <Sparkles className="h-3 w-3 text-gold" />
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-0.5 text-[0.65rem] font-medium text-amber-300">
+                <Sparkles className="h-3 w-3 text-amber-400" />
                 <span>Made To Order Handi Reservation</span>
               </div>
-              <h1 className="font-display text-3xl sm:text-4xl font-bold text-cream">
-                Booking & <span className="bg-gradient-to-r from-gold via-amber-200 to-gold bg-clip-text text-transparent">Fulfillment Details</span>
+              <h1 className="font-display text-2xl sm:text-3xl font-semibold text-zinc-100">
+                Booking & <span className="text-amber-400">Fulfilment Details</span>
               </h1>
-              <p className="text-xs sm:text-sm text-cream/75 leading-relaxed">
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed font-normal">
                 Provide your contact details, choose Springfield counter pickup or doorstep delivery, and schedule your slow-cooked dum biryani batch.
               </p>
             </div>
 
-            <form onSubmit={handleSubmitOrder} className="space-y-8">
+            <form onSubmit={handleSubmitOrder} className="space-y-6">
               {/* ===================================================== */}
               {/* SECTION 1: FULFILMENT METHOD (PICKUP VS DELIVERY)     */}
               {/* ===================================================== */}
-              <div className="rounded-3xl border border-gold/25 bg-[#120c08]/95 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
+              <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-display text-xl font-bold text-cream flex items-center gap-2">
+                  <h2 className="font-display text-lg font-semibold text-zinc-100 flex items-center gap-2">
                     <Store className="h-5 w-5 text-gold" />
                     <span>1. Fulfilment Method</span>
                   </h2>
@@ -733,60 +770,15 @@ function CheckoutPage() {
                   </button>
                 </div>
 
-                {/* Date & Time Selection Strip */}
-                <div className="space-y-4 pt-2 border-t border-gold/15">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <Label className="text-xs text-gold font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>Select Fulfilment Date:</span>
-                    </Label>
-                    <span className="text-[0.68rem] text-cream/60">Daily Dum Cutoff: 2:00 PM</span>
-                  </div>
-
-                  {/* Quick Date Pills */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {availableDates.map((item, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setSelectedDate(item.dateStr)}
-                        className={`rounded-2xl p-2.5 text-left border transition-all ${
-                          selectedDate === item.dateStr
-                            ? "bg-gold text-black border-gold shadow-md font-bold"
-                            : "bg-black/60 border-gold/20 text-cream/80 hover:bg-gold/15"
-                        }`}
-                      >
-                        <span className="text-[0.65rem] uppercase block opacity-80">{item.label}</span>
-                        <span className="text-xs font-bold block truncate">{item.dateStr.split(",")[1] || item.dateStr}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Time Window Selector */}
-                  <div className="space-y-2 pt-2">
-                    <Label className="text-xs text-gold font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>Select Preferred Time Slot ({selectedDate}):</span>
-                    </Label>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {(fulfilmentType === "pickup" ? PICKUP_TIMES : DELIVERY_TIMES).map((t) => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => setFulfilmentTime(t)}
-                          className={`rounded-xl py-2 px-3 text-xs font-bold border transition-all flex items-center justify-between ${
-                            fulfilmentTime === t
-                              ? "bg-gradient-to-r from-chili to-gold text-white border-gold shadow-md"
-                              : "bg-black/60 border-gold/20 text-cream/75 hover:bg-gold/15"
-                          }`}
-                        >
-                          <span>{t}</span>
-                          {fulfilmentTime === t && <Check className="h-3.5 w-3.5 stroke-[3]" />}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                {/* Date & Time Selection via Interactive Calendar & Clock */}
+                <div className="pt-2 border-t border-gold/15">
+                  <DumDateTimePicker
+                    selectedDate={selectedDate}
+                    onDateChange={(newDate) => setSelectedDate(newDate)}
+                    selectedTime={fulfilmentTime}
+                    onTimeChange={(newTime) => setFulfilmentTime(newTime)}
+                    fulfilmentMode={fulfilmentType}
+                  />
                 </div>
               </div>
 
@@ -811,7 +803,7 @@ function CheckoutPage() {
                         required
                         placeholder=" "
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => setName(sanitizeName(e.target.value))}
                         className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium text-sm rounded-2xl pl-12 pr-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
                       />
                       <User className="absolute left-4 top-4.5 h-5 w-5 text-gold/60 peer-focus:text-gold transition-colors" />
@@ -819,32 +811,47 @@ function CheckoutPage() {
                         htmlFor="fullName"
                         className="absolute left-12 top-2 text-[0.65rem] font-bold text-gold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-cream/50 peer-focus:top-2 peer-focus:text-[0.65rem] peer-focus:text-gold pointer-events-none"
                       >
-                        Full Name *
+                        Full Name (Letters Only) *
                       </label>
                     </div>
                   </div>
 
-                  {/* Phone Number Field with Floating Label */}
+                  {/* Phone Number Field with Floating Label (US ONLY) */}
                   <div className="relative group">
                     <div className="relative">
+                      <div className="absolute left-12 top-4.5 flex items-center gap-1 pointer-events-none text-xs text-gold/70 z-10 font-mono">
+                        <span>🇺🇸</span>
+                        <span className="text-[11px]">+1</span>
+                      </div>
                       <Input
                         id="mobilePhone"
                         type="tel"
+                        inputMode="numeric"
                         required
                         placeholder=" "
+                        maxLength={14}
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium text-sm rounded-2xl pl-12 pr-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
+                        onChange={(e) => setPhone(formatUsPhone(e.target.value))}
+                        className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium font-mono text-sm rounded-2xl pl-20 pr-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
                       />
                       <Phone className="absolute left-4 top-4.5 h-5 w-5 text-gold/60 peer-focus:text-gold transition-colors" />
                       <label
                         htmlFor="mobilePhone"
                         className="absolute left-12 top-2 text-[0.65rem] font-bold text-gold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-cream/50 peer-focus:top-2 peer-focus:text-[0.65rem] peer-focus:text-gold pointer-events-none"
                       >
-                        Mobile Phone *
+                        US Mobile Phone (10 Digits) *
                       </label>
+                      {isValidUsPhone(phone) && (
+                        <CheckCircle2 className="absolute right-4 top-5 h-4 w-4 text-emerald-400" />
+                      )}
                     </div>
-                    <p className="text-[0.65rem] text-cream/50 mt-1 pl-2">For real-time Dum Prep & Dispatch SMS alerts</p>
+                    <p className="text-[0.65rem] text-cream/50 mt-1 pl-2">
+                      {isValidUsPhone(phone) ? (
+                        <span className="text-emerald-400 font-medium">✓ Valid US mobile number for live kitchen SMS</span>
+                      ) : (
+                        "US 10-digit mobile number for real-time Dum Prep & Dispatch SMS"
+                      )}
+                    </p>
                   </div>
 
                   {/* Email Field with Floating Label */}
@@ -1023,17 +1030,20 @@ function CheckoutPage() {
                       <div className="relative">
                         <Input
                           id="zipCodeInput"
+                          type="text"
+                          inputMode="numeric"
                           required
                           placeholder=" "
+                          maxLength={5}
                           value={zipCode}
-                          onChange={(e) => setZipCode(e.target.value)}
-                          className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium text-sm rounded-2xl px-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
+                          onChange={(e) => setZipCode(sanitizeZipCode(e.target.value))}
+                          className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium font-mono text-sm rounded-2xl px-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
                         />
                         <label
                           htmlFor="zipCodeInput"
                           className="absolute left-4 top-2 text-[0.65rem] font-bold text-gold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-cream/50 peer-focus:top-2 peer-focus:text-[0.65rem] peer-focus:text-gold pointer-events-none"
                         >
-                          Springfield ZIP Code *
+                          Springfield ZIP Code (5 Digits) *
                         </label>
                       </div>
                     </div>
@@ -1196,19 +1206,24 @@ function CheckoutPage() {
                     <p className="text-[0.65rem] text-cream/60 mt-0.5">Cash / Card upon arrival / Venmo</p>
                   </button>
 
-                  {/* Secure Card */}
+                  {/* Razorpay Online */}
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("card")}
                     className={`rounded-2xl p-4 text-left border transition-all ${
                       paymentMethod === "card"
-                        ? "border-gold bg-gold/15 shadow-md text-cream font-bold"
+                        ? "border-gold bg-gold/15 shadow-md text-cream font-bold ring-1 ring-gold/40"
                         : "bg-black/40 border-gold/20 text-cream/70 hover:bg-black/60"
                     }`}
                   >
-                    <CreditCard className="h-5 w-5 text-gold mb-2" />
-                    <p className="font-bold text-xs">Credit / Debit Card</p>
-                    <p className="text-[0.65rem] text-cream/60 mt-0.5">256-Bit SSL Encrypted</p>
+                    <div className="flex items-center justify-between mb-2">
+                      <CreditCard className="h-5 w-5 text-gold" />
+                      <span className="text-[9px] font-mono bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                        Live Test
+                      </span>
+                    </div>
+                    <p className="font-bold text-xs">Razorpay Secure</p>
+                    <p className="text-[0.65rem] text-cream/60 mt-0.5">Cards, UPI, Netbanking & Wallets</p>
                   </button>
 
                   {/* WhatsApp Direct */}
@@ -1227,38 +1242,21 @@ function CheckoutPage() {
                   </button>
                 </div>
 
-                {/* Simulated Card Form Fields */}
+                {/* Razorpay Live Test Mode Info Banner */}
                 {paymentMethod === "card" && (
-                  <div className="rounded-2xl bg-black/50 border border-gold/20 p-4 space-y-3 animate-in fade-in">
-                    <p className="text-[0.68rem] text-gold font-bold uppercase tracking-wider">
-                      Enter Card Details (256-Bit Secure Simulation):
-                    </p>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="col-span-3">
-                        <Input
-                          placeholder="Card Number (4000 1234 5678 9010)"
-                          value={cardNumber}
-                          onChange={(e) => setCardNumber(e.target.value)}
-                          className="bg-black/60 border-gold/25 text-cream text-xs rounded-xl"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <Input
-                          placeholder="MM / YY"
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(e.target.value)}
-                          className="bg-black/60 border-gold/25 text-cream text-xs rounded-xl"
-                        />
-                      </div>
-                      <div>
-                        <Input
-                          placeholder="CVC"
-                          value={cardCvc}
-                          onChange={(e) => setCardCvc(e.target.value)}
-                          className="bg-black/60 border-gold/25 text-cream text-xs rounded-xl"
-                        />
-                      </div>
+                  <div className="rounded-2xl bg-amber-950/20 border border-gold/30 p-4 space-y-2 animate-in fade-in">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gold font-bold flex items-center gap-1.5">
+                        <Lock className="h-3.5 w-3.5 text-emerald-400" />
+                        <span>Razorpay Test Mode Active</span>
+                      </p>
+                      <span className="font-mono text-[10px] text-zinc-400 bg-black/50 px-2 py-0.5 rounded border border-white/10">
+                        rzp_test_SwedUUn1KgRMs0
+                      </span>
                     </div>
+                    <p className="text-xs text-cream/70 font-normal">
+                      Clicking below opens the official Razorpay test checkout window supporting test Credit/Debit Cards, UPI, Netbanking, and Wallets in a secure sandbox.
+                    </p>
                   </div>
                 )}
               </div>
@@ -1336,8 +1334,8 @@ function CheckoutPage() {
                               </span>
                             </div>
                             <p className="text-[0.68rem] text-cream/70">
-                              {line.aloo ? "✓ Added Spiced Baby Aloo (+$7)" : "No Potatoes"} ·{" "}
-                              {line.extraSpicy ? "Extra Spicy" : "Regular"}
+                              {line.aloo ? "• Royal Dum Aloo (Free)" : "• No Aloo"} ·{" "}
+                              {line.extraSpicy ? "🌶️ Spicy" : "🌿 No Spicy (Mild)"}
                             </p>
                             {line.notes && <p className="text-[0.62rem] text-gold/80 italic truncate">{line.notes}</p>}
                           </div>

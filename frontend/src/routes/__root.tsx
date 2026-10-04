@@ -91,7 +91,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&family=Poppins:wght@400;500;600;700;800&family=Marcellus&family=Inter:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap",
       },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "apple-touch-icon", href: "/favicon.png" },
@@ -130,18 +130,22 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
-          <div className="flex min-h-screen flex-col bg-[#080503] font-sans text-cream">
+          <div className="flex min-h-screen w-full flex-col bg-[#080503] font-sans text-cream">
             {!isAdminRoute && <SiteHeader />}
-            <main className="flex-1">
+            <main className={`flex-1 w-full ${!isAdminRoute ? "pt-14 lg:pt-[84px]" : ""}`}>
               <Outlet />
             </main>
-            {!isAdminRoute && <SiteFooter />}
+            {!isAdminRoute && (
+              <div className={pathname === "/" ? "hidden lg:block" : ""}>
+                <SiteFooter />
+              </div>
+            )}
 
-            {/* Global Floating WhatsApp CTA */}
+            {/* Global Floating WhatsApp CTA (Desktop only to prevent overlapping mobile navigation dock) */}
             {!isAdminRoute && (
               <aside
                 aria-label="Live WhatsApp Concierge"
-                className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2"
+                className="hidden lg:flex fixed bottom-6 right-6 z-50 flex-col items-end gap-2"
               >
                 <a
                   href={whatsappUrl}

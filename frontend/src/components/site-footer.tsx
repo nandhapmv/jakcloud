@@ -24,59 +24,52 @@ export function SiteFooter() {
   )}`;
 
   return (
-    <footer className="hidden lg:block mt-20 border-t border-gold/25 bg-[#0a0705] text-cream selection:bg-gold/30 selection:text-gold relative overflow-hidden">
-      {/* Background Ambience Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-gold/5 blur-3xl pointer-events-none" />
-
+    <footer className="hidden lg:block mt-20 border-t border-white/[0.08] bg-[#0c0c0e] text-zinc-100 relative overflow-hidden">
       {/* Main Footer Content */}
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-8 grid gap-10 md:grid-cols-2 lg:grid-cols-4 relative z-10">
+      <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 grid gap-10 md:grid-cols-2 lg:grid-cols-4 relative z-10">
         {/* Column 1: Brand & Craft */}
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           <Link to="/" className="flex items-center gap-3">
-            <div className="relative">
-              <div className="absolute -inset-1 rounded-full bg-gold/30 blur-sm" />
-              <img
-                src={logoImg}
-                alt="JAKLOUD Spice King heritage seal"
-                className="relative h-14 w-14 rounded-full border border-gold/60 bg-cream p-0.5 object-cover shadow-[0_0_15px_rgba(212,160,23,0.35)]"
-                loading="lazy"
-                width={56}
-                height={56}
-              />
-            </div>
+            <img
+              src={logoImg}
+              alt="JAKLOUD Spice King seal"
+              className="h-10 w-10 rounded-full border border-amber-500/30 bg-zinc-900 p-0.5 object-cover"
+              loading="lazy"
+              width={40}
+              height={40}
+            />
             <div>
-              <span className="font-display text-xl font-bold tracking-wider text-cream block">
+              <span className="font-display text-lg font-semibold text-zinc-100 block">
                 JAKLOUD
               </span>
-              <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold">
+              <span className="block text-[10px] font-medium text-amber-400">
                 Spice King Dum Biryani
               </span>
             </div>
           </Link>
 
-          <p className="text-xs text-cream/75 leading-relaxed">
-            Springfield's authentic slow-cooked royal Dum Pukht handi trays. Prepared fresh daily with saffron aged
-            basmati, pure desi ghee, and sealed with traditional dough.
+          <p className="text-xs text-zinc-400 leading-relaxed font-normal">
+            Springfield's authentic slow-cooked royal Dum Pukht handi trays. Prepared fresh daily with aged saffron basmati and sealed with traditional dough.
           </p>
 
-          <div className="flex items-center gap-2 rounded-xl border border-gold/20 bg-black/40 p-2.5 text-xs text-gold">
+          <div className="flex items-center gap-2 rounded-xl border border-white/[0.08] bg-zinc-900/60 p-2.5 text-xs text-zinc-300 font-normal">
             <Shield className="h-4 w-4 text-emerald-400 shrink-0" />
-            <span className="text-[0.7rem] font-semibold">100% Zabiha Halal Certified Poultry & Meats</span>
+            <span>100% Zabiha Halal Certified Poultry & Meats</span>
           </div>
         </div>
 
         {/* Column 2: Order Channels & Hotline */}
         <div className="space-y-3 text-xs">
-          <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold flex items-center gap-1.5">
-            <Phone className="h-3.5 w-3.5" /> Order & Contact Channels
+          <h3 className="text-xs font-semibold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+            <Phone className="h-3.5 w-3.5 text-amber-400" /> Contact & Orders
           </h3>
 
-          <div className="space-y-2 pt-1">
+          <div className="space-y-2 pt-1 font-normal">
             <a
               href={`tel:${BUSINESS.phone}`}
-              className="flex items-center gap-2 text-cream/90 hover:text-gold transition-colors"
+              className="flex items-center gap-2 text-zinc-300 hover:text-amber-400 transition-colors"
             >
-              <Phone className="h-3.5 w-3.5 text-gold shrink-0" />
+              <Phone className="h-3.5 w-3.5 text-amber-400 shrink-0" />
               <span>Hotline: {BUSINESS.phone}</span>
             </a>
 
@@ -87,19 +80,19 @@ export function SiteFooter() {
               className="flex items-center gap-2 text-emerald-400 hover:underline"
             >
               <MessageSquare className="h-3.5 w-3.5 shrink-0" />
-              <span>WhatsApp Direct Chat (+1 417-897-9754)</span>
+              <span>WhatsApp: +1 417-897-9754</span>
             </a>
 
             <a
               href={`mailto:${BUSINESS.email}`}
-              className="flex items-center gap-2 text-cream/80 hover:text-gold transition-colors"
+              className="flex items-center gap-2 text-zinc-300 hover:text-amber-400 transition-colors"
             >
-              <Mail className="h-3.5 w-3.5 text-gold shrink-0" />
+              <Mail className="h-3.5 w-3.5 text-amber-400 shrink-0" />
               <span>{BUSINESS.email}</span>
             </a>
 
-            <p className="flex items-start gap-2 text-cream/80 pt-1">
-              <MapPin className="h-3.5 w-3.5 text-gold shrink-0 mt-0.5" />
+            <p className="flex items-start gap-2 text-zinc-400 pt-1">
+              <MapPin className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
               <span>{BUSINESS.address}</span>
             </p>
           </div>
@@ -107,110 +100,70 @@ export function SiteFooter() {
 
         {/* Column 3: Daily Timing & Cutoffs */}
         <div className="space-y-3 text-xs">
-          <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5" /> Daily Dum Schedule
+          <h3 className="text-xs font-semibold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-amber-400" /> Daily Schedule
           </h3>
 
-          <div className="space-y-1.5 pt-1 text-cream/80">
+          <div className="space-y-1.5 pt-1 text-zinc-400 font-normal">
             <p>
-              <span className="text-gold font-semibold">Daily Order Cutoff:</span> 2:00 PM
-            </p>
-            <p>
-              <span className="text-gold font-semibold">Counter Pickup:</span> 11:00 AM – 6:00 PM
+              <span className="text-zinc-200 font-medium">Daily Order Cutoff:</span> 2:00 PM
             </p>
             <p>
-              <span className="text-gold font-semibold">Executive Delivery:</span> 2:00 PM – 6:00 PM
+              <span className="text-zinc-200 font-medium">Counter Pickup:</span> 11:00 AM – 6:00 PM
             </p>
-            <p className="text-[0.7rem] text-saffron pt-1">
-              ⚠️ Closed Wednesdays for fresh spice grinding and marinade preparations.
+            <p>
+              <span className="text-zinc-200 font-medium">Delivery:</span> 2:00 PM – 6:00 PM
             </p>
-            <p className="text-[0.7rem] text-cream/60">
-              Limited to 25 Handi Trays daily to preserve slow-cooked perfection.
+            <p className="text-[11px] text-amber-400/80 pt-1">
+              Closed Wednesdays for fresh spice grinding and marinades.
+            </p>
+            <p className="text-[11px] text-zinc-500">
+              Limited to 25 Handi Trays daily for slow-cooked perfection.
             </p>
           </div>
         </div>
 
         {/* Column 4: Quick Navigation & Admin Access */}
         <div className="space-y-3 text-xs">
-          <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold">
-            Navigation & Social
+          <h3 className="text-xs font-semibold text-zinc-200 uppercase tracking-wider">
+            Quick Navigation
           </h3>
 
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <Link to="/" className="text-cream/80 hover:text-gold transition-colors">
+          <div className="grid grid-cols-2 gap-2 pt-1 font-normal">
+            <Link to="/" className="text-zinc-400 hover:text-amber-400 transition-colors">
               Home
             </Link>
-            <Link to="/menu" className="text-cream/80 hover:text-gold transition-colors font-semibold text-gold">
-              Handi Menu
+            <Link to="/menu" className="text-zinc-400 hover:text-amber-400 transition-colors">
+              Food Menu
             </Link>
-            <Link to="/validation" className="text-cream/80 hover:text-gold transition-colors">
-              Live Capacity
-            </Link>
-            <Link to="/delivery" className="text-cream/80 hover:text-gold transition-colors">
-              Delivery Radar
-            </Link>
-            <Link to="/about" className="text-cream/80 hover:text-gold transition-colors">
+            <Link to="/about" className="text-zinc-400 hover:text-amber-400 transition-colors">
               Our Story
             </Link>
-            <Link to="/contact" className="text-cream/80 hover:text-gold transition-colors">
-              Location
+            <Link to="/delivery" className="text-zinc-400 hover:text-amber-400 transition-colors">
+              Delivery Zones
+            </Link>
+            <Link to="/contact" className="text-zinc-400 hover:text-amber-400 transition-colors">
+              Contact
+            </Link>
+            <Link to="/cart" className="text-zinc-400 hover:text-amber-400 transition-colors">
+              View Cart
             </Link>
           </div>
 
-          <div className="pt-2 border-t border-gold/15 space-y-2">
-            <p className="text-[0.68rem] text-cream/60">Follow our slow Dum cooking craft:</p>
-            <div className="flex items-center gap-3 text-gold">
-              <a
-                href="https://instagram.com/jakloud_biryani"
-                target="_blank"
-                rel="noreferrer"
-                className="h-8 w-8 rounded-lg bg-black/60 border border-gold/25 flex items-center justify-center hover:bg-gold/20 hover:text-cream transition-colors"
-                title="Instagram"
-              >
-                <Instagram className="h-4 w-4" />
-              </a>
-              <a
-                href="https://facebook.com/jakloudspiceking"
-                target="_blank"
-                rel="noreferrer"
-                className="h-8 w-8 rounded-lg bg-black/60 border border-gold/25 flex items-center justify-center hover:bg-gold/20 hover:text-cream transition-colors"
-                title="Facebook"
-              >
-                <Facebook className="h-4 w-4" />
-              </a>
-              <a
-                href="https://youtube.com/@jakloudspiceking"
-                target="_blank"
-                rel="noreferrer"
-                className="h-8 w-8 rounded-lg bg-black/60 border border-gold/25 flex items-center justify-center hover:bg-gold/20 hover:text-cream transition-colors"
-                title="YouTube"
-              >
-                <Youtube className="h-4 w-4" />
-              </a>
-            </div>
+          <div className="pt-3 border-t border-white/[0.06]">
+            <Link
+              to="/admin/login"
+              className="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:underline font-medium"
+            >
+              <Lock className="h-3 w-3" /> Kitchen Admin Portal →
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Bottom Subfooter Bar */}
-      <div className="border-t border-gold/15 bg-black/60 px-4 py-4 text-xs text-cream/60">
-        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <span>
-            © {new Date().getFullYear()} JAKLOUD – Spice King Dum Biryani. Springfield, Missouri. All rights reserved.
-          </span>
-          <div className="flex items-center gap-4">
-            <Link to="/about" className="hover:text-gold transition-colors text-[0.7rem]">
-              Halal Standards
-            </Link>
-            <span className="text-gold/30">•</span>
-            <Link
-              to="/admin/login"
-              className="text-gold hover:underline transition-colors text-[0.7rem] flex items-center gap-1 font-semibold"
-            >
-              <Lock className="h-3 w-3" /> Kitchen Command Login →
-            </Link>
-          </div>
-        </div>
+      {/* Bottom Bar */}
+      <div className="border-t border-white/[0.06] bg-[#08080a] py-4 px-6 text-center text-[11px] text-zinc-500 font-normal">
+        <p>© {new Date().getFullYear()} JAKLOUD Spice King Dum Biryani. All rights reserved. Springfield, Missouri.</p>
       </div>
     </footer>
   );

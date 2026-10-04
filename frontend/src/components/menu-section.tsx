@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flame, Plus, Shield, Sparkles, Check, Info } from "lucide-react";
+import { Flame, Plus, Shield, Sparkles, Check } from "lucide-react";
 import { toast } from "sonner";
 
 import heroImg from "@/assets/hero-biryani.jpg";
@@ -26,11 +26,11 @@ export function MenuSection() {
   return (
     <section id="menu" className="mx-auto max-w-7xl px-4 py-8">
       {CATEGORIES.map((category) => (
-        <div key={category} className="mb-14 last:mb-0">
+        <div key={category} className="mb-12 last:mb-0">
           <div className="mb-6 flex items-center gap-4">
             <div className="flex items-center gap-2 shrink-0">
-              <Sparkles className="h-4 w-4 text-gold" />
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-cream tracking-wide">{category}</h2>
+              <Sparkles className="h-4 w-4 text-amber-400" />
+              <h2 className="font-display text-2xl font-semibold text-zinc-100">{category}</h2>
             </div>
             <div className="gold-rule w-full" />
           </div>
@@ -42,27 +42,27 @@ export function MenuSection() {
         </div>
       ))}
 
-      <div className="mt-12 rounded-3xl border border-gold/30 bg-gradient-to-br from-[#170f0a] via-[#120c08] to-[#0a0705] p-6 sm:p-8 text-xs text-cream/85 shadow-2xl space-y-4">
-        <div className="flex items-center gap-2.5 text-gold font-display text-base sm:text-lg font-bold">
-          <Shield className="h-5 w-5 text-emerald-400" />
-          <span>Allergens & Handcrafted Batch Guarantee</span>
+      <div className="mt-12 rounded-2xl border border-white/[0.08] bg-[#121216] p-6 text-xs text-zinc-300 shadow-sm space-y-3">
+        <div className="flex items-center gap-2 text-zinc-100 font-semibold text-sm">
+          <Shield className="h-4 w-4 text-emerald-400" />
+          <span>Handcrafted Batch Guarantee</span>
         </div>
-        <p className="text-cream/75 leading-relaxed">
+        <p className="text-zinc-400 font-normal leading-relaxed">
           Every Handi Tray includes slow-simmered Dum Biryani layered with aged saffron basmati, pure desi ghee, boiled eggs,
-          ghee-roasted whole cashews, crispy fried onions (birista), fresh mint, house Mirchi Ka Salan gravy, and cooling raita.
+          roasted cashews, crispy fried onions (birista), fresh mint, house Mirchi Ka Salan gravy, and raita.
         </p>
-        <div className="grid gap-3 sm:grid-cols-3 pt-2 text-[0.72rem] text-cream/70 border-t border-gold/15">
+        <div className="grid gap-3 sm:grid-cols-3 pt-2 text-[11px] text-zinc-400 border-t border-white/[0.06] font-normal">
           <div className="flex items-center gap-2">
             <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-            <span>100% Zabiha Halal Certified Poultry & Meats</span>
+            <span>100% Zabiha Halal Certified Meats</span>
           </div>
           <div className="flex items-center gap-2">
-            <Check className="h-3.5 w-3.5 text-gold shrink-0" />
-            <span>Generously Serves 4–5 Adults (1.6–1.8kg Meat)</span>
+            <Check className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+            <span>Serves 4–5 Adults (1.6–1.8kg Meat)</span>
           </div>
           <div className="flex items-center gap-2">
-            <Check className="h-3.5 w-3.5 text-saffron shrink-0" />
-            <span>Flat $10 Delivery in Springfield (10 mi)</span>
+            <Check className="h-3.5 w-3.5 text-zinc-300 shrink-0" />
+            <span>Flat $10 Delivery in Springfield Metro</span>
           </div>
         </div>
       </div>
@@ -82,32 +82,32 @@ function MenuCard({ item }: { item: MenuItem }) {
   const isHalal = item.id !== "pork";
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-gold/25 bg-[#140e09]/95 text-cream shadow-2xl backdrop-blur-xl hover:border-gold/60 transition-all flex flex-col justify-between group">
+    <article className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#121216] text-zinc-100 shadow-sm hover:border-amber-500/30 transition-all flex flex-col justify-between group">
       <div>
         <div className="relative overflow-hidden">
           <img
             src={dishImage}
             alt={item.name}
-            className="h-52 sm:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-700"
+            className="h-52 w-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
             width={1600}
             height={1008}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#140e09] via-[#140e09]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#121216] via-[#121216]/40 to-transparent" />
 
           {/* Badges Overlay */}
           <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none">
             {isHalal ? (
-              <span className="rounded-full bg-emerald-950/80 border border-emerald-500/50 px-3 py-1 text-[0.65rem] font-bold text-emerald-400 backdrop-blur-md flex items-center gap-1 shadow-lg">
-                <Shield className="h-3 w-3" /> 100% Zabiha Halal
+              <span className="rounded-full bg-black/70 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-medium text-emerald-400 backdrop-blur-md flex items-center gap-1">
+                <Shield className="h-3 w-3" /> 100% Halal
               </span>
             ) : (
-              <span className="rounded-full bg-amber-950/80 border border-amber-500/50 px-3 py-1 text-[0.65rem] font-bold text-amber-300 backdrop-blur-md flex items-center gap-1 shadow-lg">
-                <Sparkles className="h-3 w-3" /> Chef Specialty
+              <span className="rounded-full bg-black/70 border border-amber-500/30 px-2.5 py-0.5 text-[10px] font-medium text-amber-300 backdrop-blur-md flex items-center gap-1">
+                <Sparkles className="h-3 w-3" /> House Special
               </span>
             )}
 
-            <span className="rounded-full bg-black/70 border border-gold/40 px-2.5 py-1 text-[0.65rem] font-bold text-gold backdrop-blur-md">
+            <span className="rounded-full bg-black/70 border border-white/10 px-2.5 py-0.5 text-[10px] font-medium text-zinc-300 backdrop-blur-md">
               Serves 4–5
             </span>
           </div>
@@ -115,45 +115,45 @@ function MenuCard({ item }: { item: MenuItem }) {
           {/* Bottom Title & Price Bar */}
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
             <div className="min-w-0">
-              <h3 className="truncate font-display text-xl sm:text-2xl font-bold text-cream group-hover:text-gold transition-colors">
+              <h3 className="truncate font-semibold text-lg text-zinc-100 group-hover:text-amber-300 transition-colors">
                 {item.name}
               </h3>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-widest text-gold/90">{item.note}</p>
+              <p className="text-[11px] font-normal text-zinc-400">{item.note}</p>
             </div>
-            <p className="shrink-0 font-display text-2xl sm:text-3xl font-bold text-gold drop-shadow-md">
+            <p className="shrink-0 font-semibold text-xl text-amber-400 font-mono">
               {formatMoney(price)}
             </p>
           </div>
         </div>
 
-        <div className="space-y-4 p-5 sm:p-6 text-xs">
-          <p className="text-cream/80 leading-relaxed text-xs sm:text-sm">{item.description}</p>
+        <div className="space-y-3.5 p-5 text-xs">
+          <p className="text-zinc-400 leading-relaxed font-normal">{item.description}</p>
           
-          <div className="flex items-center gap-3 text-[0.7rem] text-gold/90 font-medium">
-            <span className="rounded-md bg-gold/10 border border-gold/20 px-2 py-0.5">
+          <div className="flex items-center gap-3 text-[11px] text-zinc-400 font-normal">
+            <span className="rounded-md bg-zinc-900 border border-white/[0.06] px-2 py-0.5">
               1.6 – 1.8 kg Marinated Meat
             </span>
             <span>•</span>
-            <span className="rounded-md bg-gold/10 border border-gold/20 px-2 py-0.5">
+            <span className="rounded-md bg-zinc-900 border border-white/[0.06] px-2 py-0.5">
               1.0 kg Aged Basmati
             </span>
           </div>
 
           {/* Customization Options */}
-          <div className="space-y-3 rounded-2xl bg-black/40 border border-gold/15 p-3.5">
+          <div className="space-y-2.5 rounded-xl bg-zinc-900/50 border border-white/[0.05] p-3">
             <div className="flex items-center justify-between gap-3">
-              <Label htmlFor={`aloo-${item.id}`} className="text-xs text-cream/90 flex items-center gap-1.5 cursor-pointer">
-                <span>Add Slow-Steamed Baby Aloo</span>
-                <span className="text-gold font-semibold">(+{formatMoney(ALOO_CHARGE)})</span>
+              <Label htmlFor={`aloo-${item.id}`} className="text-xs text-zinc-300 flex items-center gap-1.5 cursor-pointer font-normal">
+                <span>Add Royal Dum Aloo</span>
+                <span className="text-amber-400 font-medium">(+{formatMoney(ALOO_CHARGE)})</span>
               </Label>
               <Switch id={`aloo-${item.id}`} checked={aloo} onCheckedChange={setAloo} />
             </div>
 
             <div className="flex items-center justify-between gap-3">
-              <Label htmlFor={`spice-${item.id}`} className="flex items-center gap-1.5 text-xs text-cream/90 cursor-pointer">
-                <Flame className="h-3.5 w-3.5 text-chili" />
-                <span>Extra Spicy Royal Masala</span>
-                <span className="text-emerald-400 font-semibold">(Free)</span>
+              <Label htmlFor={`spice-${item.id}`} className="flex items-center gap-1.5 text-xs text-zinc-300 cursor-pointer font-normal">
+                <Flame className="h-3.5 w-3.5 text-rose-400" />
+                <span>Extra Spicy Masala</span>
+                <span className="text-emerald-400 font-medium">(Free)</span>
               </Label>
               <Switch id={`spice-${item.id}`} checked={extraSpicy} onCheckedChange={setExtraSpicy} />
             </div>
@@ -163,29 +163,29 @@ function MenuCard({ item }: { item: MenuItem }) {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Special instructions (e.g. less oil, extra raita)"
               rows={2}
-              className="bg-black/60 border-gold/20 text-cream placeholder:text-cream/40 text-xs rounded-xl focus:border-gold"
+              className="bg-zinc-900/80 border-white/10 text-zinc-100 placeholder:text-zinc-600 text-xs rounded-lg focus:border-amber-400 font-normal"
             />
           </div>
         </div>
       </div>
 
       {/* Action Footer */}
-      <div className="p-5 sm:p-6 pt-0 flex items-center gap-3">
+      <div className="p-5 pt-0 flex items-center gap-3">
         {/* Quantity Stepper */}
-        <div className="flex items-center rounded-2xl border border-gold/30 bg-black/60 text-cream">
+        <div className="flex items-center rounded-xl border border-white/10 bg-zinc-900/80 text-zinc-100">
           <button
             type="button"
             onClick={() => setQty((q) => Math.max(1, q - 1))}
-            className="px-3 py-2 text-base text-gold hover:bg-gold/20 rounded-l-2xl transition-colors"
+            className="px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer"
             aria-label="Decrease trays"
           >
             −
           </button>
-          <span className="w-7 text-center text-xs font-bold text-cream">{qty}</span>
+          <span className="w-6 text-center text-xs font-medium text-zinc-100 font-mono">{qty}</span>
           <button
             type="button"
             onClick={() => setQty((q) => q + 1)}
-            className="px-3 py-2 text-base text-gold hover:bg-gold/20 rounded-r-2xl transition-colors"
+            className="px-3 py-1.5 text-sm text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
             aria-label="Increase trays"
           >
             +
@@ -194,7 +194,7 @@ function MenuCard({ item }: { item: MenuItem }) {
 
         {/* Add to Cart CTA */}
         <Button
-          className="flex-1 rounded-2xl bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold text-xs sm:text-sm py-5 shadow-lg shadow-chili/30 hover:scale-[1.02] transition-all gap-1.5"
+          className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold text-xs py-3 shadow-sm hover:brightness-105 transition-all gap-1.5 cursor-pointer"
           onClick={() => {
             addLine({
               proteinId: item.id,

@@ -40,6 +40,7 @@ export interface CreateOrderPayload {
   fulfilmentTime: string;
   customer: CustomerInput;
   paymentMethod?: DynamicOrder["paymentMethod"];
+  paymentStatus?: string;
   specialInstructions?: string | undefined;
 }
 
@@ -220,7 +221,8 @@ export const api = {
         fulfilmentDate: data.order.fulfilmentDate,
         fulfilmentTime: data.order.fulfilmentTime,
         customer: data.order.customer,
-        paymentMethod: payload.paymentMethod || "Instant UPI QR",
+        paymentMethod: payload.paymentMethod || "Razorpay Online",
+        paymentStatus: payload.paymentStatus || data.order.paymentStatus || "PAID",
         specialInstructions: data.order.specialInstructions,
       });
       return data;
@@ -248,7 +250,8 @@ export const api = {
         fulfilmentDate: payload.fulfilmentDate,
         fulfilmentTime: payload.fulfilmentTime,
         customer: payload.customer,
-        paymentMethod: payload.paymentMethod || "Instant UPI QR",
+        paymentMethod: payload.paymentMethod || "Razorpay Online",
+        paymentStatus: payload.paymentStatus || "pending",
         specialInstructions: payload.specialInstructions,
       });
 

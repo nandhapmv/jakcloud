@@ -18,8 +18,10 @@ type CartContextValue = {
   subtotal: number;
   addLine: (line: Omit<CartLine, "key">) => void;
   setQty: (key: string, qty: number) => void;
+  updateLine: (key: string, updates: Partial<CartLine>) => void;
   removeLine: (key: string) => void;
   clear: () => void;
+  clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -47,7 +49,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => {
     const addLine: CartContextValue["addLine"] = (line) => {
-      const key = [line.proteinId, line.aloo ? "aloo" : "plain", line.extraSpicy ? "hot" : "reg", line.notes.trim()].join(
+      const key = [line.proteinId, line.aloo ? "aloo" : "plain", line.extraSpicy ? "hot" : "reg", (line.notes || "").trim()].join(
         "|",
       );
       setLines((prev) => {
@@ -59,6 +61,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
       });
     };
 
+    const updateLine: CartContextValue["updateLine"] = (key, updates) => {
+      setLines((prev) =>
+        prev.map((l) => {
+          if (l.key !== key) return l;
+          const updated = { ...l, ...updates };
+          const dish = MENU.find((m) => m.id === updated.proteinId);
+          const unitPrice = updated.aloo
+            ? (dish?.priceWithAloo ?? (dish?.price ? dish.price + ALOO_CHARGE : updated.unitPrice + ALOO_CHARGE))
+            : (dish?.price ?? updated.unitPrice);
+          const newKey = [
+            updated.proteinId,
+            updated.aloo ? "aloo" : "plain",
+            updated.extraSpicy ? "hot" : "reg",
+            (updated.notes || "").trim(),
+          ].join("|");
+          return {
+            ...updated,
+            unitPrice,
+            key: newKey,
+          };
+        }),
+      );
+    };
+
+    const clearAll = () => {
+      setLines([]);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+    };
+
     return {
       lines,
       count: lines.reduce((sum, l) => sum + l.qty, 0),
@@ -68,8 +103,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setLines((prev) =>
           qty <= 0 ? prev.filter((l) => l.key !== key) : prev.map((l) => (l.key === key ? { ...l, qty } : l)),
         ),
-      removeLine: (key) => setLines((prev) => prev.filter((l) => l.key !== key)),
-      clear: () => setLines([]),
+      updateLine,
+      removeLine: (key) =>
+        setLines((prev) => prev.filter((l) => l.key !== key)),
+      clear: clearAll,
+      clearCart: clearAll,
     };
   }, [lines]);
 

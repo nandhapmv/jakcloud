@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { z, ZodError } from "zod";
 
 export const orderItemSchema = z.object({
-  proteinId: z.enum(["chicken", "pork", "beef", "mutton"]),
+  proteinId: z.enum(["chicken", "pork", "beef", "mutton", "paneer", "prawn"]),
   aloo: z.boolean().default(false),
   extraSpicy: z.boolean().default(false),
   notes: z.string().optional().default(""),
@@ -26,6 +26,8 @@ export const createOrderSchema = z.object({
   fulfilmentTime: z.string().min(1, "Fulfilment time is required"),
   customer: customerSchema,
   specialInstructions: z.string().optional(),
+  paymentMethod: z.string().optional(),
+  paymentStatus: z.string().optional(),
 });
 
 export const contactSchema = z.object({

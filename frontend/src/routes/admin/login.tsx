@@ -9,7 +9,6 @@ import {
   Sparkles,
   ArrowRight,
   Flame,
-  ChefHat,
   KeyRound,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -53,7 +52,6 @@ function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
 
-  // If already logged in, redirect to dashboard
   useEffect(() => {
     if (isAuthenticated) {
       navigate({ to: "/admin" });
@@ -88,81 +86,67 @@ function AdminLoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#0a0705] font-sans text-cream selection:bg-gold/30 selection:text-gold flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      {/* Full-Screen Luxury Hero Backdrop */}
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      {/* Background Backdrop */}
       <div className="absolute inset-0 z-0">
         <img
           src={heroBg}
           alt="Royal Hyderabadi Dum Biryani"
-          className="h-full w-full object-cover object-center scale-105 filter brightness-50 transition-all duration-1000"
+          className="h-full w-full object-cover object-center filter brightness-25 opacity-30"
         />
-        {/* Matte Black & Royal Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#080503] via-[#0d0906]/85 to-[#080503]/90" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,160,23,0.12)_0%,rgba(8,5,3,0.85)_70%,#080503_100%)]" />
-        {/* Ambient Gold & Chili Lighting Orbs */}
-        <div className="pointer-events-none absolute -left-20 top-1/4 h-96 w-96 rounded-full bg-chili/15 blur-[120px]" />
-        <div className="pointer-events-none absolute -right-20 bottom-1/4 h-96 w-96 rounded-full bg-gold/15 blur-[120px]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/90 to-[#09090b]/95" />
       </div>
 
       {/* Main Container */}
-      <div className="relative z-10 w-full max-w-md animate-in fade-in zoom-in-95 duration-700">
-        {/* Glassmorphism Luxury Card */}
-        <div className="relative overflow-hidden rounded-3xl border border-gold/30 bg-[#120c08]/80 p-8 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.95)] backdrop-blur-2xl sm:p-10">
-          {/* Subtle Top Gold Aura Line */}
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
-
+      <div className="relative z-10 w-full max-w-md">
+        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#121216]/90 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
           {/* Logo & Brand Title */}
           <div className="text-center">
-            <div className="relative mx-auto inline-block">
-              <div className="absolute -inset-1.5 rounded-full bg-gradient-to-r from-chili/40 via-gold/50 to-saffron/40 blur-md opacity-80" />
-              <img
-                src={logoImg}
-                alt="JAKLOUD Spice King Heritage Seal"
-                className="relative h-20 w-20 rounded-full border-2 border-gold/60 bg-cream p-0.5 shadow-[0_0_25px_rgba(212,160,23,0.35)] object-cover sm:h-24 sm:w-24 mx-auto"
-                width={96}
-                height={96}
-              />
-            </div>
+            <img
+              src={logoImg}
+              alt="JAKLOUD Spice King Heritage Seal"
+              className="h-16 w-16 rounded-full border border-amber-500/30 bg-black p-0.5 object-cover mx-auto"
+              width={64}
+              height={64}
+            />
 
-            <div className="mt-5 flex items-center justify-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.35em] text-gold">
-              <Flame className="h-3.5 w-3.5 text-chili animate-pulse" />
+            <div className="mt-3 flex items-center justify-center gap-1.5 text-[0.65rem] font-medium uppercase tracking-widest text-amber-400">
+              <Flame className="h-3 w-3 text-amber-400" />
               <span>JAKLOUD · SPICE KING</span>
-              <Flame className="h-3.5 w-3.5 text-chili animate-pulse" />
             </div>
 
-            <h1 className="mt-1 font-display text-2xl tracking-wide text-cream sm:text-3xl">
-              Kitchen Command Portal
+            <h1 className="mt-1 font-display text-xl sm:text-2xl font-semibold text-zinc-100">
+              Kitchen Admin Portal
             </h1>
-            <p className="mt-1 text-xs text-cream/70">
+            <p className="mt-0.5 text-xs text-zinc-400 font-normal">
               Authorized personnel & restaurant administration
             </p>
           </div>
 
           {/* Quick Demo Fill Badge */}
-          <div className="mt-6 flex justify-center">
+          <div className="mt-4 flex justify-center">
             <button
               type="button"
               onClick={handleQuickFill}
-              className="group flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-[0.7rem] font-medium text-gold/90 transition-all hover:border-gold hover:bg-gold/20 hover:text-gold"
+              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-[#18181f] px-3 py-1 text-[0.68rem] font-medium text-zinc-300 transition-colors hover:text-amber-300 hover:border-amber-500/30"
             >
-              <Sparkles className="h-3 w-3 text-gold group-hover:rotate-12 transition-transform" />
+              <Sparkles className="h-3 w-3 text-amber-400" />
               <span>Autofill Demo Credentials</span>
             </button>
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleLogin} className="mt-6 space-y-5">
-            {/* Email Field */}
-            <div className="space-y-1.5">
+          <form onSubmit={handleLogin} className="mt-5 space-y-4 text-xs font-normal">
+            <div className="space-y-1">
               <Label
                 htmlFor="admin-email"
-                className="text-xs font-medium uppercase tracking-wider text-gold/90"
+                className="text-xs font-medium text-zinc-300"
               >
-                Admin Email Address
+                Admin Email
               </Label>
               <div className="relative group">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold/60 group-focus-within:text-gold transition-colors">
-                  <Mail className="h-4 w-4" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500 group-focus-within:text-amber-400 transition-colors">
+                  <Mail className="h-3.5 w-3.5" />
                 </div>
                 <Input
                   id="admin-email"
@@ -172,31 +156,30 @@ function AdminLoginPage() {
                   placeholder="admin@jakloud.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-11 rounded-xl border-gold/30 bg-black/40 pl-10 pr-4 text-sm text-cream placeholder:text-cream/35 transition-all focus-visible:border-gold focus-visible:bg-black/60 focus-visible:ring-2 focus-visible:ring-gold/30"
+                  className="h-10 rounded-xl border-white/[0.08] bg-[#18181f] pl-9 pr-3 text-xs text-zinc-200 placeholder:text-zinc-500 focus:border-amber-500/50"
                 />
               </div>
             </div>
 
-            {/* Password Field */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <Label
                   htmlFor="admin-password"
-                  className="text-xs font-medium uppercase tracking-wider text-gold/90"
+                  className="text-xs font-medium text-zinc-300"
                 >
                   Password
                 </Label>
                 <button
                   type="button"
                   onClick={() => setForgotOpen(true)}
-                  className="text-xs text-gold/80 hover:text-gold hover:underline transition-colors"
+                  className="text-[0.68rem] text-zinc-400 hover:text-amber-300 transition-colors"
                 >
                   Forgot password?
                 </button>
               </div>
               <div className="relative group">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold/60 group-focus-within:text-gold transition-colors">
-                  <Lock className="h-4 w-4" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500 group-focus-within:text-amber-400 transition-colors">
+                  <Lock className="h-3.5 w-3.5" />
                 </div>
                 <Input
                   id="admin-password"
@@ -206,71 +189,66 @@ function AdminLoginPage() {
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-11 rounded-xl border-gold/30 bg-black/40 pl-10 pr-10 text-sm text-cream placeholder:text-cream/35 transition-all focus-visible:border-gold focus-visible:bg-black/60 focus-visible:ring-2 focus-visible:ring-gold/30"
+                  className="h-10 rounded-xl border-white/[0.08] bg-[#18181f] pl-9 pr-9 text-xs text-zinc-200 placeholder:text-zinc-500 focus:border-amber-500/50"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-cream/50 hover:text-gold transition-colors"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500 hover:text-zinc-300 transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                    <EyeOff className="h-3.5 w-3.5" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-3.5 w-3.5" />
                   )}
                 </button>
               </div>
             </div>
 
-            {/* Remember Me Checkbox */}
-            <div className="flex items-center space-x-2 pt-1">
+            <div className="flex items-center space-x-2 pt-0.5">
               <Checkbox
                 id="remember-me"
                 checked={rememberMe}
                 onCheckedChange={(c) => setRememberMe(c === true)}
-                className="border-gold/50 data-[state=checked]:bg-gold data-[state=checked]:text-black"
+                className="border-white/20 data-[state=checked]:bg-amber-500 data-[state=checked]:text-zinc-950"
               />
               <label
                 htmlFor="remember-me"
-                className="text-xs font-medium text-cream/80 select-none cursor-pointer"
+                className="text-xs text-zinc-400 select-none cursor-pointer"
               >
                 Remember this session for 30 days
               </label>
             </div>
 
-            {/* Red & Gold Luxury Login Button */}
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#b91c1c] via-[#d97706] to-[#d4a017] p-px font-display font-medium shadow-[0_10px_25px_-5px_rgba(185,28,28,0.4)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_15px_30px_-5px_rgba(212,160,23,0.5)] active:scale-[0.99] disabled:opacity-70 group"
+              className="w-full rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs py-5 shadow-md transition-colors gap-1.5"
             >
-              <div className="flex h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-gradient-to-r from-chili/90 via-saffron to-gold/90 px-6 text-sm font-semibold tracking-wide text-white transition-all group-hover:bg-opacity-90">
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-cream border-t-transparent" />
-                    <span>Verifying Credentials...</span>
-                  </div>
-                ) : (
-                  <>
-                    <span>Enter Kitchen Portal</span>
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </>
-                )}
-              </div>
-            </button>
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-950 border-t-transparent" />
+                  <span>Verifying Credentials...</span>
+                </div>
+              ) : (
+                <>
+                  <span>Enter Kitchen Portal</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </>
+              )}
+            </Button>
           </form>
 
-          {/* Security Guarantee Footer */}
-          <div className="mt-8 flex items-center justify-center gap-2 border-t border-gold/15 pt-5 text-center text-[0.7rem] text-cream/60">
-            <ShieldCheck className="h-3.5 w-3.5 text-gold" />
-            <span>256-Bit Encrypted Restaurant Portal</span>
+          <div className="mt-6 flex items-center justify-center gap-1.5 border-t border-white/[0.06] pt-4 text-center text-[0.68rem] text-zinc-500 font-normal">
+            <ShieldCheck className="h-3 w-3 text-amber-400" />
+            <span>256-Bit Encrypted Kitchen Management</span>
           </div>
 
-          <div className="mt-3 text-center">
+          <div className="mt-2 text-center">
             <Link
               to="/"
-              className="text-[0.75rem] text-gold/70 hover:text-gold transition-colors inline-flex items-center gap-1"
+              className="text-[0.7rem] text-zinc-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1 font-normal"
             >
               ← Return to Public Website
             </Link>
@@ -278,31 +256,30 @@ function AdminLoginPage() {
         </div>
       </div>
 
-      {/* Forgot Password Dialog */}
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
-        <DialogContent className="border-gold/30 bg-[#120c08] text-cream sm:max-w-md">
+        <DialogContent className="border-white/10 bg-[#121216] text-zinc-200 sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gold/10 text-gold mb-2">
-              <KeyRound className="h-6 w-6" />
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 mb-1">
+              <KeyRound className="h-5 w-5" />
             </div>
-            <DialogTitle className="text-center font-display text-xl text-primary-foreground">
+            <DialogTitle className="text-center font-display text-lg font-semibold text-zinc-100">
               Administrator Password Reset
             </DialogTitle>
-            <DialogDescription className="text-center text-xs text-cream/70 pt-1">
-              For security reasons, admin credentials for the live Dum biryani kitchen portal are managed by the Head Chef & Founders.
+            <DialogDescription className="text-center text-xs text-zinc-400 pt-0.5 font-normal">
+              Admin credentials for the live Dum biryani kitchen portal are managed by the Head Chef & Founders.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="rounded-xl border border-gold/20 bg-black/40 p-4 text-xs text-cream/80 space-y-2">
-            <p className="font-semibold text-gold">Master Recovery Contact:</p>
-            <p>• Email: <span className="font-mono text-cream">sales@jakloud.com</span></p>
-            <p>• Phone: <span className="font-mono text-cream">417-897-9754</span></p>
-            <p className="text-[0.7rem] text-muted-foreground pt-1">
-              Default demo credentials: <span className="font-mono text-gold">admin@jakloud.com</span> / <span className="font-mono text-gold">spiceking2026</span>
+          <div className="rounded-xl border border-white/[0.06] bg-[#18181f] p-3 text-xs text-zinc-300 space-y-1.5 font-normal">
+            <p className="font-medium text-amber-400">Master Recovery Contact:</p>
+            <p>• Email: <span className="font-mono text-zinc-200">sales@jakloud.com</span></p>
+            <p>• Phone: <span className="font-mono text-zinc-200">417-897-9754</span></p>
+            <p className="text-[0.68rem] text-zinc-500 pt-1">
+              Default demo credentials: <span className="font-mono text-amber-300">admin@jakloud.com</span> / <span className="font-mono text-amber-300">spiceking2026</span>
             </p>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-1">
             <Button
               variant="outline"
               size="sm"
@@ -310,13 +287,13 @@ function AdminLoginPage() {
                 handleQuickFill();
                 setForgotOpen(false);
               }}
-              className="border-gold/40 text-gold hover:bg-gold/20"
+              className="border-white/10 text-zinc-300 hover:bg-white/[0.06] text-xs"
             >
               Fill Demo Login
             </Button>
             <Button
               size="sm"
-              className="bg-saffron text-saffron-foreground hover:bg-saffron/90"
+              className="bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-medium"
               onClick={() => setForgotOpen(false)}
             >
               Got it

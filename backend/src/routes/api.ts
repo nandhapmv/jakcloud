@@ -5,6 +5,7 @@ import { orderRouter } from "./order.routes.js";
 import { contactRouter } from "./contact.routes.js";
 import { authRouter } from "./auth.routes.js";
 import { dbRouter } from "./db.routes.js";
+import { razorpayRouter } from "./razorpay.routes.js";
 
 export const apiRouter = Router();
 
@@ -14,3 +15,4 @@ apiRouter.use("/auth", authRouter);
 apiRouter.use("/menu", menuRouter);
 apiRouter.use("/orders", orderRouter);
 apiRouter.use("/contact", contactRouter);
+apiRouter.use("/razorpay", razorpayRouter);

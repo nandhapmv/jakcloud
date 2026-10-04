@@ -139,9 +139,9 @@ export function QrWelcomePage() {
 
   return (
     <>
-      {/* Mobile-First App Design (Screen 2 - Bonuses & QR Matching User Mockup) */}
+      {/* Mobile-First App Design */}
       <div className="block lg:hidden">
-        <MobileAppView initialTab="qr" />
+        <MobileAppView initialTab="home" />
       </div>
 
       {/* Desktop Rich Brand QR Hub */}

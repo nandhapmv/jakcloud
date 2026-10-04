@@ -25,4 +25,8 @@ export const config = {
     alooCharge: 7.0,
     taxRate: 0.086, // 8.6%
   },
+  razorpay: {
+    keyId: process.env.RAZORPAY_KEY_ID || "rzp_test_SwedUUn1KgRMs0",
+    keySecret: process.env.RAZORPAY_KEY_SECRET || "xdW2Ry7T67sUK4zMKb3oOsZh",
+  },
 };

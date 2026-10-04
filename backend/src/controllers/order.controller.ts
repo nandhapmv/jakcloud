@@ -14,7 +14,7 @@ import {
 
 export async function createOrder(req: Request, res: Response) {
   try {
-    const { items, fulfilmentType, fulfilmentDate, fulfilmentTime, customer, specialInstructions, paymentMethod } = req.body;
+    const { items, fulfilmentType, fulfilmentDate, fulfilmentTime, customer, specialInstructions, paymentMethod, paymentStatus } = req.body;
 
     const { orderItems, subtotal, tax, deliveryFee, total } = calculateOrderTotals(
       items,
@@ -38,8 +38,8 @@ export async function createOrder(req: Request, res: Response) {
       tax,
       deliveryFee,
       total,
-      paymentMethod: paymentMethod || "Instant UPI QR",
-      paymentStatus: "pending",
+      paymentMethod: paymentMethod || "Razorpay Online",
+      paymentStatus: paymentStatus || "pending",
       specialInstructions: specialInstructions || "",
       createdAt: now,
       updatedAt: now,
