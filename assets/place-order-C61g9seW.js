@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";import{t}from"./useNavigate-Dn3kT24B.js";var n=e(),r=()=>(0,n.jsx)(t,{to:`/checkout`,replace:!0});export{r as component};
