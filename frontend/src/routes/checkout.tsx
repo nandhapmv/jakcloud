@@ -145,8 +145,8 @@ function CheckoutPage() {
   // Special Instructions
   const [instructions, setInstructions] = useState("");
 
-  // Payment Method
-  const [paymentMethod, setPaymentMethod] = useState<"on_fulfillment" | "card" | "whatsapp">("on_fulfillment");
+  // Payment Method (Razorpay Online)
+  const [paymentMethod] = useState<"card">("card");
 
   // Promo Code State
   const [promoInput, setPromoInput] = useState("");
@@ -330,8 +330,8 @@ function CheckoutPage() {
             deliveryInstructions: landmark.trim() || undefined,
           }),
         },
-        paymentMethod: paymentMethod === "card" ? "Razorpay Online" : (paymentMethod === "whatsapp" ? "WhatsApp Direct" : "Pay on Pickup / Delivery"),
-        paymentStatus: paymentMethod === "card" ? "paid" : "pending",
+        paymentMethod: "Razorpay Online",
+        paymentStatus: razorpayPaymentId ? "paid" : "pending",
         specialInstructions: instructions.trim() || undefined,
       });
 
@@ -896,51 +896,31 @@ function CheckoutPage() {
                   <span className="text-[10px] sm:text-[11px] text-emerald-400 font-medium shrink-0">Zero Surcharges</span>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {/* Pay on Fulfillment */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("on_fulfillment")}
-                    className={`rounded-xl p-3 sm:p-3.5 text-left border transition-all cursor-pointer ${
-                      paymentMethod === "on_fulfillment"
-                        ? "border-amber-400 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/50 text-zinc-100 font-semibold"
-                        : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200 hover:border-white/20"
-                    }`}
-                  >
-                    <Banknote className="h-4.5 w-4.5 text-amber-400 mb-1" />
-                    <p className="font-semibold text-xs text-zinc-100">Pay on Fulfilment</p>
-                    <p className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5">Cash / Card upon arrival</p>
-                  </button>
-
-                  {/* Razorpay Online */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("card")}
-                    className={`rounded-xl p-3 sm:p-3.5 text-left border transition-all cursor-pointer ${
-                      paymentMethod === "card"
-                        ? "border-amber-400 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/50 text-zinc-100 font-semibold"
-                        : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200 hover:border-white/20"
-                    }`}
-                  >
-                    <CreditCard className="h-4.5 w-4.5 text-amber-400 mb-1" />
-                    <p className="font-semibold text-xs text-zinc-100">Online Payment</p>
-                    <p className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5">Cards, UPI & Netbanking</p>
-                  </button>
-
-                  {/* WhatsApp Direct */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("whatsapp")}
-                    className={`rounded-xl p-3 sm:p-3.5 text-left border transition-all cursor-pointer ${
-                      paymentMethod === "whatsapp"
-                        ? "border-emerald-500 bg-emerald-950/40 text-emerald-300 font-semibold ring-1 ring-emerald-500/50"
-                        : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200 hover:border-white/20"
-                    }`}
-                  >
-                    <MessageSquare className="h-4.5 w-4.5 text-emerald-400 mb-1" />
-                    <p className="font-semibold text-xs text-zinc-100">WhatsApp VIP</p>
-                    <p className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5">Direct Chef Confirmation</p>
-                  </button>
+                {/* Only Razorpay Online Payment */}
+                <div className="rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-3.5 sm:p-4 shadow-[0_0_20px_rgba(245,158,11,0.12)] ring-1 ring-amber-400/30">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-10 w-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 shrink-0">
+                        <CreditCard className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-xs sm:text-sm text-zinc-100 truncate">
+                            Razorpay Online Payment
+                          </p>
+                          <span className="rounded-full bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 text-[9.5px] font-semibold text-emerald-400 uppercase tracking-wider shrink-0">
+                            Instant
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
+                          Cards, UPI & Netbanking (Instant Kitchen Order Dispatch)
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-zinc-950 font-bold text-xs shrink-0">
+                      ✓
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -952,12 +932,12 @@ function CheckoutPage() {
                 className="w-full rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-zinc-950 font-bold text-sm sm:text-base py-5 sm:py-6 shadow-lg shadow-amber-500/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer px-3"
               >
                 {isSubmitting ? (
-                  "Reserving Handi Batch..."
+                  "Opening Razorpay Payment..."
                 ) : (
                   <>
                     <Sparkles className="h-4.5 w-4.5 shrink-0" />
                     <span className="font-bold text-center">
-                      Confirm Handi Booking · {formatMoney(calculations.grandTotal)}
+                      Pay with Razorpay · {formatMoney(calculations.grandTotal)}
                     </span>
                   </>
                 )}
