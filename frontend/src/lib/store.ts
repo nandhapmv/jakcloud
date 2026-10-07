@@ -267,131 +267,10 @@ export const INITIAL_MENU_ITEMS: DynamicMenuItem[] = [
   },
 ];
 
-export const INITIAL_ORDERS: DynamicOrder[] = [
-  {
-    id: "ord_101",
-    orderNumber: "JK-94821",
-    status: "preparing",
-    fulfilmentType: "delivery",
-    fulfilmentDate: "Tomorrow",
-    fulfilmentTime: "2:00 PM",
-    customer: {
-      name: "Dr. Bradley Hayes",
-      phone: "417-897-9754",
-      email: "bradley.h@mercyhealth.org",
-      address: "1420 E Primrose St., Suite 200",
-      city: "Springfield",
-      zipCode: "65804",
-      deliveryInstructions: "Mercy Medical Mile Building B, 2nd floor reception",
-    },
-    items: [
-      {
-        proteinId: "chicken",
-        name: "Royal Chicken Dum Biryani",
-        aloo: true,
-        extraSpicy: true,
-        notes: "Extra spicy flame, pack extra salan gravy",
-        qty: 2,
-        unitPrice: 108.99,
-        lineTotal: 217.98,
-      },
-      {
-        proteinId: "mutton",
-        name: "Hyderabadi Shahi Mutton Dum Biryani",
-        aloo: false,
-        extraSpicy: false,
-        notes: "Nizami goat cuts slow-braised in pure desi ghee",
-        qty: 1,
-        unitPrice: 157.99,
-        lineTotal: 157.99,
-      },
-    ],
-    subtotal: 375.97,
-    tax: 32.33,
-    deliveryFee: 10.0,
-    total: 418.3,
-    paymentMethod: "Instant UPI QR",
-    paymentStatus: "Paid Online",
-    specialInstructions: "Medical staff celebration. Please keep sealed in insulated thermal bags.",
-    staffNotes: "VIP repeat patron. Sent extra mint raita complimentary.",
-    assignedDriver: "Chef Dispatch Van #1",
-    createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
-  },
-  {
-    id: "ord_102",
-    orderNumber: "JK-94820",
-    status: "confirmed",
-    fulfilmentType: "pickup",
-    fulfilmentDate: "Tomorrow",
-    fulfilmentTime: "12:00 PM",
-    customer: {
-      name: "Sophia Martinez",
-      phone: "417-555-0192",
-      email: "sophia.m@gmail.com",
-    },
-    items: [
-      {
-        proteinId: "beef",
-        name: "Slow-Braised Spiced Beef Dum Biryani",
-        aloo: true,
-        extraSpicy: false,
-        notes: "Medium spice with golden baby potatoes",
-        qty: 1,
-        unitPrice: 129.99,
-        lineTotal: 129.99,
-      },
-    ],
-    subtotal: 129.99,
-    tax: 11.18,
-    deliveryFee: 0,
-    total: 141.17,
-    paymentMethod: "Cash on Pickup",
-    paymentStatus: "Cash on Pickup",
-    specialInstructions: "Counter pickup at 12:00 sharp.",
-    staffNotes: "Confirmed pickup slot by phone.",
-    createdAt: new Date(Date.now() - 1000 * 60 * 95).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-  },
-  {
-    id: "ord_103",
-    orderNumber: "JK-94819",
-    status: "ready",
-    fulfilmentType: "pickup",
-    fulfilmentDate: "Today",
-    fulfilmentTime: "4:00 PM",
-    customer: {
-      name: "Rajesh & Priya Sharma",
-      phone: "417-501-4421",
-      email: "rajesh.sharma@yahoo.com",
-    },
-    items: [
-      {
-        proteinId: "mutton",
-        name: "Hyderabadi Shahi Mutton Dum Biryani",
-        aloo: true,
-        extraSpicy: true,
-        notes: "Extra roasted cashews pack",
-        qty: 1,
-        unitPrice: 164.99,
-        lineTotal: 164.99,
-      },
-    ],
-    subtotal: 164.99,
-    tax: 14.19,
-    deliveryFee: 0,
-    total: 179.18,
-    paymentMethod: "Razorpay / Card Gateway",
-    paymentStatus: "Paid Online",
-    specialInstructions: "Golden handi packaging.",
-    staffNotes: "Dum seal intact, resting under heat lamp.",
-    createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
-  },
-];
+export const INITIAL_ORDERS: DynamicOrder[] = [];
 
 export const INITIAL_KITCHEN_SETTINGS: KitchenSettings = {
-  dailyTrayLimit: 10, // Default 10 orders per day
+  dailyTrayLimit: 25, // Default 10 orders per day
   orderCutoffHour: 15, // 3:00 PM (15:00) cutoff
   bookingHorizonDays: 7, // 7 days (1 week) default horizon
   isKitchenOpen: true,
@@ -399,7 +278,7 @@ export const INITIAL_KITCHEN_SETTINGS: KitchenSettings = {
   closedWeekdays: [3], // Wednesday
   deliveryFee: 10,
   freeDeliveryTrayThreshold: 5,
-  alooCharge: 0, // Free aloo ($0)
+  alooCharge: 7, // Free aloo ($0)
   deliveryRadiusMiles: 10,
   heroAnnouncement: "🔥 Made-to-Order Authentic Hyderabadi Dum Biryani · 10 Handi Trays Daily Limit · Order by 3:00 PM",
   announcementActive: true,
@@ -475,44 +354,7 @@ export const INITIAL_PROTEINS: ProteinMatrixItem[] = [
   },
 ];
 
-export const INITIAL_CUSTOMERS: CustomerRecord[] = [
-  {
-    id: "cust_1",
-    name: "Dr. Bradley Hayes",
-    email: "bradley.h@mercyhealth.org",
-    phone: "417-897-9754",
-    totalOrders: 6,
-    totalSpend: 1845.5,
-    vipTier: "Spice King VIP",
-    lastOrderDate: "Yesterday",
-    address: "1420 E Primrose St., Suite 200, Springfield, MO",
-    staffNotes: "Chief of Surgery at Mercy. Always orders extra spicy + salan.",
-  },
-  {
-    id: "cust_2",
-    name: "Sophia Martinez",
-    email: "sophia.m@gmail.com",
-    phone: "417-555-0192",
-    totalOrders: 3,
-    totalSpend: 423.51,
-    vipTier: "Royal Patron",
-    lastOrderDate: "3 days ago",
-    address: "Chesterfield Village, Springfield, MO",
-    staffNotes: "Prefers pickup at 12:00 PM.",
-  },
-  {
-    id: "cust_3",
-    name: "Rajesh & Priya Sharma",
-    email: "rajesh.sharma@yahoo.com",
-    phone: "417-501-4421",
-    totalOrders: 8,
-    totalSpend: 2450.0,
-    vipTier: "Black Card",
-    lastOrderDate: "Today",
-    address: "Galloway Creek, Springfield, MO",
-    staffNotes: "Host of monthly community feast. Requires golden handi packaging.",
-  },
-];
+export const INITIAL_CUSTOMERS: CustomerRecord[] = [];
 
 // ==========================================
 // 3. REACTIVE STORAGE LAYER
@@ -542,7 +384,43 @@ function getStored<T>(key: string, defaultValue: T): T {
       localStorage.setItem(key, JSON.stringify(defaultValue));
       return defaultValue;
     }
-    return JSON.parse(raw) as T;
+    const parsed = JSON.parse(raw) as T;
+    // Automatically purge old mock orders
+    if (key === KEYS.ORDERS && Array.isArray(parsed)) {
+      const filtered = parsed.filter(
+        (o: any) =>
+          o.id &&
+          !o.id.startsWith("ord_10") &&
+          !o.id.startsWith("ord_demo") &&
+          o.customer?.name !== "Dr. Bradley Hayes" &&
+          o.customer?.name !== "Marcus Vance" &&
+          o.customer?.name !== "Sophia Martinez" &&
+          o.customer?.name !== "Chef Reception Sample"
+      );
+      if (filtered.length !== parsed.length) {
+        localStorage.setItem(key, JSON.stringify(filtered));
+        return filtered as unknown as T;
+      }
+    }
+    // Automatically purge old mock customers
+    if (key === KEYS.CUSTOMERS && Array.isArray(parsed)) {
+      const filtered = parsed.filter(
+        (c: any) =>
+          c.id &&
+          c.id !== "cust_1" &&
+          c.id !== "cust_2" &&
+          c.id !== "cust_3" &&
+          c.name !== "Dr. Bradley Hayes" &&
+          c.name !== "Marcus Vance" &&
+          c.name !== "Sophia Martinez" &&
+          c.name !== "Rajesh & Priya Sharma"
+      );
+      if (filtered.length !== parsed.length) {
+        localStorage.setItem(key, JSON.stringify(filtered));
+        return filtered as unknown as T;
+      }
+    }
+    return parsed;
   } catch {
     return defaultValue;
   }
@@ -591,7 +469,82 @@ function syncBackendDeleteMenuItem(id: string) {
   }).catch((e) => console.warn("Backend sync failed:", e));
 }
 
+function syncBackendCreateOrder(order: any) {
+  if (typeof window === "undefined") return;
+  fetch(`${API_BASE_URL}/api/orders`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: order.items,
+      fulfilmentType: order.fulfilmentType,
+      fulfilmentDate: order.fulfilmentDate,
+      fulfilmentTime: order.fulfilmentTime,
+      customer: order.customer,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      specialInstructions: order.specialInstructions,
+    }),
+  }).catch((e) => console.warn("Backend sync create order failed:", e));
+}
+
+function syncBackendUpdateOrderStatus(id: string, status: string) {
+  if (typeof window === "undefined") return;
+  fetch(`${API_BASE_URL}/api/orders/${encodeURIComponent(id)}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  }).catch((e) => console.warn("Backend sync update order status failed:", e));
+}
+
+function syncBackendUpdateOrder(id: string, updates: any) {
+  if (typeof window === "undefined") return;
+  fetch(`${API_BASE_URL}/api/orders/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  }).catch((e) => console.warn("Backend sync update order failed:", e));
+}
+
+function syncBackendDeleteOrder(id: string) {
+  if (typeof window === "undefined") return;
+  fetch(`${API_BASE_URL}/api/orders/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  }).catch((e) => console.warn("Backend sync delete order failed:", e));
+}
+
+function syncBackendSettings(updates: any) {
+  if (typeof window === "undefined") return;
+  fetch(`${API_BASE_URL}/api/settings`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  }).catch((e) => console.warn("Backend sync settings failed:", e));
+}
+
 export const jakloudStore = {
+  async syncWithBackend(): Promise<void> {
+    if (typeof window === "undefined") return;
+    try {
+      const [ordersRes, settingsRes, customersRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/orders`).then((r) => (r.ok ? r.json() : null)),
+        fetch(`${API_BASE_URL}/api/settings`).then((r) => (r.ok ? r.json() : null)),
+        fetch(`${API_BASE_URL}/api/customers`).then((r) => (r.ok ? r.json() : null)),
+      ]);
+
+      if (ordersRes && Array.isArray(ordersRes.orders)) {
+        this.saveOrders(ordersRes.orders);
+      }
+      if (settingsRes) {
+        this.saveSettings(settingsRes);
+      }
+      if (customersRes && Array.isArray(customersRes.customers)) {
+        this.saveCustomers(customersRes.customers);
+      }
+    } catch (err) {
+      console.warn("Backend store sync error:", err);
+    }
+  },
+
   // MENU OPERATIONS
   getMenu(): DynamicMenuItem[] {
     return getStored<DynamicMenuItem[]>(KEYS.MENU, INITIAL_MENU_ITEMS);
@@ -709,8 +662,18 @@ export const jakloudStore = {
 
     // Update customer CRM
     this.recordCustomerOrder(newOrder);
+    syncBackendCreateOrder(newOrder);
 
     return newOrder;
+  },
+
+  addExistingOrder(order: DynamicOrder): void {
+    const current = this.getOrders();
+    const exists = current.some((o) => o.id === order.id || o.orderNumber === order.orderNumber);
+    if (!exists) {
+      this.saveOrders([order, ...current]);
+      this.recordCustomerOrder(order);
+    }
   },
 
   updateOrderStatus(orderId: string, status: OrderStatus): DynamicOrder | null {
@@ -725,6 +688,7 @@ export const jakloudStore = {
     });
     if (updated) {
       this.saveOrders(next);
+      syncBackendUpdateOrderStatus(orderId, status);
     }
     return updated;
   },
@@ -746,6 +710,7 @@ export const jakloudStore = {
     });
     if (updated) {
       this.saveOrders(next);
+      syncBackendUpdateOrder(orderId, { staffNotes, assignedDriver });
     }
     return updated;
   },
@@ -755,6 +720,7 @@ export const jakloudStore = {
     const next = current.filter((o) => o.id !== orderId && o.orderNumber !== orderId);
     if (next.length !== current.length) {
       this.saveOrders(next);
+      syncBackendDeleteOrder(orderId);
       return true;
     }
     return false;
@@ -764,8 +730,8 @@ export const jakloudStore = {
   getSettings(): KitchenSettings {
     const s = getStored<KitchenSettings>(KEYS.SETTINGS, INITIAL_KITCHEN_SETTINGS);
     const merged = { ...INITIAL_KITCHEN_SETTINGS, ...s };
-    if (merged.dailyTrayLimit === 25 && !s.bookingHorizonDays) {
-      merged.dailyTrayLimit = 10;
+    if (!merged.dailyTrayLimit) {
+      merged.dailyTrayLimit = 25;
       merged.orderCutoffHour = 15;
       merged.bookingHorizonDays = 7;
       setStored(KEYS.SETTINGS, merged);
@@ -777,6 +743,7 @@ export const jakloudStore = {
     const current = this.getSettings();
     const next = { ...current, ...updates };
     setStored(KEYS.SETTINGS, next);
+    syncBackendSettings(updates);
     return next;
   },
 
@@ -1042,6 +1009,10 @@ export function useDynamicOrders() {
     setOrders(jakloudStore.getOrders());
     setStats(jakloudStore.getComputedStats());
   }, []);
+
+  useEffect(() => {
+    jakloudStore.syncWithBackend().then(() => reload());
+  }, [reload]);
 
   useEffect(() => {
     const handleSync = (e: Event) => {

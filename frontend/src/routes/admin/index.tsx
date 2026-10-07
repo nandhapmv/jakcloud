@@ -50,6 +50,7 @@ import {
   Layers,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Info,
   Edit,
   Save,
@@ -73,13 +74,13 @@ import {
   useDynamicOrders,
   useKitchenSettings,
   useDynamicMenu,
+  useDynamicCustomers,
   type DynamicOrder,
 } from "@/lib/store";
 import {
   WEEKLY_SALES_DATA,
   PROTEIN_DISTRIBUTION,
   BEST_SELLING_DISHES,
-  MOCK_CUSTOMERS,
   INITIAL_NOTIFICATIONS,
   type NotificationItem,
   type CustomerRecord,
@@ -130,11 +131,13 @@ function AdminOverviewPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
 
   // Live reactive store hooks
   const { orders, stats: dynamicStats, updateStatus, reload } = useDynamicOrders();
   const { settings, updateSettings } = useKitchenSettings();
+  const { customers: dynamicCustomers } = useDynamicCustomers();
 
   const [messages, setMessages] = useState<ContactMessageResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -209,16 +212,101 @@ function AdminOverviewPage() {
   // Calculated stats object for backwards-compatibility
   const stats = dynamicStats;
 
-  // Calculated metrics
+  // Calculated metrics from real database orders
   const totalTraysBooked = useMemo(() => {
-    return orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0) || 19;
+    return orders.reduce((sum, o) => sum + (o.status !== "cancelled" ? o.items.reduce((s, i) => s + i.qty, 0) : 0), 0);
   }, [orders]);
 
-  const capacityPercentage = Math.min(100, Math.round((totalTraysBooked / dailyLimit) * 100));
+  const capacityPercentage = dailyLimit > 0 ? Math.min(100, Math.round((totalTraysBooked / dailyLimit) * 100)) : 0;
 
-  const pickupOrdersCount = orders.filter((o) => o.fulfilmentType === "pickup").length || 11;
-  const deliveryOrdersCount = orders.filter((o) => o.fulfilmentType === "delivery").length || 8;
-  const pendingOrdersCount = orders.filter((o) => o.status === "confirmed" || o.status === "preparing").length || 4;
+  const pickupOrdersCount = useMemo(() => {
+    return orders.filter((o) => o.fulfilmentType === "pickup" && o.status !== "cancelled").length;
+  }, [orders]);
+
+  const deliveryOrdersCount = useMemo(() => {
+    return orders.filter((o) => o.fulfilmentType === "delivery" && o.status !== "cancelled").length;
+  }, [orders]);
+
+  const pendingOrdersCount = useMemo(() => {
+    return orders.filter((o) => o.status === "confirmed" || o.status === "preparing" || o.status === "dum_cooking").length;
+  }, [orders]);
+
+  const uniqueDinersCount = useMemo(() => {
+    const set = new Set<string>();
+    orders.forEach((o) => {
+      const key = o.customer.phone || o.customer.email || o.customer.name;
+      if (key) set.add(key.toLowerCase().trim());
+    });
+    return set.size;
+  }, [orders]);
+
+  const todayRevenue = useMemo(() => {
+    const todayStr = new Date().toDateString();
+    const todayOrders = orders.filter(
+      (o) =>
+        o.status !== "cancelled" &&
+        (o.fulfilmentDate.toLowerCase().includes("today") ||
+         new Date(o.createdAt).toDateString() === todayStr)
+    );
+    return todayOrders.reduce((sum, o) => sum + o.total, 0);
+  }, [orders]);
+
+  // Real 7-day sales aggregation from database
+  const dynamicWeeklySalesData = useMemo(() => {
+    const days: { day: string; dateStr: string; revenue: number; trays: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dayName = d.toLocaleDateString("en-US", { weekday: "short" });
+      const dateStr = d.toDateString();
+      days.push({ day: dayName, dateStr, revenue: 0, trays: 0 });
+    }
+
+    orders.forEach((o) => {
+      if (o.status === "cancelled") return;
+      const orderDateStr = new Date(o.createdAt).toDateString();
+      const match = days.find((d) => d.dateStr === orderDateStr);
+      if (match) {
+        match.revenue += o.total;
+        match.trays += o.items.reduce((s, it) => s + it.qty, 0);
+      }
+    });
+
+    return days.map(({ day, revenue, trays }) => ({
+      day,
+      revenue: Math.round(revenue * 100) / 100,
+      trays,
+    }));
+  }, [orders]);
+
+  // Real protein breakdown from actual database orders
+  const dynamicProteinData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    orders.forEach((o) => {
+      if (o.status === "cancelled") return;
+      o.items.forEach((item) => {
+        const name = item.name.replace(/Dum Biryani|Royal|Hyderabadi|Slow-Braised|Artisanal|\(Veg\)/gi, "").trim() || item.name;
+        counts[name] = (counts[name] || 0) + item.qty;
+      });
+    });
+
+    const entries = Object.entries(counts);
+    if (entries.length === 0) {
+      return [
+        { name: "Chicken Dum", value: 1, color: "#d4a017" },
+        { name: "Mutton Dum", value: 1, color: "#b91c1c" },
+        { name: "Beef Dum", value: 1, color: "#ea580c" },
+        { name: "Paneer / Seafood", value: 1, color: "#10b981" },
+      ];
+    }
+
+    const palette = ["#d4a017", "#b91c1c", "#ea580c", "#10b981", "#3b82f6", "#a855f7"];
+    return entries.map(([name, value], idx) => ({
+      name,
+      value,
+      color: palette[idx % palette.length]!,
+    }));
+  }, [orders]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
@@ -297,10 +385,10 @@ function AdminOverviewPage() {
             </div>
             {!sidebarCollapsed && (
               <div className="min-w-0 animate-in fade-in-50">
-                <span className="font-display text-lg tracking-wider text-cream font-bold truncate block">
+                <span className="font-sans text-base font-bold tracking-wider text-cream truncate block leading-tight">
                   JAKLOUD
                 </span>
-                <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold truncate">
+                <span className="block text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-gold truncate">
                   Spice King · Admin
                 </span>
               </div>
@@ -323,31 +411,53 @@ function AdminOverviewPage() {
           {/* Mobile Close Button */}
           <button
             onClick={() => setMobileNavOpen(false)}
-            className="text-cream/60 hover:text-gold lg:hidden"
+            className="text-cream/60 hover:text-gold lg:hidden p-1 rounded-lg"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Live Kitchen Status Pill */}
+        {/* Live Operational Status & Capacity Card */}
         {!sidebarCollapsed ? (
-          <div className="px-4 pt-3.5 animate-in fade-in-50">
-            <div className="flex items-center justify-between rounded-xl border border-gold/20 bg-black/40 p-2.5 text-xs shadow-inner">
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+          <div className="px-3.5 pt-3 animate-in fade-in-50">
+            <div className="rounded-2xl border border-gold/20 bg-gradient-to-b from-[#18110b] to-[#110c08] p-3 shadow-inner space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  </span>
+                  <span className="font-semibold text-cream text-xs">Kitchen Active</span>
+                </div>
+                <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wider text-emerald-400">
+                  Dum Live
                 </span>
-                <span className="font-medium text-cream text-[0.75rem]">Kitchen Active</span>
               </div>
-              <span className="rounded bg-gold/15 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wider text-gold">
-                Dum Oven Live
-              </span>
+
+              {/* Integrated Mini Capacity Gauge */}
+              <Link
+                to="/admin/daily-control"
+                className="block pt-1.5 border-t border-white/[0.06] hover:opacity-90 transition-opacity group"
+                title="Manage Daily 25-Tray Limit & Capacity"
+              >
+                <div className="flex items-center justify-between text-[0.68rem] mb-1">
+                  <span className="text-gold/80 flex items-center gap-1 group-hover:text-amber-300 font-medium">
+                    <Flame className="h-3 w-3 text-chili" /> Capacity
+                  </span>
+                  <span className="font-mono font-bold text-cream">
+                    {totalTraysBooked} / {dailyLimit} Trays
+                  </span>
+                </div>
+                <Progress
+                  value={capacityPercentage}
+                  className="h-1.5 bg-black/60 border border-gold/20"
+                />
+              </Link>
             </div>
           </div>
         ) : (
-          <div className="pt-3 flex justify-center">
+          <div className="pt-3 flex flex-col items-center gap-2">
             <span
               className="relative flex h-3 w-3"
               title="Kitchen Active • Dum Oven Live"
@@ -359,132 +469,214 @@ function AdminOverviewPage() {
         )}
 
         {/* Navigation Menu */}
-        <nav className="flex-1 space-y-1 px-2.5 py-3 overflow-y-auto">
-          {[
-            { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-            {
-              id: "orders",
-              label: "Live Orders",
-              icon: ShoppingBag,
-              badge: orders.length,
-            },
-            { id: "menu", label: "Menu Management", icon: MenuSquare },
-            { id: "customers", label: "Customers CRM", icon: Users, badge: "128" },
-            { id: "delivery", label: "Delivery & Routing", icon: Truck },
-            { id: "reports", label: "Financial Reports", icon: BarChart3 },
-            { id: "settings", label: "Kitchen Settings", icon: Settings },
-          ].map((item) => {
-            const Icon = item.icon;
-            const isActive = activeSection === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveSection(item.id as NavSection);
-                  setMobileNavOpen(false);
-                }}
-                title={sidebarCollapsed ? item.label : undefined}
-                className={`flex w-full items-center rounded-xl p-2.5 text-xs font-medium transition-all ${
-                  sidebarCollapsed ? "justify-center" : "justify-between px-3.5"
-                } ${
-                  isActive
-                    ? "bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold shadow-md shadow-chili/30"
-                    : "text-cream/70 hover:bg-gold/10 hover:text-gold"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : "text-gold/80"}`} />
-                  {!sidebarCollapsed && <span>{item.label}</span>}
-                </div>
-                {!sidebarCollapsed && item.badge !== undefined && (
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold ${
-                      isActive
-                        ? "bg-black/30 text-white"
-                        : "bg-gold/15 text-gold border border-gold/25"
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-
-          {/* Dedicated Submodules Section */}
-          <div className="pt-3 mt-2 border-t border-gold/15 space-y-1">
+        <nav className="flex-1 space-y-3.5 px-2.5 py-3 overflow-y-auto">
+          {/* Group 1: CORE OPERATIONS */}
+          <div className="space-y-1">
             {!sidebarCollapsed && (
-              <p className="px-3 text-[0.62rem] font-semibold uppercase tracking-wider text-gold/60">
-                Dedicated Modules
+              <p className="px-3 text-[0.62rem] font-semibold uppercase tracking-wider text-gold/60 mb-1">
+                Operations
               </p>
             )}
             {[
-              { to: "/admin/orders", label: "Orders Table", icon: ShoppingBag },
-              { to: "/admin/menu", label: "Menu Editor", icon: MenuSquare },
-              { to: "/admin/proteins", label: "Protein & Halal", icon: Flame },
-              { to: "/admin/customers", label: "Customer CRM", icon: Users },
-              { to: "/admin/reports", label: "Reports & BI", icon: BarChart3 },
-              { to: "/admin/delivery", label: "Delivery Zones", icon: Truck },
-              { to: "/admin/daily-control", label: "Daily Capacity", icon: Sliders },
-              { to: "/admin/cms", label: "Website CMS", icon: Sparkles },
-            ].map((mod) => {
-              const ModIcon = mod.icon;
+              { id: "dashboard", label: "Dashboard Overview", icon: LayoutDashboard },
+              {
+                id: "orders",
+                label: "Live Orders Queue",
+                icon: ShoppingBag,
+                badge: orders.length,
+                fullRoute: "/admin/orders",
+              },
+              {
+                id: "menu",
+                label: "Menu & Tray Pricing",
+                icon: MenuSquare,
+                fullRoute: "/admin/menu",
+              },
+              {
+                link: "/admin/proteins",
+                label: "Meat & Halal Matrix",
+                icon: Flame,
+              },
+              {
+                link: "/admin/daily-control",
+                label: "Daily 25-Tray Limit",
+                icon: Sliders,
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              const isActive = item.id ? activeSection === item.id : false;
+
+              if (item.link) {
+                return (
+                  <Link
+                    key={item.link}
+                    to={item.link}
+                    title={sidebarCollapsed ? item.label : undefined}
+                    className={`flex w-full items-center rounded-xl p-2.5 text-xs font-medium text-cream/75 hover:bg-gold/15 hover:text-gold transition-all ${
+                      sidebarCollapsed ? "justify-center" : "gap-3 px-3.5"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0 text-gold/80" />
+                    {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                  </Link>
+                );
+              }
+
               return (
-                <Link
-                  key={mod.to}
-                  to={mod.to}
-                  title={sidebarCollapsed ? mod.label : undefined}
-                  className={`flex items-center rounded-xl p-2 text-xs font-medium text-cream/75 hover:bg-gold/15 hover:text-gold transition-colors ${
-                    sidebarCollapsed ? "justify-center" : "gap-3 px-3"
-                  }`}
-                >
-                  <ModIcon className="h-3.5 w-3.5 shrink-0 text-gold/80" />
-                  {!sidebarCollapsed && <span className="truncate">{mod.label}</span>}
-                </Link>
+                <div key={item.id} className="relative group">
+                  <button
+                    onClick={() => {
+                      setActiveSection(item.id as NavSection);
+                      setMobileNavOpen(false);
+                    }}
+                    title={sidebarCollapsed ? item.label : undefined}
+                    className={`flex w-full items-center rounded-xl p-2.5 text-xs font-medium transition-all ${
+                      sidebarCollapsed ? "justify-center" : "justify-between px-3.5"
+                    } ${
+                      isActive
+                        ? "bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold shadow-md shadow-chili/30"
+                        : "text-cream/70 hover:bg-gold/10 hover:text-gold"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : "text-gold/80"}`} />
+                      {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                    </div>
+                    {!sidebarCollapsed && item.badge !== undefined && (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold shrink-0 ${
+                          isActive
+                            ? "bg-black/30 text-white"
+                            : "bg-gold/15 text-gold border border-gold/25"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                  {!sidebarCollapsed && item.fullRoute && (
+                    <Link
+                      to={item.fullRoute}
+                      title={`Open full ${item.label} page`}
+                      className={`absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded-md text-[0.6rem] transition-all ${
+                        isActive ? "text-white/80 hover:text-white" : "text-gold/70 hover:text-gold hover:bg-gold/15"
+                      }`}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Group 2: MANAGEMENT & CRM */}
+          <div className="space-y-1 pt-2 border-t border-gold/15">
+            {!sidebarCollapsed && (
+              <p className="px-3 text-[0.62rem] font-semibold uppercase tracking-wider text-gold/60 mb-1">
+                Management & CRM
+              </p>
+            )}
+            {[
+              {
+                id: "customers",
+                label: "Customers CRM",
+                icon: Users,
+                badge: uniqueDinersCount > 0 ? String(uniqueDinersCount) : undefined,
+                fullRoute: "/admin/customers",
+              },
+              {
+                id: "delivery",
+                label: "Delivery & Routing",
+                icon: Truck,
+                fullRoute: "/admin/delivery",
+              },
+              {
+                id: "reports",
+                label: "Financial Reports & BI",
+                icon: BarChart3,
+                fullRoute: "/admin/reports",
+              },
+              {
+                link: "/admin/cms",
+                label: "Website CMS & Media",
+                icon: Sparkles,
+              },
+              {
+                id: "settings",
+                label: "Kitchen Settings",
+                icon: Settings,
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              const isActive = item.id ? activeSection === item.id : false;
+
+              if (item.link) {
+                return (
+                  <Link
+                    key={item.link}
+                    to={item.link}
+                    title={sidebarCollapsed ? item.label : undefined}
+                    className={`flex w-full items-center rounded-xl p-2.5 text-xs font-medium text-cream/75 hover:bg-gold/15 hover:text-gold transition-all ${
+                      sidebarCollapsed ? "justify-center" : "gap-3 px-3.5"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0 text-gold/80" />
+                    {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                  </Link>
+                );
+              }
+
+              return (
+                <div key={item.id} className="relative group">
+                  <button
+                    onClick={() => {
+                      setActiveSection(item.id as NavSection);
+                      setMobileNavOpen(false);
+                    }}
+                    title={sidebarCollapsed ? item.label : undefined}
+                    className={`flex w-full items-center rounded-xl p-2.5 text-xs font-medium transition-all ${
+                      sidebarCollapsed ? "justify-center" : "justify-between px-3.5"
+                    } ${
+                      isActive
+                        ? "bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold shadow-md shadow-chili/30"
+                        : "text-cream/70 hover:bg-gold/10 hover:text-gold"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : "text-gold/80"}`} />
+                      {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                    </div>
+                    {!sidebarCollapsed && item.badge !== undefined && (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold shrink-0 ${
+                          isActive
+                            ? "bg-black/30 text-white"
+                            : "bg-gold/15 text-gold border border-gold/25"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                  {!sidebarCollapsed && item.fullRoute && (
+                    <Link
+                      to={item.fullRoute}
+                      title={`Open full ${item.label} page`}
+                      className={`absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded-md text-[0.6rem] transition-all ${
+                        isActive ? "text-white/80 hover:text-white" : "text-gold/70 hover:text-gold hover:bg-gold/15"
+                      }`}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  )}
+                </div>
               );
             })}
           </div>
         </nav>
 
-        {/* Daily Order Limit Gauge Widget */}
-        {!sidebarCollapsed ? (
-          <div className="p-3.5 border-t border-gold/15 bg-black/30 animate-in fade-in-50">
-            <Link
-              to="/admin/daily-control"
-              className="block rounded-xl border border-gold/25 bg-[#170f0a] p-3 space-y-2 hover:border-gold/60 transition-colors group cursor-pointer"
-              title="Open Daily Order & Capacity Control"
-            >
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-gold uppercase tracking-wider flex items-center gap-1 group-hover:text-amber-300 transition-colors text-[0.7rem]">
-                  <Flame className="h-3.5 w-3.5 text-chili animate-pulse" /> Daily Limit
-                </span>
-                <span className="font-mono font-bold text-cream group-hover:text-gold text-xs">
-                  {totalTraysBooked} / {dailyLimit}
-                </span>
-              </div>
-              <Progress
-                value={capacityPercentage}
-                className="h-1.5 bg-black/60 border border-gold/20"
-              />
-              <div className="flex justify-between text-[0.62rem] text-cream/60">
-                <span>{capacityPercentage}% Reached</span>
-                <span className="text-gold font-medium group-hover:underline">Control →</span>
-              </div>
-            </Link>
-          </div>
-        ) : (
-          <div className="p-2 border-t border-gold/15 flex justify-center">
-            <Link
-              to="/admin/daily-control"
-              className="h-9 w-9 rounded-xl border border-gold/25 bg-[#170f0a] flex items-center justify-center text-gold hover:border-gold"
-              title={`Daily Capacity: ${totalTraysBooked}/${dailyLimit} Trays (${capacityPercentage}%)`}
-            >
-              <Flame className="h-4 w-4 text-chili animate-pulse" />
-            </Link>
-          </div>
-        )}
-
-        {/* Sidebar Footer / User Profile */}
+        {/* Sidebar Footer / Administrator Profile Card */}
         <div className="border-t border-gold/15 p-3 bg-[#0d0906]">
           <div className={`flex items-center ${sidebarCollapsed ? "justify-center" : "justify-between"}`}>
             <div className="flex items-center gap-2.5 min-w-0">
@@ -507,7 +699,7 @@ function AdminOverviewPage() {
                   navigate({ to: "/admin/login" });
                   toast.info("Logged out from admin portal.");
                 }}
-                className="rounded-lg p-1.5 text-cream/50 hover:bg-chili/20 hover:text-chili transition-colors"
+                className="rounded-lg p-1.5 text-cream/50 hover:bg-chili/20 hover:text-chili transition-colors cursor-pointer"
                 title="Logout"
                 aria-label="Logout"
               >
@@ -531,23 +723,15 @@ function AdminOverviewPage() {
       {/* ------------------------------------------------------------- */}
       <div className="flex flex-1 flex-col overflow-x-hidden">
         {/* TOP NAVBAR */}
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-gold/20 bg-[#120c08]/90 px-4 backdrop-blur-xl sm:px-8">
-          {/* Left: Mobile Toggle, Desktop Collapse Toggle & Live Search */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-1 max-w-lg">
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-gold/20 bg-[#120c08]/95 px-4 backdrop-blur-xl sm:px-8">
+          {/* Left: Mobile Toggle & Clean Live Search */}
+          <div className="flex items-center gap-3 sm:gap-4 flex-1 max-w-md lg:max-w-lg">
             <button
               onClick={() => setMobileNavOpen(true)}
-              className="rounded-lg p-2 text-cream hover:bg-gold/10 lg:hidden"
+              className="rounded-xl p-2 text-cream hover:bg-gold/15 lg:hidden border border-gold/20 bg-black/40"
               aria-label="Open navigation drawer"
             >
               <MenuSquare className="h-5 w-5 text-gold" />
-            </button>
-
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hidden lg:flex h-9 w-9 items-center justify-center rounded-xl border border-gold/25 bg-black/40 text-gold hover:bg-gold/15 transition-colors"
-              title="Toggle Sidebar Collapse"
-            >
-              <Sliders className="h-4 w-4" />
             </button>
 
             <div className="relative w-full">
@@ -556,12 +740,12 @@ function AdminOverviewPage() {
                 placeholder="Search orders, phone, patrons, biryani..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 w-full rounded-2xl border-gold/25 bg-black/40 pl-10 pr-4 text-xs text-cream placeholder:text-cream/40 focus-visible:border-gold focus-visible:ring-1 focus-visible:ring-gold"
+                className="h-10 w-full rounded-2xl border-gold/25 bg-black/40 pl-10 pr-9 text-xs text-cream placeholder:text-cream/40 focus-visible:border-gold focus-visible:ring-1 focus-visible:ring-gold"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-cream/40 hover:text-cream"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-cream/40 hover:text-cream p-0.5 rounded transition-colors"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -569,26 +753,28 @@ function AdminOverviewPage() {
             </div>
           </div>
 
-          {/* Right: Date, Springfield Time, Actions, Notifications & Profile */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            {/* Live Clock & Date */}
-            <div className="hidden xl:flex flex-col text-right">
-              <span className="text-xs font-semibold text-cream">
-                {currentTime.toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-              <span className="text-[0.7rem] font-mono text-gold flex items-center justify-end gap-1">
-                <Clock className="h-3 w-3" />
-                {currentTime.toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })} · Springfield, MO
-              </span>
+          {/* Right: Date/Time Badge, Website, Refresh, Notifications & Profile */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+            {/* Live Clock & Springfield Badge */}
+            <div className="hidden lg:flex items-center gap-2 rounded-xl border border-gold/20 bg-black/40 px-3 py-1.5 text-xs shadow-inner">
+              <Clock className="h-3.5 w-3.5 text-gold shrink-0" />
+              <div className="flex flex-col text-left leading-tight">
+                <span className="font-semibold text-cream text-[0.72rem]">
+                  {currentTime.toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+                <span className="font-mono text-gold text-[0.65rem]">
+                  {currentTime.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })} · Springfield, MO
+                </span>
+              </div>
             </div>
 
             {/* Quick Public View */}
@@ -596,10 +782,11 @@ function AdminOverviewPage() {
               asChild
               variant="outline"
               size="sm"
-              className="hidden md:flex border-gold/30 bg-black/40 text-xs text-cream hover:bg-gold/10 hover:text-gold gap-1.5"
+              className="hidden sm:flex border-gold/30 bg-black/40 text-xs text-cream hover:bg-gold/15 hover:text-gold gap-1.5 rounded-xl h-9"
             >
               <Link to="/" target="_blank">
-                <ExternalLink className="h-3.5 w-3.5 text-gold" /> Website
+                <ExternalLink className="h-3.5 w-3.5 text-gold" />
+                <span>Website</span>
               </Link>
             </Button>
 
@@ -609,22 +796,36 @@ function AdminOverviewPage() {
               size="icon"
               onClick={() => loadData(true)}
               disabled={isRefreshing}
-              className="h-9 w-9 rounded-full border-gold/30 bg-black/40 text-cream hover:bg-gold/10 hover:text-gold"
+              className="h-9 w-9 rounded-xl border-gold/30 bg-black/40 text-cream hover:bg-gold/15 hover:text-gold"
               title="Refresh live metrics"
             >
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin text-gold" : ""}`} />
             </Button>
 
+            {/* Click-away overlay for dropdown menus */}
+            {(notificationsOpen || profileMenuOpen) && (
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => {
+                  setNotificationsOpen(false);
+                  setProfileMenuOpen(false);
+                }}
+              />
+            )}
+
             {/* Notifications Bell with Dropdown */}
             <div className="relative">
               <button
-                onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="relative flex h-9 w-9 items-center justify-center rounded-full border border-gold/30 bg-black/40 text-cream/80 hover:bg-gold/10 hover:text-gold transition-colors"
+                onClick={() => {
+                  setNotificationsOpen(!notificationsOpen);
+                  setProfileMenuOpen(false);
+                }}
+                className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-gold/30 bg-black/40 text-cream/80 hover:bg-gold/15 hover:text-gold transition-colors cursor-pointer"
                 aria-label="Notifications"
               >
                 <Bell className="h-4 w-4" />
                 {unreadNotificationsCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-chili px-1 text-[0.6rem] font-bold text-white animate-pulse">
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-chili px-1 text-[0.6rem] font-bold text-white shadow-md animate-pulse">
                     {unreadNotificationsCount}
                   </span>
                 )}
@@ -635,7 +836,7 @@ function AdminOverviewPage() {
                   <div className="flex items-center justify-between border-b border-gold/15 pb-3">
                     <div className="flex items-center gap-2">
                       <Bell className="h-4 w-4 text-gold" />
-                      <h4 className="font-display text-sm text-cream font-semibold">Kitchen Alerts</h4>
+                      <h4 className="font-sans text-sm text-cream font-semibold">Kitchen Alerts</h4>
                     </div>
                     {unreadNotificationsCount > 0 && (
                       <button
@@ -662,6 +863,75 @@ function AdminOverviewPage() {
                         <p className="mt-1 text-[0.75rem] text-cream/75 leading-relaxed">{n.message}</p>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Profile Dropdown / Quick User Pill */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setProfileMenuOpen(!profileMenuOpen);
+                  setNotificationsOpen(false);
+                }}
+                className="flex items-center gap-2 rounded-xl border border-gold/25 bg-black/40 py-1 px-2.5 text-left hover:border-gold/50 transition-all cursor-pointer"
+                title="Admin Account & Settings"
+              >
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-chili to-gold text-xs font-bold text-white shadow-sm">
+                  KA
+                </div>
+                <div className="hidden md:block leading-tight text-left">
+                  <span className="block text-xs font-semibold text-cream">
+                    {user?.name ? user.name.split(" ")[0] : "Chef Kartheek"}
+                  </span>
+                  <span className="block text-[0.6rem] text-gold uppercase tracking-wider font-mono">
+                    Admin
+                  </span>
+                </div>
+                <ChevronDown className="h-3.5 w-3.5 text-gold/70 hidden sm:block" />
+              </button>
+
+              {profileMenuOpen && (
+                <div className="absolute right-0 mt-3 w-56 rounded-2xl border border-gold/30 bg-[#140e09] p-2 shadow-2xl backdrop-blur-2xl z-50 animate-in fade-in-50 zoom-in-95">
+                  <div className="p-2 border-b border-gold/15">
+                    <p className="text-xs font-semibold text-cream">{user?.name || "Master Chef Kartheek"}</p>
+                    <p className="text-[0.65rem] text-gold/80 truncate">{user?.email || "admin@jakloud.com"}</p>
+                  </div>
+                  <div className="py-1 space-y-0.5">
+                    <button
+                      onClick={() => {
+                        setActiveSection("settings");
+                        setProfileMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs text-cream/80 hover:bg-gold/15 hover:text-gold transition-colors text-left cursor-pointer"
+                    >
+                      <Settings className="h-3.5 w-3.5 text-gold" />
+                      <span>Kitchen Settings</span>
+                    </button>
+                    <Link
+                      to="/"
+                      target="_blank"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs text-cream/80 hover:bg-gold/15 hover:text-gold transition-colors text-left cursor-pointer"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5 text-gold" />
+                      <span>Customer Storefront</span>
+                    </Link>
+                  </div>
+                  <div className="pt-1 border-t border-gold/15">
+                    <button
+                      onClick={() => {
+                        setProfileMenuOpen(false);
+                        logout();
+                        navigate({ to: "/admin/login" });
+                        toast.info("Logged out from admin portal.");
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs text-rose-400 hover:bg-rose-500/15 transition-colors text-left font-medium cursor-pointer"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                      <span>Logout</span>
+                    </button>
                   </div>
                 </div>
               )}
@@ -803,11 +1073,11 @@ function AdminOverviewPage() {
                     </div>
                   </div>
                   <h3 className="mt-3 font-display text-xl font-bold text-cream sm:text-2xl">
-                    {stats ? formatMoney(stats.totalRevenue) : "$2,480.90"}
+                    {formatMoney(todayRevenue)}
                   </h3>
                   <div className="mt-2 flex items-center gap-1 text-[0.65rem] text-emerald-400">
                     <TrendingUp className="h-3 w-3" />
-                    <span>+24% vs last week</span>
+                    <span>Real database receipts</span>
                   </div>
                 </div>
 
@@ -822,10 +1092,10 @@ function AdminOverviewPage() {
                     </div>
                   </div>
                   <h3 className="mt-3 font-display text-2xl font-bold text-cream">
-                    128 <span className="text-xs font-sans text-cream/60">Diners</span>
+                    {uniqueDinersCount} <span className="text-xs font-sans text-cream/60">Diners</span>
                   </h3>
                   <div className="mt-2 text-[0.65rem] text-emerald-400">
-                    84% Repeat order rate
+                    {uniqueDinersCount > 0 ? "Active patrons in database" : "No orders recorded yet"}
                   </div>
                 </div>
               </div>
@@ -855,7 +1125,7 @@ function AdminOverviewPage() {
 
                   <div className="h-72 w-full pt-2">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={WEEKLY_SALES_DATA}>
+                      <AreaChart data={dynamicWeeklySalesData}>
                         <defs>
                           <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#d4a017" stopOpacity={0.4} />
@@ -940,7 +1210,7 @@ function AdminOverviewPage() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={PROTEIN_DISTRIBUTION}
+                          data={dynamicProteinData}
                           cx="50%"
                           cy="50%"
                           innerRadius={55}
@@ -948,7 +1218,7 @@ function AdminOverviewPage() {
                           paddingAngle={4}
                           dataKey="value"
                         >
-                          {PROTEIN_DISTRIBUTION.map((entry, index) => (
+                          {dynamicProteinData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -959,21 +1229,21 @@ function AdminOverviewPage() {
                             borderRadius: "10px",
                             fontSize: "11px",
                           }}
-                          formatter={(value: any) => [`${value}% share`, ""]}
+                          formatter={(value: any) => [`${value} trays`, ""]}
                         />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs border-t border-gold/15 pt-3">
-                    {PROTEIN_DISTRIBUTION.map((p) => (
+                    {dynamicProteinData.map((p) => (
                       <div key={p.name} className="flex items-center gap-2">
                         <span
                           className="h-2.5 w-2.5 rounded-full shrink-0"
                           style={{ backgroundColor: p.color }}
                         />
                         <span className="text-cream/80 truncate">{p.name}</span>
-                        <span className="font-bold text-gold ml-auto">{p.value}%</span>
+                        <span className="font-bold text-gold ml-auto">{p.value}</span>
                       </div>
                     ))}
                   </div>
@@ -1469,55 +1739,73 @@ function AdminOverviewPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gold/10">
-                      {MOCK_CUSTOMERS.map((cust) => (
-                        <tr key={cust.id} className="hover:bg-gold/5 transition-colors">
-                          <td className="px-5 py-4">
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold border ${cust.avatarBg} ${cust.avatarText}`}
-                              >
-                                {cust.avatarInitials}
-                              </div>
-                              <div>
-                                <p className="font-semibold text-cream text-xs">{cust.name}</p>
-                                <p className="text-[0.65rem] text-cream/50">Joined {cust.joinDate}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4 text-xs">
-                            <p className="text-cream font-mono">{cust.phone}</p>
-                            <p className="text-[0.7rem] text-cream/60">{cust.email}</p>
-                          </td>
-                          <td className="px-5 py-4 text-xs">
-                            <span className="rounded-full bg-gold/15 border border-gold/30 px-2 py-0.5 text-[0.65rem] font-semibold text-gold">
-                              {cust.status}
-                            </span>
-                          </td>
-                          <td className="px-5 py-4 text-xs">
-                            <span className="font-bold text-cream">{cust.totalOrders} Orders</span>
-                            <p className="text-[0.65rem] text-cream/50">Last: {cust.lastOrderDate}</p>
-                          </td>
-                          <td className="px-5 py-4 font-display font-bold text-gold text-sm font-mono">
-                            {formatMoney(cust.totalSpent)}
-                          </td>
-                          <td className="px-5 py-4 text-xs text-cream font-medium">
-                            {cust.favoriteProtein}
-                          </td>
-                          <td className="px-5 py-4 text-xs">
-                            <span className="rounded-full bg-black/50 border border-gold/20 px-2.5 py-0.5 text-[0.7rem] text-cream/80">
-                              {cust.preferredFulfilment}
-                            </span>
-                          </td>
-                          <td className="px-5 py-4 text-right">
+                      {dynamicCustomers.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="px-5 py-12 text-center">
+                            <Users className="mx-auto h-8 w-8 text-gold/40 mb-2" />
+                            <p className="text-sm font-semibold text-cream">No customer records in database yet</p>
+                            <p className="text-xs text-cream/60 mt-1">
+                              Customers who place orders on the storefront or reservations will automatically appear here.
+                            </p>
                             <Link
                               to="/admin/customers"
-                              className="inline-flex items-center gap-1 text-xs text-gold hover:underline font-semibold"
+                              className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-gold/30 bg-black/40 px-3 py-1.5 text-xs text-gold hover:bg-gold/15 transition-all"
                             >
-                              Profile & CRM →
+                              Open Customer Management →
                             </Link>
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        dynamicCustomers.map((cust) => (
+                          <tr key={cust.id} className="hover:bg-gold/5 transition-colors">
+                            <td className="px-5 py-4">
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold border ${cust.avatarBg || "bg-gold/15 border-gold/30"} ${cust.avatarText || "text-gold"}`}
+                                >
+                                  {cust.avatarInitials}
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-cream text-xs">{cust.name}</p>
+                                  <p className="text-[0.65rem] text-cream/50">Joined {cust.joinDate}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-5 py-4 text-xs">
+                              <p className="text-cream font-mono">{cust.phone}</p>
+                              <p className="text-[0.7rem] text-cream/60">{cust.email}</p>
+                            </td>
+                            <td className="px-5 py-4 text-xs">
+                              <span className="rounded-full bg-gold/15 border border-gold/30 px-2 py-0.5 text-[0.65rem] font-semibold text-gold">
+                                {cust.status}
+                              </span>
+                            </td>
+                            <td className="px-5 py-4 text-xs">
+                              <span className="font-bold text-cream">{cust.totalOrders} Orders</span>
+                              <p className="text-[0.65rem] text-cream/50">Last: {cust.lastOrderDate || "Recent"}</p>
+                            </td>
+                            <td className="px-5 py-4 font-display font-bold text-gold text-sm font-mono">
+                              {formatMoney(cust.totalSpend || 0)}
+                            </td>
+                            <td className="px-5 py-4 text-xs text-cream font-medium">
+                              {cust.favoriteProtein || "Signature Dum"}
+                            </td>
+                            <td className="px-5 py-4 text-xs">
+                              <span className="rounded-full bg-black/50 border border-gold/20 px-2.5 py-0.5 text-[0.7rem] text-cream/80">
+                                {cust.preferredFulfilment || "Pickup"}
+                              </span>
+                            </td>
+                            <td className="px-5 py-4 text-right">
+                              <Link
+                                to="/admin/customers"
+                                className="inline-flex items-center gap-1 text-xs text-gold hover:underline font-semibold"
+                              >
+                                Profile & CRM →
+                              </Link>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>

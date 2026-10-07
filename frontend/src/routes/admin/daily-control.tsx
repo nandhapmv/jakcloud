@@ -85,17 +85,17 @@ function DailyOrderControlPage() {
         (new Date(o.createdAt).toDateString() === new Date().toDateString());
       return isToday && o.status !== "cancelled";
     });
-    return todayOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0) || 19;
+    return todayOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
   }, [orders]);
 
   const pickupTrays = useMemo(() => {
     return orders.filter((o) => o.fulfilmentType === "pickup" && o.status !== "cancelled")
-      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0) || 11;
+      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
   }, [orders]);
 
   const deliveryTrays = useMemo(() => {
     return orders.filter((o) => o.fulfilmentType === "delivery" && o.status !== "cancelled")
-      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0) || 8;
+      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
   }, [orders]);
 
   // Closed Announcement Customization

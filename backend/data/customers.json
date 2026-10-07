@@ -1,0 +1,22 @@
+[
+  {
+    "id": "cust_4178979754",
+    "name": "Sai Kartheek",
+    "email": "kartheek@jakloud.com",
+    "phone": "417-897-9754",
+    "totalOrders": 1,
+    "totalSpent": 111.99,
+    "favoriteProtein": "Chicken Dum Biryani",
+    "preferredFulfilment": "Delivery",
+    "lastOrderDate": "Tomorrow",
+    "status": "Standard Patron",
+    "joinDate": "Oct 2026",
+    "avatarInitials": "SK",
+    "avatarBg": "bg-gold/15 border-gold/40",
+    "avatarText": "text-gold",
+    "address": "3625 S Bedford Ave",
+    "city": "Springfield",
+    "zipCode": "65809",
+    "adminNotes": ""
+  }
+]

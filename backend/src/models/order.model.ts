@@ -1,6 +1,14 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { MENU_ITEMS, type ProteinId } from "./menu.model.js";
 import { config } from "../config/index.js";
 import { getPool, isDatabaseConnected } from "../config/database.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DATA_DIR = path.resolve(__dirname, "../../data");
+const ORDERS_FILE = path.join(DATA_DIR, "orders.json");
 
 export interface OrderItem {
   proteinId: ProteinId;
@@ -43,86 +51,42 @@ export interface Order {
   paymentStatus?: string;
   specialInstructions?: string;
   staffNotes?: string;
+  assignedDriver?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-// In-memory order store
+// In-memory order cache
 const orders = new Map<string, Order>();
 
-// Seed sample orders for demonstration
-const sampleOrders: Order[] = [
-  {
-    id: "ord_demo_1",
-    orderNumber: "JK-2026-8821",
-    status: "preparing",
-    fulfilmentType: "delivery",
-    fulfilmentDate: "Tomorrow",
-    fulfilmentTime: "2:00 PM",
-    customer: {
-      name: "Marcus Vance",
-      email: "marcus.v@example.com",
-      phone: "417-555-3921",
-      address: "1420 E Sunshine St",
-      city: "Springfield",
-      zipCode: "65804",
-      deliveryInstructions: "Ring bell at side entrance",
-    },
-    items: [
-      {
-        proteinId: "mutton",
-        name: "Mutton Dum Biryani",
-        aloo: true,
-        extraSpicy: true,
-        notes: "Heavy on roasted cashews and fried onions",
-        qty: 1,
-        unitPrice: 164.99,
-        lineTotal: 164.99,
-      },
-    ],
-    subtotal: 164.99,
-    tax: 14.19,
-    deliveryFee: 10.0,
-    total: 174.99,
-    specialInstructions: "Occasion order for family celebration.",
-    createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-  },
-  {
-    id: "ord_demo_2",
-    orderNumber: "JK-2026-7452",
-    status: "confirmed",
-    fulfilmentType: "pickup",
-    fulfilmentDate: "Tomorrow",
-    fulfilmentTime: "12:00 PM",
-    customer: {
-      name: "Ananya Patel",
-      email: "ananya.patel@example.com",
-      phone: "417-555-8492",
-    },
-    items: [
-      {
-        proteinId: "chicken",
-        name: "Chicken Dum Biryani",
-        aloo: false,
-        extraSpicy: false,
-        notes: "",
-        qty: 2,
-        unitPrice: 101.99,
-        lineTotal: 203.98,
-      },
-    ],
-    subtotal: 203.98,
-    tax: 17.54,
-    deliveryFee: 0,
-    total: 203.98,
-    specialInstructions: "Will arrive right at noon.",
-    createdAt: new Date(Date.now() - 3600000 * 6).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 6).toISOString(),
-  },
-];
+function loadOrdersFromFile(): void {
+  try {
+    if (fs.existsSync(ORDERS_FILE)) {
+      const raw = fs.readFileSync(ORDERS_FILE, "utf-8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((o: Order) => orders.set(o.id, o));
+      }
+    }
+  } catch (err) {
+    console.warn("Could not read orders from file:", err);
+  }
+}
 
-sampleOrders.forEach((o) => orders.set(o.id, o));
+function persistOrdersToFile(): void {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    const list = Array.from(orders.values());
+    fs.writeFileSync(ORDERS_FILE, JSON.stringify(list, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to write orders to file:", err);
+  }
+}
+
+// Initial load from real persistent file storage
+loadOrdersFromFile();
 
 export function generateOrderNumber(): string {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -175,13 +139,14 @@ export function calculateOrderTotals(
 }
 
 export async function saveOrder(order: Order): Promise<Order> {
-  // Always update in-memory cache
+  // 1. Update cache & persistent storage
   orders.set(order.id, order);
+  persistOrdersToFile();
 
+  // 2. Persist to MySQL if available
   const pool = getPool();
   if (pool && isDatabaseConnected()) {
     try {
-      // 1. Insert/Update customer
       await pool.query(
         `INSERT INTO customers (id, name, email, phone, address, city, zip_code, delivery_instructions)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -198,7 +163,6 @@ export async function saveOrder(order: Order): Promise<Order> {
         ],
       );
 
-      // 2. Insert order
       await pool.query(
         `INSERT INTO orders 
           (id, order_number, status, fulfilment_type, fulfilment_date, fulfilment_time, 
@@ -230,7 +194,6 @@ export async function saveOrder(order: Order): Promise<Order> {
         ],
       );
 
-      // 3. Insert items
       for (const item of order.items) {
         await pool.query(
           `INSERT INTO order_items (id, order_id, protein_id, name, aloo, extra_spicy, notes, qty, unit_price, line_total)
@@ -263,6 +226,7 @@ export async function updateOrderStatus(id: string, status: OrderStatus): Promis
     order.status = status;
     order.updatedAt = new Date().toISOString();
     orders.set(order.id, order);
+    persistOrdersToFile();
   }
 
   const pool = getPool();
@@ -279,6 +243,38 @@ export async function updateOrderStatus(id: string, status: OrderStatus): Promis
   }
 
   return order;
+}
+
+export async function updateOrderDetails(
+  id: string,
+  updates: Partial<Order>,
+): Promise<Order | undefined> {
+  const order = orders.get(id) || findOrderByNumber(id);
+  if (order) {
+    Object.assign(order, updates, { updatedAt: new Date().toISOString() });
+    orders.set(order.id, order);
+    persistOrdersToFile();
+  }
+  return order;
+}
+
+export async function deleteOrder(id: string): Promise<boolean> {
+  const order = orders.get(id) || findOrderByNumber(id);
+  if (!order) return false;
+
+  orders.delete(order.id);
+  persistOrdersToFile();
+
+  const pool = getPool();
+  if (pool && isDatabaseConnected()) {
+    try {
+      await pool.query("DELETE FROM orders WHERE id = ? OR order_number = ?", [order.id, order.orderNumber]);
+    } catch (err: any) {
+      console.warn("⚠️ MySQL deleteOrder warning:", err.message);
+    }
+  }
+
+  return true;
 }
 
 export function findOrderById(id: string): Order | undefined {
@@ -302,10 +298,29 @@ export function listAllOrders(): Order[] {
 
 export function getAdminStats() {
   const all = Array.from(orders.values());
-  const totalRevenue = all.reduce((sum, o) => sum + (o.status !== "cancelled" ? o.total : 0), 0);
-  const totalTrays = all.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
-  const activeOrders = all.filter((o) => o.status === "confirmed" || o.status === "preparing").length;
+  const validOrders = all.filter((o) => o.status !== "cancelled");
+  const totalRevenue = validOrders.reduce((sum, o) => sum + o.total, 0);
+  const totalTrays = validOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
+  const activeOrders = all.filter((o) => o.status === "confirmed" || o.status === "preparing" || o.status === "dum_cooking").length;
   const readyOrders = all.filter((o) => o.status === "ready").length;
+  const pickupOrders = validOrders.filter((o) => o.fulfilmentType === "pickup").length;
+  const deliveryOrders = validOrders.filter((o) => o.fulfilmentType === "delivery").length;
+
+  // Calculate unique diners
+  const uniqueDiners = new Set<string>();
+  all.forEach((o) => {
+    const key = o.customer.phone || o.customer.email || o.customer.name;
+    if (key) uniqueDiners.add(key.toLowerCase().trim());
+  });
+
+  // Calculate today's booked trays
+  const todayStr = new Date().toDateString();
+  const todayOrders = validOrders.filter(
+    (o) =>
+      o.fulfilmentDate.toLowerCase().includes("today") ||
+      new Date(o.createdAt).toDateString() === todayStr,
+  );
+  const todayTraysBooked = todayOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
 
   return {
     totalRevenue: Math.round(totalRevenue * 100) / 100,
@@ -313,5 +328,9 @@ export function getAdminStats() {
     totalOrders: all.length,
     activeOrders,
     readyOrders,
+    pickupOrders,
+    deliveryOrders,
+    dinerBase: uniqueDiners.size,
+    todayTraysBooked,
   };
 }

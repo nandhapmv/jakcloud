@@ -255,17 +255,10 @@ export const api = {
         body: JSON.stringify(payload),
       });
       const data = await handleResponse<{ message: string; order: OrderResponse }>(res);
-      // Synchronize into dynamic local store
-      jakloudStore.createOrder({
-        items: data.order.items as OrderItemDetail[],
-        fulfilmentType: data.order.fulfilmentType,
-        fulfilmentDate: data.order.fulfilmentDate,
-        fulfilmentTime: data.order.fulfilmentTime,
-        customer: data.order.customer,
-        paymentMethod: payload.paymentMethod || "Razorpay Online",
-        paymentStatus: payload.paymentStatus || data.order.paymentStatus || "PAID",
-        specialInstructions: data.order.specialInstructions,
-      });
+      // Synchronize into dynamic local store without duplicate POST
+      if (data?.order) {
+        jakloudStore.addExistingOrder(data.order as unknown as DynamicOrder);
+      }
       return data;
     } catch {
       // Dynamic store order creation
@@ -376,29 +369,107 @@ export const api = {
       const res = await fetch(`${API_BASE_URL}/api/contact`);
       return await handleResponse<{ count: number; messages: ContactMessageResponse[] }>(res);
     } catch {
-      return {
-        count: 2,
-        messages: [
-          {
-            id: "msg_1",
-            name: "Emily Vance",
-            email: "emily.vance@gmail.com",
-            phone: "417-882-9901",
-            subject: "Corporate Catering for 40 Guests",
-            message: "Looking to reserve 8 Mutton & Chicken Dum Handi trays for our clinic celebration next Friday.",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: "msg_2",
-            name: "Rajesh Kumar",
-            email: "rajesh.k@yahoo.com",
-            phone: "417-501-4421",
-            subject: "Extra Ghee & Spicy Gravy Inquiry",
-            message: "Can we request an extra jar of mirchi ka salan with the party feast tray?",
-            createdAt: new Date(Date.now() - 7200000).toISOString(),
-          },
-        ],
-      };
+      return { count: 0, messages: [] };
+    }
+  },
+
+  async deleteOrder(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/orders/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      await handleResponse<{ message: string }>(res);
+      jakloudStore.deleteOrder(id);
+      return true;
+    } catch {
+      jakloudStore.deleteOrder(id);
+      return false;
+    }
+  },
+
+  async updateOrder(id: string, updates: Record<string, any>): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/orders/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      return await handleResponse<any>(res);
+    } catch {
+      return null;
+    }
+  },
+
+  async getCustomers(): Promise<{ count: number; customers: any[] }> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/customers`);
+      return await handleResponse<{ count: number; customers: any[] }>(res);
+    } catch {
+      const list = jakloudStore.getCustomers();
+      return { count: list.length, customers: list };
+    }
+  },
+
+  async createCustomer(data: Record<string, any>): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/customers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      return await handleResponse<any>(res);
+    } catch {
+      return null;
+    }
+  },
+
+  async updateCustomer(id: string, updates: Record<string, any>): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/customers/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      return await handleResponse<any>(res);
+    } catch {
+      return null;
+    }
+  },
+
+  async deleteCustomer(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/customers/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      await handleResponse<{ message: string }>(res);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async getKitchenSettings(): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/settings`);
+      return await handleResponse<any>(res);
+    } catch {
+      return jakloudStore.getSettings();
+    }
+  },
+
+  async updateKitchenSettings(updates: Record<string, any>): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      const data = await handleResponse<any>(res);
+      jakloudStore.updateSettings(updates);
+      return data;
+    } catch {
+      jakloudStore.updateSettings(updates);
+      return null;
     }
   },
 };

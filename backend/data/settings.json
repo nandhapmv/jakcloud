@@ -1,0 +1,15 @@
+{
+  "dailyTrayLimit": 25,
+  "orderCutoffHour": 15,
+  "bookingHorizonDays": 7,
+  "isKitchenOpen": true,
+  "emergencyPauseReason": "",
+  "closedWeekdays": [3],
+  "deliveryFee": 10,
+  "freeDeliveryTrayThreshold": 3,
+  "alooCharge": 7,
+  "deliveryRadiusMiles": 10,
+  "heroAnnouncement": "Artisanal Dum Biryani slow-cooked in sealed clay handis. Limited to 25 trays daily.",
+  "announcementActive": true,
+  "salesTaxRate": 0.086
+}

@@ -45,8 +45,8 @@ import paneerImg from "@/assets/paneer-biryani.jpg";
 import prawnImg from "@/assets/prawn-biryani.jpg";
 
 import { useAuth } from "@/lib/auth";
+import { api } from "@/lib/api";
 import {
-  MOCK_CUSTOMERS,
   type CustomerRecord,
   type CustomerOrderHistoryItem,
 } from "@/lib/admin-data";
@@ -85,18 +85,37 @@ function CustomerManagementPage() {
   const navigate = useNavigate();
   const { orders } = useDynamicOrders();
 
-  // State with LocalStorage persistence
+  // State with LocalStorage persistence & real database loading
   const [customers, setCustomers] = useState<CustomerRecord[]>(() => {
     if (typeof window !== "undefined") {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const clean = parsed.filter(
+            (c: any) =>
+              c.id !== "cust_1" &&
+              c.id !== "cust_2" &&
+              c.name !== "Marcus Vance" &&
+              c.name !== "Dr. Bradley Hayes"
+          );
+          if (clean.length > 0) return clean;
+        }
       } catch {
         /* fallback */
       }
     }
-    return MOCK_CUSTOMERS;
+    return [];
   });
+
+  // Load real customers from database on mount
+  useEffect(() => {
+    api.getCustomers().then((res) => {
+      if (res && Array.isArray(res.customers) && res.customers.length > 0) {
+        setCustomers(res.customers);
+      }
+    });
+  }, []);
 
   // Persist customers whenever state changes
   useEffect(() => {
@@ -305,11 +324,13 @@ function CustomerManagementPage() {
       });
   }, [customers, searchQuery, statusFilter, fulfilmentFilter, proteinFilter, sortBy]);
 
-  // Aggregate Metrics
-  const totalRegistered = 128; // Active patron directory total
+  // Aggregate Metrics from Real Customer State
+  const totalRegistered = customers.length;
   const vipCount = customers.filter((c) => c.status === "VIP Royal" || c.status === "Occasion Host").length;
   const totalLtvSpend = customers.reduce((sum, c) => sum + c.totalSpent, 0);
-  const avgLtv = totalLtvSpend / (customers.length || 1);
+  const avgLtv = customers.length > 0 ? totalLtvSpend / customers.length : 0;
+  const repeatCustomersCount = customers.filter((c) => c.totalOrders > 1).length;
+  const repeatRate = customers.length > 0 ? Math.round((repeatCustomersCount / customers.length) * 100) : 0;
 
   // Status Badge Class
   const getStatusBadge = (status: CustomerRecord["status"]) => {
@@ -423,7 +444,7 @@ function CustomerManagementPage() {
             </h3>
             <div className="mt-2 flex items-center gap-1.5 text-[0.65rem] text-emerald-400">
               <TrendingUp className="h-3 w-3" />
-              <span>+14 new diners this month</span>
+              <span>{vipCount} VIP patrons</span>
             </div>
           </div>
 
@@ -461,7 +482,7 @@ function CustomerManagementPage() {
             </h3>
             <div className="mt-2 flex items-center gap-1.5 text-[0.65rem] text-emerald-400">
               <TrendingUp className="h-3 w-3" />
-              <span>+22% higher average Handi tray size</span>
+              <span>Total Spend: {formatMoney(totalLtvSpend)}</span>
             </div>
           </div>
 
@@ -476,11 +497,11 @@ function CustomerManagementPage() {
               </div>
             </div>
             <h3 className="mt-3 font-display text-2xl font-bold text-emerald-400">
-              78.5% <span className="text-xs font-sans text-cream/60">Retention</span>
+              {repeatRate}% <span className="text-xs font-sans text-cream/60">Retention</span>
             </h3>
             <div className="mt-2 flex items-center gap-1.5 text-[0.65rem] text-cream/70">
               <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-              <span>Repeat Handi bookings &gt; 3x</span>
+              <span>{repeatCustomersCount} repeat patrons</span>
             </div>
           </div>
         </div>

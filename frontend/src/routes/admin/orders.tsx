@@ -1011,7 +1011,7 @@ export function OrderManagementPage() {
                 <Label className="text-[0.7rem] text-gold uppercase">Patron Name *</Label>
                 <Input
                   required
-                  placeholder="e.g. Marcus Vance"
+                  placeholder="e.g. Patron Name"
                   value={manualName}
                   onChange={(e) => setManualName(e.target.value)}
                   className="mt-1 h-9 rounded-xl border-gold/20 bg-black/50 text-xs text-cream"

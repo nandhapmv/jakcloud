@@ -7,6 +7,8 @@ import {
   findOrderByNumber,
   listAllOrders,
   updateOrderStatus,
+  updateOrderDetails,
+  deleteOrder as removeOrder,
   getAdminStats,
   type Order,
   type OrderStatus,
@@ -66,7 +68,6 @@ export function getOrder(req: Request, res: Response) {
     return res.status(400).json({ error: "Order ID or order number is required" });
   }
 
-  // Support lookup by UUID id or Order Reference Number (e.g. JK-2026-XXXX)
   const order = findOrderById(id) || findOrderByNumber(id);
   if (!order) {
     return res.status(404).json({ error: "Order not found" });
@@ -106,6 +107,39 @@ export async function updateStatus(req: Request, res: Response) {
     message: `Order ${updated.orderNumber} status updated to ${status}`,
     order: updated,
   });
+}
+
+export async function updateOrder(req: Request, res: Response) {
+  const idParam = req.params.id;
+  const id = Array.isArray(idParam) ? idParam[0] : idParam;
+  if (!id) {
+    return res.status(400).json({ error: "Order ID is required" });
+  }
+
+  const updated = await updateOrderDetails(id, req.body);
+  if (!updated) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+
+  return res.json({
+    message: `Order ${updated.orderNumber} updated successfully.`,
+    order: updated,
+  });
+}
+
+export async function deleteOrder(req: Request, res: Response) {
+  const idParam = req.params.id;
+  const id = Array.isArray(idParam) ? idParam[0] : idParam;
+  if (!id) {
+    return res.status(400).json({ error: "Order ID is required" });
+  }
+
+  const success = await removeOrder(id);
+  if (!success) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+
+  return res.json({ message: "Order removed successfully." });
 }
 
 export function getStats(_req: Request, res: Response) {
