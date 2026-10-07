@@ -125,10 +125,10 @@ export function SiteHeader() {
 
             {/* Mobile Brand text */}
             <div className="block lg:hidden min-w-0 leading-tight">
-              <span className="block text-sm sm:text-base font-bold tracking-tight text-white group-hover:text-amber-400 transition-colors whitespace-nowrap">
+              <span className="block text-xs sm:text-base font-bold tracking-tight text-white group-hover:text-amber-400 transition-colors truncate">
                 JAKLOUD Spice King
               </span>
-              <span className="block text-[9px] font-semibold text-zinc-400 tracking-wider uppercase whitespace-nowrap">
+              <span className="block text-[8.5px] sm:text-[9px] font-semibold text-zinc-400 tracking-wider uppercase truncate">
                 ARTISANAL DUM BIRYANI
               </span>
             </div>

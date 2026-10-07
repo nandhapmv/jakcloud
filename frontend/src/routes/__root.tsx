@@ -130,9 +130,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
-          <div className="flex min-h-screen w-full flex-col bg-[#080503] font-sans text-cream">
+          <div className="flex min-h-screen w-full max-w-full flex-col bg-[#080503] font-sans text-cream overflow-x-hidden">
             {!isAdminRoute && <SiteHeader />}
-            <main className={`flex-1 w-full ${!isAdminRoute ? "pt-14 lg:pt-[84px]" : ""}`}>
+            <main className={`flex-1 w-full max-w-full overflow-x-hidden ${!isAdminRoute ? "pt-14 lg:pt-[84px]" : ""}`}>
               <Outlet />
             </main>
             {!isAdminRoute && (

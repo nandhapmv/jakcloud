@@ -8,6 +8,7 @@ import {
   Users,
   Scale,
   Plus,
+  Minus,
   Check,
   ChevronRight,
   Flame,
@@ -246,13 +247,48 @@ export const BIRYANI_CARDS: BiryaniCardData[] = [
 
 export function BiryaniSelectionPage() {
   const nextDate = formatDate(nextAvailableDate());
-  const { count } = useCart();
+  const { count, addLine } = useCart();
   const { items: dynamicMenuItems } = useDynamicMenu();
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [spiceFilter, setSpiceFilter] = useState<string>("all");
   const [activeDishModal, setActiveDishModal] = useState<BiryaniCardData | null>(null);
+
+  const [modalAloo, setModalAloo] = useState(true);
+  const [modalSpice, setModalSpice] = useState<"extra" | "mild">("mild");
+  const [modalNotes, setModalNotes] = useState("");
+  const [modalQty, setModalQty] = useState(1);
+
+  const handleOpenDishModal = (dish: BiryaniCardData) => {
+    setActiveDishModal(dish);
+    setModalAloo(true);
+    setModalSpice(dish.spiceDefault === "extra" ? "extra" : "mild");
+    setModalNotes("");
+    setModalQty(1);
+  };
+
+  const handleModalAddToCart = () => {
+    if (!activeDishModal) return;
+    const fullNotes = [
+      `Spice: ${modalSpice === "extra" ? "SPICY" : "MILD"}`,
+      modalNotes.trim() ? `Note: ${modalNotes.trim()}` : "",
+    ]
+      .filter(Boolean)
+      .join(" | ");
+
+    addLine({
+      proteinId: activeDishModal.id,
+      name: activeDishModal.name,
+      aloo: modalAloo,
+      extraSpicy: modalSpice === "extra",
+      notes: fullNotes,
+      qty: modalQty,
+      unitPrice: activeDishModal.price,
+    });
+    toast.success(`${modalQty} × ${activeDishModal.name} added to your Handi Order!`);
+    setActiveDishModal(null);
+  };
 
   const allBiryaniCards: (BiryaniCardData & { available: boolean })[] = useMemo(() => {
     return dynamicMenuItems.map((dyn) => {
@@ -339,7 +375,7 @@ export function BiryaniSelectionPage() {
               <Calendar className="h-3.5 w-3.5 text-amber-400" />
               <span>Next Handi Batch: <strong className="text-amber-300 font-medium">{nextDate}</strong></span>
               <span className="text-zinc-600">•</span>
-              <span className="text-amber-400/90 font-medium">2:00 PM Cutoff</span>
+              <span className="text-amber-400/90 font-medium">3:00 PM Cutoff</span>
             </div>
 
             <Link
@@ -434,7 +470,7 @@ export function BiryaniSelectionPage() {
               <BiryaniSelectionCard
                 key={dish.id}
                 dish={dish}
-                onOpenDetails={() => setActiveDishModal(dish)}
+                onOpenDetails={() => handleOpenDishModal(dish)}
               />
             ))}
           </div>
@@ -493,63 +529,220 @@ export function BiryaniSelectionPage() {
         </section>
       </main>
 
-      {/* 5. QUICK-VIEW DETAILS DIALOG */}
+      {/* 5. FULL LUXURY CUSTOMIZER & DETAILS DIALOG */}
       <Dialog open={!!activeDishModal} onOpenChange={(open) => !open && setActiveDishModal(null)}>
-        <DialogContent className="border-white/10 bg-[#121216] text-zinc-200 sm:max-w-lg p-0 overflow-hidden rounded-2xl">
+        <DialogContent className="border border-white/10 bg-[#121217] text-zinc-200 max-w-lg w-[95vw] p-0 overflow-hidden rounded-2xl shadow-2xl max-h-[92vh] flex flex-col">
           {activeDishModal && (
-            <div>
-              <div className="relative h-56 w-full">
-                <img
-                  src={activeDishModal.image}
-                  alt={activeDishModal.name}
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#121216] via-transparent to-transparent" />
-                <div className="absolute top-3 left-3">
-                  <span className={`rounded-full px-2.5 py-0.5 text-[0.62rem] font-medium uppercase tracking-wider border backdrop-blur-md ${activeDishModal.badgeColor}`}>
-                    {activeDishModal.dietaryBadge}
-                  </span>
+            <div className="flex flex-col h-full overflow-hidden">
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto flex-1 scrollbar-thin">
+                {/* Hero Dish Image */}
+                <div className="relative h-56 sm:h-64 w-full shrink-0">
+                  <img
+                    src={activeDishModal.image}
+                    alt={activeDishModal.name}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#121217] via-[#121217]/30 to-transparent" />
+
+                  {/* Top Badges */}
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
+                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider border backdrop-blur-md ${activeDishModal.badgeColor}`}>
+                      {activeDishModal.dietaryBadge}
+                    </span>
+                    <span className="rounded-full bg-black/70 border border-white/10 px-2.5 py-0.5 text-[10px] font-medium text-zinc-300 backdrop-blur-md">
+                      {activeDishModal.serves}
+                    </span>
+                  </div>
+
+                  {/* Note pill */}
+                  <div className="absolute bottom-3 left-4 right-4">
+                    <span className="text-[10px] uppercase tracking-wider text-amber-400 font-bold">
+                      {activeDishModal.note}
+                    </span>
+                    <DialogTitle className="font-display text-xl sm:text-2xl font-bold text-zinc-100 drop-shadow">
+                      {activeDishModal.name}
+                    </DialogTitle>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-5 space-y-4 text-xs">
+                  {/* Full Description */}
+                  <DialogDescription className="text-zinc-300 text-xs sm:text-sm leading-relaxed font-normal">
+                    {activeDishModal.description}
+                  </DialogDescription>
+
+                  {/* Handi Specs */}
+                  <div className="rounded-xl bg-zinc-900/80 border border-white/[0.08] p-3 space-y-2">
+                    <p className="font-semibold text-zinc-200 text-xs flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Tray Feeds & Includes:</span>
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-zinc-400">
+                      <span>• Feeds: <strong className="text-zinc-200">{activeDishModal.serves}</strong></span>
+                      <span>• Meat: <strong className="text-zinc-200">{activeDishModal.meatWeight}</strong></span>
+                      <span>• Rice: <strong className="text-zinc-200">{activeDishModal.riceWeight}</strong></span>
+                      <span>• Includes: <strong className="text-zinc-200">2 Eggs, Salan & Raita</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Customization 1: Dum Aloo */}
+                  <div className="space-y-1.5 pt-1 border-t border-white/[0.06]">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
+                        <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-zinc-950 text-[10px] font-bold">1</span>
+                        <span>Royal Dum Aloo Option</span>
+                      </label>
+                      <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                        100% Free
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setModalAloo(true)}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                          modalAloo
+                            ? "bg-amber-500/15 border-amber-400 text-amber-200 ring-1 ring-amber-400/50"
+                            : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-xs font-semibold text-zinc-100">🥔 Add Dum Aloo</span>
+                          {modalAloo && <Check className="h-3.5 w-3.5 text-amber-400 stroke-[3]" />}
+                        </div>
+                        <span className="text-[10px] text-emerald-400 font-medium mt-1">
+                          Free ($0.00) Included
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setModalAloo(false)}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                          !modalAloo
+                            ? "bg-amber-500/15 border-amber-400 text-amber-200 ring-1 ring-amber-400/50"
+                            : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-xs font-semibold text-zinc-100">🍚 No Aloo</span>
+                          {!modalAloo && <Check className="h-3.5 w-3.5 text-amber-400 stroke-[3]" />}
+                        </div>
+                        <span className="text-[10px] text-zinc-400 mt-1">
+                          Protein & Basmati only
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Customization 2: Spice Preference */}
+                  <div className="space-y-1.5 pt-1 border-t border-white/[0.06]">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
+                        <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-zinc-950 text-[10px] font-bold">2</span>
+                        <span>Spice Preference</span>
+                      </label>
+                      <span className="text-[10px] text-amber-400/90 font-mono">Select 1</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setModalSpice("extra")}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                          modalSpice === "extra"
+                            ? "bg-rose-500/15 border-rose-500 text-rose-200 ring-1 ring-rose-500/50"
+                            : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-xs font-semibold text-zinc-100 flex items-center gap-1">
+                            <Flame className="h-3.5 w-3.5 text-rose-400" />
+                            <span>🌶️ Spicy</span>
+                          </span>
+                          {modalSpice === "extra" && <Check className="h-3.5 w-3.5 text-rose-400 stroke-[3]" />}
+                        </div>
+                        <span className="text-[10px] text-rose-300/80 mt-1">Authentic Dum Heat</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setModalSpice("mild")}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                          modalSpice === "mild"
+                            ? "bg-emerald-500/15 border-emerald-500 text-emerald-200 ring-1 ring-emerald-500/50"
+                            : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-xs font-semibold text-zinc-100 flex items-center gap-1">
+                            <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+                            <span>🌿 Mild (No Spicy)</span>
+                          </span>
+                          {modalSpice === "mild" && <Check className="h-3.5 w-3.5 text-emerald-400 stroke-[3]" />}
+                        </div>
+                        <span className="text-[10px] text-emerald-300/80 mt-1">Gentle & aromatic</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Customization 3: Special Instructions */}
+                  <div className="space-y-1.5 pt-1 border-t border-white/[0.06]">
+                    <label className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
+                      <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-zinc-800 text-zinc-300 text-[10px] font-bold">3</span>
+                      <span>Special Kitchen Instructions (Optional)</span>
+                    </label>
+                    <Textarea
+                      value={modalNotes}
+                      onChange={(e) => setModalNotes(e.target.value)}
+                      placeholder="e.g. less oil, extra crispy fried onions, separate sauce containers..."
+                      rows={2}
+                      className="bg-zinc-900/80 border-white/[0.08] text-zinc-200 text-xs rounded-xl focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="p-5 space-y-3 text-xs">
-                <div>
-                  <span className="text-[0.65rem] uppercase tracking-wider text-amber-400 font-medium">
-                    {activeDishModal.note}
-                  </span>
-                  <DialogTitle className="font-display text-xl font-semibold text-zinc-100 mt-0.5">
-                    {activeDishModal.name}
-                  </DialogTitle>
-                </div>
-
-                <DialogDescription className="text-zinc-400 text-xs leading-relaxed font-normal">
-                  {activeDishModal.description}
-                </DialogDescription>
-
-                <div className="rounded-xl bg-[#18181f] border border-white/[0.06] p-3 space-y-1.5">
-                  <p className="font-medium text-zinc-300 text-[0.72rem]">Tray Specifications:</p>
-                  <div className="grid grid-cols-2 gap-1.5 text-[0.7rem] text-zinc-400 font-normal">
-                    <span>• Feeds: {activeDishModal.serves}</span>
-                    <span>• Meat: {activeDishModal.meatWeight}</span>
-                    <span>• Rice: {activeDishModal.riceWeight}</span>
-                    <span>• Energy: ~{activeDishModal.kcal.toLocaleString()} kcal/serving</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-between border-t border-white/[0.08]">
-                  <div>
-                    <span className="text-[0.62rem] text-zinc-500 uppercase tracking-wider block">Price / Handi Tray</span>
-                    <p className="font-display text-xl font-semibold text-amber-400">
-                      {formatMoney(activeDishModal.price)}
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => setActiveDishModal(null)}
-                    className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-medium text-xs rounded-xl"
+              {/* Sticky Footer Action Bar */}
+              <div className="p-3.5 sm:p-4 border-t border-white/[0.08] bg-[#121217] shrink-0 flex items-center gap-2.5 sm:gap-3">
+                {/* Quantity Stepper */}
+                <div className="flex items-center rounded-xl border border-white/[0.1] bg-zinc-900/90 text-zinc-200 shrink-0 h-11">
+                  <button
+                    type="button"
+                    onClick={() => setModalQty((q) => Math.max(1, q - 1))}
+                    className="w-8 h-full flex items-center justify-center text-base text-zinc-400 hover:text-zinc-100 rounded-l-xl transition-colors cursor-pointer active:scale-95"
+                    aria-label="Decrease quantity"
                   >
-                    Close Preview
-                  </Button>
+                    −
+                  </button>
+                  <span className="w-6 text-center text-xs font-bold text-zinc-100">{modalQty}</span>
+                  <button
+                    type="button"
+                    onClick={() => setModalQty((q) => q + 1)}
+                    className="w-8 h-full flex items-center justify-center text-base text-zinc-400 hover:text-zinc-100 rounded-r-xl transition-colors cursor-pointer active:scale-95"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
                 </div>
+
+                {/* Add to Cart Button */}
+                <button
+                  type="button"
+                  onClick={handleModalAddToCart}
+                  className="min-w-0 flex-1 h-11 px-3 sm:px-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.98] text-zinc-950 font-bold text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center justify-between gap-1.5"
+                >
+                  <span className="flex items-center gap-1.5 min-w-0">
+                    <Plus className="h-4 w-4 stroke-[3] shrink-0" />
+                    <span className="hidden sm:inline font-bold">Add to Handi Tray</span>
+                    <span className="sm:hidden font-bold">Add to Tray</span>
+                  </span>
+                  <span className="font-mono text-xs sm:text-sm shrink-0 bg-black/15 px-2 py-0.5 rounded-lg text-zinc-950">
+                    {formatMoney(activeDishModal.price * modalQty)}
+                  </span>
+                </button>
               </div>
             </div>
           )}
@@ -589,238 +782,100 @@ function BiryaniSelectionCard({
   dish: BiryaniCardData & { available?: boolean };
   onOpenDetails: () => void;
 }) {
-  const { addLine } = useCart();
-  const [aloo, setAloo] = useState(false);
-  const [spiceIntensity, setSpiceIntensity] = useState<"mild" | "medium" | "extra">(dish.spiceDefault);
-  const [notes, setNotes] = useState("");
-  const [qty, setQty] = useState(1);
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const price = dish.price; // Royal Dum Aloo is 100% Free ($0.00)
   const isAvailable = dish.available !== false;
 
-  const renderSpiceFlames = (rating: number) => {
-    return Array.from({ length: 3 }).map((_, i) => (
-      <Flame
-        key={i}
-        className={`h-3 w-3 ${
-          i < rating ? "text-amber-400 fill-amber-400" : "text-zinc-600"
-        }`}
-      />
-    ));
-  };
-
   return (
-    <article className={`overflow-hidden rounded-2xl border bg-[#121216] text-zinc-200 shadow-xl transition-all duration-200 flex flex-col justify-between group ${
-      isAvailable ? "border-white/[0.08] hover:border-white/20 hover:bg-[#15151a]" : "border-red-900/30 opacity-75"
-    }`}>
+    <article
+      onClick={onOpenDetails}
+      className={`overflow-hidden rounded-2xl border bg-[#121217] text-zinc-200 shadow-md transition-all duration-300 flex flex-col justify-between group cursor-pointer ${
+        isAvailable
+          ? "border-white/[0.08] hover:border-amber-400/40 hover:bg-[#16161d] hover:shadow-xl hover:-translate-y-1"
+          : "border-red-900/30 opacity-70"
+      }`}
+    >
       <div>
-        <div className="relative overflow-hidden h-52 w-full cursor-pointer" onClick={onOpenDetails}>
+        {/* Card Image */}
+        <div className="relative overflow-hidden h-44 sm:h-48 w-full">
           <img
             src={dish.image}
             alt={dish.name}
-            className={`h-full w-full object-cover transition-transform duration-300 ${isAvailable ? "group-hover:scale-105" : "filter grayscale-[50%]"}`}
+            className={`h-full w-full object-cover transition-transform duration-500 ${
+              isAvailable ? "group-hover:scale-105" : "grayscale"
+            }`}
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#121216] via-[#121216]/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#121217] via-[#121217]/20 to-transparent" />
 
+          {/* Top Badges */}
           <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none">
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[0.62rem] font-medium uppercase tracking-wider border backdrop-blur-md shadow-md ${dish.badgeColor}`}
+              className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider border backdrop-blur-md shadow-md ${dish.badgeColor}`}
             >
               {dish.dietaryBadge}
             </span>
 
             {isAvailable ? (
-              <span className="rounded-full bg-black/70 border border-white/10 px-2 py-0.5 text-[0.62rem] font-medium text-zinc-300 backdrop-blur-md">
+              <span className="rounded-full bg-black/75 border border-white/10 px-2.5 py-0.5 text-[10px] font-medium text-zinc-300 backdrop-blur-md">
                 {dish.serves}
               </span>
             ) : (
-              <span className="rounded-full bg-red-950/90 border border-red-500 px-2 py-0.5 text-[0.62rem] font-medium text-red-300 backdrop-blur-md">
+              <span className="rounded-full bg-red-950/90 border border-red-500 px-2.5 py-0.5 text-[10px] font-medium text-red-300 backdrop-blur-md">
                 Sold Out Today
               </span>
             )}
           </div>
+        </div>
+
+        {/* Card Body */}
+        <div className="p-4 space-y-2">
+          <div>
+            <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
+              {dish.note}
+            </span>
+            <h3 className="font-display text-base sm:text-lg font-bold text-zinc-100 group-hover:text-amber-300 transition-colors line-clamp-1 mt-0.5">
+              {dish.name}
+            </h3>
+          </div>
+
+          <p className="text-zinc-400 text-xs line-clamp-2 leading-relaxed font-normal">
+            {dish.description}
+          </p>
+
+          <div className="flex items-center gap-2 pt-1 text-[11px] text-zinc-400 font-medium">
+            <span className="inline-flex items-center gap-1 text-zinc-300 bg-zinc-900/80 px-2 py-0.5 rounded-md border border-white/[0.06]">
+              <Scale className="h-3 w-3 text-amber-400" />
+              <span>{dish.meatWeight.split(" ")[0]} {dish.meatWeight.split(" ")[1]}</span>
+            </span>
+            <span className="inline-flex items-center gap-1 text-zinc-300 bg-zinc-900/80 px-2 py-0.5 rounded-md border border-white/[0.06]">
+              <Flame className="h-3 w-3 text-amber-400" />
+              <span>{dish.spiceDefault === "extra" ? "Spicy" : "Medium"}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Card Footer */}
+      <div className="p-4 pt-0">
+        <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between gap-3">
+          <div>
+            <span className="text-[10px] text-zinc-500 uppercase tracking-wider block">Price / Tray</span>
+            <p className="font-display text-lg font-bold text-amber-300">
+              {formatMoney(dish.price)}
+            </p>
+          </div>
 
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onOpenDetails();
             }}
-            className="absolute bottom-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 border border-white/10 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Inspect Details"
+            className="rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs px-3.5 py-2.5 shadow-md flex items-center gap-1.5 transition-all group-hover:scale-105 cursor-pointer"
           >
-            <Eye className="h-3.5 w-3.5" />
+            <span>View & Customise</span>
+            <ChevronRight className="h-3.5 w-3.5" />
           </button>
-
-          <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between gap-2">
-            <div className="min-w-0">
-              <span className="text-[0.62rem] font-medium text-amber-400 uppercase tracking-wider">{dish.note}</span>
-              <h3 className="font-display text-base sm:text-lg font-semibold text-zinc-100 group-hover:text-amber-400 transition-colors truncate">
-                {dish.name}
-              </h3>
-            </div>
-          </div>
         </div>
-
-        <div className="p-4 sm:p-5 space-y-3 text-xs">
-          <p className="text-zinc-400 leading-relaxed line-clamp-2 text-xs font-normal">{dish.description}</p>
-
-          <div className="flex items-center justify-between pt-1 border-t border-white/[0.06] text-[0.7rem] font-normal">
-            <div className="flex items-center gap-1 text-zinc-300 font-medium">
-              <Scale className="h-3 w-3 text-amber-400" />
-              <span>{dish.meatWeight}</span>
-            </div>
-
-            <div className="flex items-center gap-1" title={`Spice Level: ${dish.spiceDefault}`}>
-              <span className="text-[0.62rem] text-zinc-400 uppercase tracking-wider">Spice:</span>
-              <div className="flex items-center">{renderSpiceFlames(dish.spiceRating)}</div>
-            </div>
-          </div>
-
-          <div className="rounded-xl bg-[#18181f] border border-white/[0.06] p-2.5 space-y-1 text-[0.68rem] text-zinc-400 font-normal">
-            {dish.highlightNotes.map((note, idx) => (
-              <div key={idx} className="flex items-center gap-1.5">
-                <Check className="h-3 w-3 text-amber-400 shrink-0" />
-                <span>{note}</span>
-              </div>
-            ))}
-          </div>
-
-          {isAvailable && (
-            <div className="space-y-2 rounded-xl bg-[#18181f] border border-white/[0.06] p-3">
-              <div className="flex items-center justify-between gap-2">
-                <Label htmlFor={`biryani-aloo-${dish.id}`} className="text-xs text-zinc-300 flex items-center gap-1.5 cursor-pointer font-normal">
-                  <span>🥔 Add Royal Dum Aloo</span>
-                  <span className="text-emerald-400 font-semibold text-[0.65rem] bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">100% Free</span>
-                </Label>
-                <Switch id={`biryani-aloo-${dish.id}`} checked={aloo} onCheckedChange={setAloo} />
-              </div>
-
-              <div className="pt-2 border-t border-white/[0.06] space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-[0.62rem] uppercase tracking-wider text-zinc-400 font-medium">
-                    Spice Preference:
-                  </Label>
-                  <span className="text-[0.62rem] text-amber-400/90 font-mono">Select 1</span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setSpiceIntensity("extra")}
-                    className={`rounded-lg py-1.5 px-2 text-[0.7rem] font-medium border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      spiceIntensity === "extra"
-                        ? "bg-rose-500/15 border-rose-500 text-rose-200 ring-1 ring-rose-500/50 font-semibold"
-                        : "bg-[#121216] border-white/[0.06] text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    <Flame className="h-3.5 w-3.5 text-rose-400" />
-                    <span>🌶️ Spicy</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSpiceIntensity("mild")}
-                    className={`rounded-lg py-1.5 px-2 text-[0.7rem] font-medium border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      spiceIntensity === "mild"
-                        ? "bg-emerald-500/15 border-emerald-500 text-emerald-200 ring-1 ring-emerald-500/50 font-semibold"
-                        : "bg-[#121216] border-white/[0.06] text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>🌿 No Spicy (Mild)</span>
-                  </button>
-                </div>
-              </div>
-
-              {isExpanded && (
-                <div className="pt-2 border-t border-white/[0.06] space-y-1">
-                  <Label className="text-[0.62rem] text-zinc-400">Special Instructions:</Label>
-                  <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="e.g. less oil, extra mint leaves"
-                    rows={2}
-                    className="bg-[#121216] border-white/[0.08] text-zinc-200 text-xs rounded-xl focus:border-amber-500/50"
-                  />
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="text-[0.62rem] text-zinc-400 hover:text-amber-300 font-normal block text-right"
-              >
-                {isExpanded ? "− Hide Special Instructions" : "+ Add Special Instructions"}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="p-4 sm:p-5 pt-0 space-y-2.5">
-        <div className="flex items-baseline justify-between">
-          <span className="text-[0.62rem] text-zinc-500 uppercase tracking-wider">Price / Tray</span>
-          <p className="font-display text-lg font-semibold text-amber-400">
-            {formatMoney(price * qty)}
-          </p>
-        </div>
-
-        {isAvailable ? (
-          <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-xl border border-white/[0.08] bg-[#18181f] text-zinc-200">
-              <button
-                type="button"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="px-2.5 py-1.5 text-xs text-zinc-400 hover:text-zinc-100 rounded-l-xl transition-colors"
-                aria-label="Decrease trays"
-              >
-                −
-              </button>
-              <span className="w-6 text-center text-xs font-medium text-zinc-100">{qty}</span>
-              <button
-                type="button"
-                onClick={() => setQty((q) => q + 1)}
-                className="px-2.5 py-1.5 text-xs text-zinc-400 hover:text-zinc-100 rounded-r-xl transition-colors"
-                aria-label="Increase trays"
-              >
-                +
-              </button>
-            </div>
-
-            <Button
-              className="flex-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs py-4 shadow-md transition-colors gap-1.5"
-              onClick={() => {
-                const fullNotes = [
-                  `Spice: ${spiceIntensity.toUpperCase()}`,
-                  notes ? `Note: ${notes}` : "",
-                ]
-                  .filter(Boolean)
-                  .join(" | ");
-
-                addLine({
-                  proteinId: dish.id,
-                  name: dish.name,
-                  aloo,
-                  extraSpicy: spiceIntensity === "extra",
-                  notes: fullNotes,
-                  qty,
-                  unitPrice: price,
-                });
-                toast.success(`${qty} × ${dish.name} added to your Handi Order!`);
-                setQty(1);
-              }}
-            >
-              <Plus className="h-3.5 w-3.5" /> Add · {formatMoney(price * qty)}
-            </Button>
-          </div>
-        ) : (
-          <Button
-            disabled
-            className="w-full rounded-xl bg-[#18181f] border border-white/[0.06] text-zinc-500 font-medium text-xs py-4 cursor-not-allowed"
-          >
-            Sold Out for Today
-          </Button>
-        )}
       </div>
     </article>
   );

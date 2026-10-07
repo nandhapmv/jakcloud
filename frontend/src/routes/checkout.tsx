@@ -498,23 +498,23 @@ function CheckoutPage() {
   // MAIN CHECKOUT FORM SCREEN
   // -------------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 py-10 px-4 sm:px-8 relative overflow-hidden pb-28">
-      <div className="mx-auto max-w-7xl space-y-6 relative z-10">
+    <div className="min-h-screen w-full max-w-full bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 py-6 sm:py-10 px-3 sm:px-6 lg:px-8 relative overflow-x-hidden pb-28">
+      <div className="mx-auto max-w-7xl w-full min-w-0 space-y-6 relative z-10">
         {/* Top Header & Breadcrumbs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-4">
           <Button
             asChild
             variant="ghost"
             size="sm"
-            className="gap-1.5 text-amber-400 hover:bg-white/[0.06] rounded-xl text-xs font-medium w-fit"
+            className="gap-1.5 text-amber-400 hover:bg-white/[0.06] rounded-xl text-xs font-medium w-fit -ml-2"
           >
             <Link to="/cart">
               <ArrowLeft className="h-4 w-4" /> Back to Shopping Cart
             </Link>
           </Button>
 
-          {/* Checkout Progress Pills */}
-          <div className="flex items-center gap-2 text-[0.68rem] font-medium uppercase tracking-wider text-zinc-400">
+          {/* Checkout Progress Pills (Responsive wrap) */}
+          <div className="flex flex-wrap items-center gap-1.5 text-[0.65rem] sm:text-[0.68rem] font-medium uppercase tracking-wider text-zinc-400">
             <span className="text-emerald-400">1. Menu</span>
             <span className="text-zinc-600">›</span>
             <span className="text-emerald-400">2. Customizer</span>
@@ -526,7 +526,7 @@ function CheckoutPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-amber-400">
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-amber-400">
             <Lock className="h-3.5 w-3.5" />
             <span>256-Bit SSL Secure Checkout</span>
           </div>
@@ -554,13 +554,13 @@ function CheckoutPage() {
               {/* ===================================================== */}
               {/* SECTION 1: FULFILMENT & SCHEDULE                      */}
               {/* ===================================================== */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                    <Store className="h-5 w-5 text-amber-400" />
-                    <span>1. Fulfilment & Schedule</span>
+              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-4 min-w-0 w-full overflow-hidden">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-100 flex items-center gap-2 min-w-0 truncate">
+                    <Store className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                    <span className="truncate">1. Fulfilment & Schedule</span>
                   </h2>
-                  <span className="text-[11px] font-medium text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] sm:text-[11px] font-medium text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full shrink-0">
                     Springfield, MO
                   </span>
                 </div>
@@ -662,13 +662,13 @@ function CheckoutPage() {
               {/* ===================================================== */}
               {/* SECTION 2: CUSTOMER CONTACT DETAILS                   */}
               {/* ===================================================== */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                    <User className="h-5 w-5 text-amber-400" />
-                    <span>2. Contact Details</span>
+              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-4 min-w-0 w-full overflow-hidden">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-100 flex items-center gap-2 min-w-0 truncate">
+                    <User className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                    <span className="truncate">2. Contact Details</span>
                   </h2>
-                  <span className="text-[11px] text-zinc-400">Order & SMS Confirmation</span>
+                  <span className="text-[10px] sm:text-[11px] text-zinc-400 shrink-0">Order Confirmation</span>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -773,13 +773,13 @@ function CheckoutPage() {
               {/* SECTION 3: DELIVERY ADDRESS (IF DELIVERY SELECTED)    */}
               {/* ===================================================== */}
               {fulfilmentType === "delivery" && (
-                <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-4 animate-in fade-in duration-200">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-amber-400" />
-                      <span>3. Springfield Delivery Address</span>
+                <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-4 animate-in fade-in duration-200 min-w-0 w-full overflow-hidden">
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-100 flex items-center gap-2 min-w-0 truncate">
+                      <MapPin className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                      <span className="truncate">3. Delivery Address</span>
                     </h2>
-                    <span className="text-[11px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] sm:text-[11px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
                       10-Mile Radius
                     </span>
                   </div>
@@ -893,13 +893,13 @@ function CheckoutPage() {
               {/* ===================================================== */}
               {/* SECTION 4: KITCHEN PREPARATION & SPECIAL NOTES        */}
               {/* ===================================================== */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                    <Flame className="h-5 w-5 text-amber-400" />
-                    <span>4. Kitchen Notes (Optional)</span>
+              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-3 min-w-0 w-full overflow-hidden">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-100 flex items-center gap-2 min-w-0 truncate">
+                    <Flame className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                    <span className="truncate">4. Kitchen Notes (Optional)</span>
                   </h2>
-                  <span className="text-[11px] text-zinc-400">Dietary & Preferences</span>
+                  <span className="text-[10px] sm:text-[11px] text-zinc-400 shrink-0">Dietary & Prefs</span>
                 </div>
 
                 <Textarea
@@ -915,13 +915,13 @@ function CheckoutPage() {
               {/* ===================================================== */}
               {/* SECTION 5: PAYMENT PREFERENCE                         */}
               {/* ===================================================== */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-amber-400" />
-                    <span>5. Payment Method</span>
+              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-4 min-w-0 w-full overflow-hidden">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-100 flex items-center gap-2 min-w-0 truncate">
+                    <CreditCard className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                    <span className="truncate">5. Payment Method</span>
                   </h2>
-                  <span className="text-[11px] text-emerald-400 font-medium">Zero Surcharges</span>
+                  <span className="text-[10px] sm:text-[11px] text-emerald-400 font-medium shrink-0">Zero Surcharges</span>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
@@ -929,45 +929,45 @@ function CheckoutPage() {
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("on_fulfillment")}
-                    className={`rounded-xl p-3.5 text-left border transition-all cursor-pointer ${
+                    className={`rounded-xl p-3 sm:p-3.5 text-left border transition-all cursor-pointer ${
                       paymentMethod === "on_fulfillment"
                         ? "border-amber-400 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/50 text-zinc-100 font-semibold"
                         : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200 hover:border-white/20"
                     }`}
                   >
-                    <Banknote className="h-5 w-5 text-amber-400 mb-1.5" />
+                    <Banknote className="h-4.5 w-4.5 text-amber-400 mb-1" />
                     <p className="font-semibold text-xs text-zinc-100">Pay on Fulfilment</p>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">Cash / Card / Venmo upon arrival</p>
+                    <p className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5">Cash / Card upon arrival</p>
                   </button>
 
                   {/* Razorpay Online */}
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("card")}
-                    className={`rounded-xl p-3.5 text-left border transition-all cursor-pointer ${
+                    className={`rounded-xl p-3 sm:p-3.5 text-left border transition-all cursor-pointer ${
                       paymentMethod === "card"
                         ? "border-amber-400 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/50 text-zinc-100 font-semibold"
                         : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200 hover:border-white/20"
                     }`}
                   >
-                    <CreditCard className="h-5 w-5 text-amber-400 mb-1.5" />
+                    <CreditCard className="h-4.5 w-4.5 text-amber-400 mb-1" />
                     <p className="font-semibold text-xs text-zinc-100">Online Payment</p>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">Cards, UPI & Netbanking (SSL)</p>
+                    <p className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5">Cards, UPI & Netbanking</p>
                   </button>
 
                   {/* WhatsApp Direct */}
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("whatsapp")}
-                    className={`rounded-xl p-3.5 text-left border transition-all cursor-pointer ${
+                    className={`rounded-xl p-3 sm:p-3.5 text-left border transition-all cursor-pointer ${
                       paymentMethod === "whatsapp"
                         ? "border-emerald-500 bg-emerald-950/40 text-emerald-300 font-semibold ring-1 ring-emerald-500/50"
                         : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200 hover:border-white/20"
                     }`}
                   >
-                    <MessageSquare className="h-5 w-5 text-emerald-400 mb-1.5" />
+                    <MessageSquare className="h-4.5 w-4.5 text-emerald-400 mb-1" />
                     <p className="font-semibold text-xs text-zinc-100">WhatsApp VIP</p>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">Direct Chef Confirmation</p>
+                    <p className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5">Direct Chef Confirmation</p>
                   </button>
                 </div>
               </div>
@@ -977,14 +977,16 @@ function CheckoutPage() {
                 type="submit"
                 disabled={isSubmitting || lines.length === 0}
                 size="lg"
-                className="w-full rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-zinc-950 font-bold text-base py-6 shadow-lg shadow-amber-500/20 hover:scale-[1.01] hover:brightness-105 transition-all gap-2 cursor-pointer"
+                className="w-full rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-zinc-950 font-bold text-sm sm:text-base py-5 sm:py-6 shadow-lg shadow-amber-500/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer px-3"
               >
                 {isSubmitting ? (
                   "Reserving Handi Batch..."
                 ) : (
                   <>
-                    <Sparkles className="h-5 w-5" />
-                    <span>Confirm Handi Booking — {formatMoney(calculations.grandTotal)}</span>
+                    <Sparkles className="h-4.5 w-4.5 shrink-0" />
+                    <span className="font-bold text-center">
+                      Confirm Handi Booking · {formatMoney(calculations.grandTotal)}
+                    </span>
                   </>
                 )}
               </Button>
@@ -994,17 +996,17 @@ function CheckoutPage() {
           {/* ========================================================= */}
           {/* RIGHT: STICKY ORDER SUMMARY (4-5 COLS)                    */}
           {/* ========================================================= */}
-          <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 space-y-5">
-            <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-5">
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
-                <div>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400">Order Review</span>
-                  <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-zinc-100">
-                    <ShoppingBag className="h-5 w-5 text-amber-400" />
-                    <span>Summary ({count} {count === 1 ? "Tray" : "Trays"})</span>
+          <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 space-y-5 min-w-0 w-full">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-4 sm:space-y-5 min-w-0 w-full overflow-hidden">
+              <div className="flex items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+                <div className="min-w-0">
+                  <span className="text-[9.5px] sm:text-[10px] font-semibold uppercase tracking-wider text-amber-400 block">Order Review</span>
+                  <h2 className="flex items-center gap-1.5 font-display text-base sm:text-lg font-semibold text-zinc-100 truncate">
+                    <ShoppingBag className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                    <span className="truncate">Summary ({count} {count === 1 ? "Tray" : "Trays"})</span>
                   </h2>
                 </div>
-                <Button asChild variant="ghost" size="sm" className="text-xs text-amber-400 hover:bg-white/[0.06] rounded-xl font-medium">
+                <Button asChild variant="ghost" size="sm" className="text-xs text-amber-400 hover:bg-white/[0.06] rounded-xl font-medium shrink-0 px-2 sm:px-3">
                   <Link to="/cart">Edit Cart</Link>
                 </Button>
               </div>
