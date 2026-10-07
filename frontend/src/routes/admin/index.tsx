@@ -364,7 +364,7 @@ function AdminOverviewPage() {
       {/* 1. LEFT SIDEBAR                                               */}
       {/* ------------------------------------------------------------- */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-screen flex-col border-r border-gold/20 bg-[#100b07] transition-all duration-300 lg:relative lg:translate-x-0 shrink-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-screen h-[100dvh] flex-col border-r border-gold/20 bg-[#100b07] transition-all duration-300 lg:sticky lg:top-0 lg:h-[100dvh] lg:self-start lg:translate-x-0 shrink-0 ${
           sidebarCollapsed ? "lg:w-20" : "lg:w-72"
         } ${mobileNavOpen ? "w-72 translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"}`}
       >
@@ -721,9 +721,9 @@ function AdminOverviewPage() {
       {/* ------------------------------------------------------------- */}
       {/* 2. MAIN VIEWPORT                                              */}
       {/* ------------------------------------------------------------- */}
-      <div className="flex flex-1 flex-col h-screen min-w-0 overflow-hidden">
+      <div className="flex flex-1 flex-col h-screen h-[100dvh] max-h-[100dvh] min-w-0 overflow-hidden">
         {/* TOP NAVBAR (Permanently fixed at top) */}
-        <header className="h-20 shrink-0 z-30 flex items-center justify-between border-b border-gold/20 bg-[#120c08]/95 px-4 backdrop-blur-xl sm:px-8">
+        <header className="sticky top-0 z-30 h-20 shrink-0 flex items-center justify-between border-b border-gold/20 bg-[#120c08]/95 px-4 backdrop-blur-xl sm:px-8">
           {/* Left: Mobile Toggle & Clean Live Search */}
           <div className="flex items-center gap-3 sm:gap-4 flex-1 max-w-md lg:max-w-lg">
             <button

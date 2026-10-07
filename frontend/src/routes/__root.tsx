@@ -121,6 +121,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdminRoute = pathname.startsWith("/admin");
+  const isAdminDashboard = pathname === "/admin" || pathname === "/admin/";
 
   const whatsappUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
     "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKLOUD.",
@@ -130,9 +131,21 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
-          <div className="flex min-h-screen w-full max-w-full flex-col bg-[#080503] font-sans text-cream overflow-x-hidden">
+          <div
+            className={`flex w-full max-w-full flex-col bg-[#080503] font-sans text-cream overflow-x-hidden ${
+              isAdminDashboard ? "h-screen h-[100dvh] max-h-[100dvh] overflow-hidden" : "min-h-screen"
+            }`}
+          >
             {!isAdminRoute && <SiteHeader />}
-            <main className={`flex-1 w-full max-w-full overflow-x-hidden ${!isAdminRoute ? "pt-14 lg:pt-[84px]" : ""}`}>
+            <main
+              className={`flex-1 w-full max-w-full overflow-x-hidden ${
+                isAdminDashboard
+                  ? "h-screen h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col"
+                  : !isAdminRoute
+                  ? "pt-14 lg:pt-[84px]"
+                  : ""
+              }`}
+            >
               <Outlet />
             </main>
             {!isAdminRoute && (
