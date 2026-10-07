@@ -38,6 +38,7 @@ import {
   DELIVERY_TIMES,
   type ProteinId,
 } from "@/lib/menu";
+import { useDynamicMenu } from "@/lib/store";
 
 export const Route = createFileRoute("/customize")({
   head: () => ({
@@ -123,13 +124,25 @@ const PROTEIN_OPTIONS: { id: ProteinId; name: string; price: number; halal: bool
 
 export function CustomizeOrderPage() {
   const { addLine } = useCart();
+  const { items: dynamicMenuItems } = useDynamicMenu();
   const navigate = useNavigate();
   const nextDate = formatDate(nextAvailableDate());
 
+  const proteinOptions = useMemo(() => {
+    return PROTEIN_OPTIONS.map((p) => {
+      const match = dynamicMenuItems.find((d) => d.proteinId === p.id || d.id === p.id);
+      return {
+        ...p,
+        name: match?.name ?? p.name,
+        price: match?.price ?? p.price,
+      };
+    });
+  }, [dynamicMenuItems]);
+
   const [selectedProteinId, setSelectedProteinId] = useState<ProteinId>("chicken");
   const selectedProtein = useMemo(
-    () => PROTEIN_OPTIONS.find((p) => p.id === selectedProteinId) || PROTEIN_OPTIONS[0],
-    [selectedProteinId],
+    () => proteinOptions.find((p) => p.id === selectedProteinId) || proteinOptions[0],
+    [selectedProteinId, proteinOptions],
   );
 
   const [trayCount, setTrayCount] = useState(1);
@@ -262,7 +275,7 @@ export function CustomizeOrderPage() {
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {PROTEIN_OPTIONS.map((protein) => {
+                {proteinOptions.map((protein) => {
                   const isSelected = selectedProteinId === protein.id;
                   return (
                     <div

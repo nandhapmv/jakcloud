@@ -72,7 +72,7 @@ import {
   PICKUP_TIMES,
   DELIVERY_TIMES,
 } from "@/lib/menu";
-import { useKitchenSettings, jakloudStore, type DynamicOrder } from "@/lib/store";
+import { useKitchenSettings, useDynamicMenu, jakloudStore, type DynamicOrder } from "@/lib/store";
 import { api } from "@/lib/api";
 import { DumDateTimePicker } from "@/components/dum-date-time-picker";
 import {
@@ -156,7 +156,42 @@ export interface MobileAppViewProps {
 export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   const { lines, addLine, setQty, updateLine, removeLine, count, subtotal, clearCart } = useCart();
   const { settings } = useKitchenSettings();
+  const { items: dynamicMenuItems } = useDynamicMenu();
   const navigate = useNavigate();
+
+  // Real-time dynamic menu synced from Admin & Backend
+  const displayMenu = useMemo(() => {
+    if (!dynamicMenuItems || dynamicMenuItems.length === 0) {
+      return MENU;
+    }
+    return dynamicMenuItems.map((d) => {
+      const pId = (d.proteinId || d.id || "chicken").replace(/^dish-/, "") as ProteinId;
+      return {
+        id: pId,
+        dishId: d.id,
+        proteinId: pId,
+        name: d.name,
+        category: d.category,
+        price: d.price,
+        priceWithAloo: d.priceWithAloo || d.price + (settings?.alooCharge ?? 0),
+        note: d.badge || "Handi Dum",
+        description: d.description,
+        meatWeight: d.meatWeight,
+        riceWeight: d.riceWeight,
+        kcal: d.kcal,
+        kcalAloo: d.kcalAloo || (d.kcal ? d.kcal + 157 : 1850),
+        available: d.available !== false,
+        image: d.image || DISH_IMAGES[pId] || chickenImg,
+        badge: d.badge,
+        halal: d.isHalalCertified !== false,
+      };
+    });
+  }, [dynamicMenuItems, settings?.alooCharge]);
+
+  const lowestPrice = useMemo(() => {
+    if (displayMenu.length === 0) return 98.99;
+    return Math.min(...displayMenu.map((d) => d.price));
+  }, [displayMenu]);
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<"home" | "menu" | "cart" | "profile">(initialTab);
@@ -167,7 +202,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   const [fulfilmentMode, setFulfilmentMode] = useState<"pickup" | "delivery">("pickup");
 
   // Interactive Customizer Modal
-  const [selectedDishModal, setSelectedDishModal] = useState<MenuItem | null>(null);
+  const [selectedDishModal, setSelectedDishModal] = useState<any | null>(null);
   const [modalAloo, setModalAloo] = useState(false);
   const [modalExtraSpicy, setModalExtraSpicy] = useState(false);
   const [modalNotes, setModalNotes] = useState("");
@@ -296,7 +331,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   };
 
   // Quick 1-tap add to cart from protein card
-  const handleAddProteinToCart = (dish: MenuItem) => {
+  const handleAddProteinToCart = (dish: any) => {
     addLine({
       proteinId: dish.id,
       name: dish.name,
@@ -311,7 +346,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   };
 
   // Quick quantity increment/decrement from protein card
-  const handleUpdateProteinQty = (dish: MenuItem, delta: number) => {
+  const handleUpdateProteinQty = (dish: any, delta: number) => {
     const existingLines = lines.filter((l) => l.proteinId === dish.id);
     if (delta > 0) {
       if (existingLines.length > 0) {
@@ -328,7 +363,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   };
 
   // Open full customizer dialog
-  const handleOpenCustomizer = (dish: MenuItem) => {
+  const handleOpenCustomizer = (dish: any) => {
     setSelectedDishModal(dish);
     setModalAloo(true); // Default to adding the free royal aloo
     setModalExtraSpicy(true); // Default to authentic spicy
@@ -338,7 +373,9 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   // Confirm customization modal
   const handleAddFromModal = () => {
     if (!selectedDishModal) return;
-    const unitPrice = selectedDishModal.price; // Free Aloo ($0)
+    const unitPrice = modalAloo && currentAlooFee > 0
+      ? (selectedDishModal.priceWithAloo || selectedDishModal.price + currentAlooFee)
+      : selectedDishModal.price;
 
     addLine({
       proteinId: selectedDishModal.id,
@@ -626,11 +663,11 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                         Royal Dum Biryani Handi Trays
                       </h2>
                       <p className="text-[11px] text-zinc-300 font-normal">
-                        6 fresh protein choices · Saffron aged basmati
+                        {displayMenu.length} fresh protein choices · Saffron aged basmati
                       </p>
                     </div>
-                    <span className="shrink-0 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-medium px-2.5 py-1">
-                      From $98.99
+                    <span className="shrink-0 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-medium px-2.5 py-1 font-mono">
+                      From {formatMoney(lowestPrice)}
                     </span>
                   </div>
                 </div>
@@ -640,7 +677,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="rounded-xl bg-zinc-900/60 border border-white/[0.05] p-2 text-center">
                       <span className="block text-[10px] font-medium text-amber-400">
-                        6 Protein Options
+                        {displayMenu.length} Protein Options
                       </span>
                       <span className="block text-[10px] text-zinc-400 font-normal mt-0.5">
                         Chicken, Mutton, Beef, Pork, Seafood, Veg
@@ -704,7 +741,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                   <span>Back to Overview</span>
                 </button>
                 <span className="text-xs text-zinc-400 font-normal">
-                  {MENU.length} Protein Trays Available
+                  {displayMenu.length} Protein Trays Available
                 </span>
               </div>
 
@@ -719,40 +756,55 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                   </p>
                 </div>
                 <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-[10px] font-medium text-amber-300">
-                  6 Options
+                  {displayMenu.length} Options
                 </span>
               </div>
 
-              {/* The 6 Protein Option Cards */}
+              {/* The Protein Option Cards */}
               <div className="space-y-2.5">
-                {MENU.map((dish) => {
-                  const flyer = PROTEIN_FLYER_DATA[dish.id] || {
+                {displayMenu.map((dish) => {
+                  const flyerPreset = PROTEIN_FLYER_DATA[dish.id] || {
                     emoji: "🥘",
                     flyerName: dish.name,
                     meatDesc: dish.description,
-                    halal: true,
+                    halal: dish.halal ?? true,
                     badge: "Handi Dum",
+                  };
+                  const flyer = {
+                    emoji: flyerPreset.emoji,
+                    flyerName: flyerPreset.flyerName,
+                    meatDesc: dish.meatWeight || dish.description || flyerPreset.meatDesc,
+                    halal: dish.halal !== undefined ? dish.halal : flyerPreset.halal,
+                    badge: dish.badge || flyerPreset.badge,
                   };
 
                   const totalCartCount = getProteinCartCount(dish.id);
-                  const dishImg = DISH_IMAGES[dish.id] || chickenImg;
+                  const dishImg = dish.image || DISH_IMAGES[dish.id] || chickenImg;
 
                   return (
                     <div
                       key={dish.id}
-                      className="rounded-2xl bg-[#121216] border border-white/[0.08] p-3 shadow-sm hover:border-amber-500/30 transition-all space-y-2.5"
+                      className={`rounded-2xl bg-[#121216] border p-3 shadow-sm transition-all space-y-2.5 ${
+                        !dish.available
+                          ? "opacity-60 border-white/[0.05]"
+                          : "border-white/[0.08] hover:border-amber-500/30"
+                      }`}
                     >
                       {/* Top: Image + Info */}
                       <div className="flex gap-3">
                         {/* Thumbnail */}
                         <div
-                          onClick={() => handleOpenCustomizer(dish)}
-                          className="relative h-18 w-18 shrink-0 cursor-pointer overflow-hidden rounded-xl bg-black border border-white/[0.05]"
+                          onClick={() => dish.available && handleOpenCustomizer(dish)}
+                          className={`relative h-18 w-18 shrink-0 overflow-hidden rounded-xl bg-black border border-white/[0.05] ${
+                            dish.available ? "cursor-pointer group" : "cursor-not-allowed"
+                          }`}
                         >
                           <img
                             src={dishImg}
                             alt={dish.name}
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            className={`h-full w-full object-cover transition-transform duration-300 ${
+                              dish.available ? "group-hover:scale-105" : "grayscale"
+                            }`}
                             loading="lazy"
                           />
                         </div>
@@ -775,8 +827,10 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                           </div>
 
                           <h3
-                            onClick={() => handleOpenCustomizer(dish)}
-                            className="text-xs sm:text-sm font-medium text-zinc-100 truncate hover:text-amber-300 transition-colors cursor-pointer mt-0.5"
+                            onClick={() => dish.available && handleOpenCustomizer(dish)}
+                            className={`text-xs sm:text-sm font-medium text-zinc-100 truncate transition-colors mt-0.5 ${
+                              dish.available ? "hover:text-amber-300 cursor-pointer" : "cursor-not-allowed"
+                            }`}
                           >
                             {dish.name}
                           </h3>
@@ -793,6 +847,11 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                             <span className="text-[10px] text-zinc-500 font-normal">
                               • Serves 4–5
                             </span>
+                            {!dish.available && (
+                              <span className="text-[9px] font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded px-1.5 py-0.5">
+                                Sold Out
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -807,7 +866,11 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                         </div>
 
                         {/* Quantity Stepper / Open Customizer */}
-                        {totalCartCount === 0 ? (
+                        {!dish.available ? (
+                          <div className="rounded-lg bg-zinc-800/80 border border-white/5 text-zinc-500 px-3 py-1.5 text-xs font-medium ml-auto">
+                            Sold Out
+                          </div>
+                        ) : totalCartCount === 0 ? (
                           <button
                             type="button"
                             onClick={() => handleOpenCustomizer(dish)}
@@ -882,24 +945,28 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
               <p className="text-[11px] text-zinc-400 font-normal">Fresh slow-braised dum biryani trays</p>
             </div>
             <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-xs font-mono font-medium text-amber-300">
-              6 Specialties
+              {displayMenu.length} Specialties
             </span>
           </div>
 
           <div className="space-y-2.5">
-            {MENU.map((dish) => {
-              const dishImg = DISH_IMAGES[dish.id] || chickenImg;
+            {displayMenu.map((dish) => {
+              const dishImg = dish.image || DISH_IMAGES[dish.id] || chickenImg;
 
               return (
                 <div
                   key={dish.id}
-                  className="rounded-2xl bg-[#121216] border border-white/[0.08] p-3 space-y-2.5 shadow-sm"
+                  className={`rounded-2xl bg-[#121216] border p-3 space-y-2.5 shadow-sm transition-all ${
+                    !dish.available ? "opacity-60 border-white/[0.05]" : "border-white/[0.08]"
+                  }`}
                 >
                   <div className="flex gap-3">
                     <img
                       src={dishImg}
                       alt={dish.name}
-                      className="h-16 w-16 rounded-xl object-cover shrink-0 border border-white/[0.05]"
+                      className={`h-16 w-16 rounded-xl object-cover shrink-0 border border-white/[0.05] ${
+                        !dish.available ? "grayscale" : ""
+                      }`}
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
@@ -909,9 +976,16 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                         </span>
                       </div>
                       <p className="text-[10px] text-zinc-400 line-clamp-2 mt-0.5 font-normal">{dish.description}</p>
-                      <p className="text-[10px] text-zinc-500 mt-1 font-normal">
-                        Serves 4–5 · {dish.kcal} kcal
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-[10px] text-zinc-500 font-normal">
+                          Serves 4–5 · {dish.kcal} kcal
+                        </p>
+                        {!dish.available && (
+                          <span className="text-[9px] font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded px-1 py-0.2">
+                            Sold Out
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -920,13 +994,17 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                       <span>🥔 Royal Dum Aloo:</span>
                       <span className="text-emerald-400 font-semibold">100% Free ($0)</span>
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenCustomizer(dish)}
-                      className="rounded-lg bg-amber-500/20 border border-amber-500/40 px-2.5 py-1 text-xs font-medium text-amber-300 hover:bg-amber-500/30 transition-all cursor-pointer"
-                    >
-                      Customize & Add
-                    </button>
+                    {!dish.available ? (
+                      <span className="text-xs text-zinc-500 font-medium px-2.5 py-1">Unavailable</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenCustomizer(dish as any)}
+                        className="rounded-lg bg-amber-500/20 border border-amber-500/40 px-2.5 py-1 text-xs font-medium text-amber-300 hover:bg-amber-500/30 transition-all cursor-pointer"
+                      >
+                        Customize & Add
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -992,7 +1070,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                   <div className="space-y-3">
                     {lines.map((line) => {
                       const dishImg = DISH_IMAGES[line.proteinId] || chickenImg;
-                      const dish = MENU.find((m) => m.id === line.proteinId);
+                      const dish = displayMenu.find((m) => m.id === line.proteinId || m.dishId === line.proteinId) || MENU.find((m) => m.id === line.proteinId);
                       const basePrice = dish?.price ?? (line.aloo ? line.unitPrice - currentAlooFee : line.unitPrice);
 
                       return (

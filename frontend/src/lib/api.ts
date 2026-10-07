@@ -206,6 +206,47 @@ export const api = {
     }
   },
 
+  async updateMenuItem(id: string, updates: Record<string, any>): Promise<{ success: boolean; item: any } | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/menu/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      return await handleResponse<{ success: boolean; item: any }>(res);
+    } catch (err) {
+      console.warn("Backend updateMenuItem failed:", err);
+      return null;
+    }
+  },
+
+  async createMenuItem(item: Record<string, any>): Promise<{ success: boolean; item: any } | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/menu`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item),
+      });
+      return await handleResponse<{ success: boolean; item: any }>(res);
+    } catch (err) {
+      console.warn("Backend createMenuItem failed:", err);
+      return null;
+    }
+  },
+
+  async deleteMenuItem(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/menu/${id}`, {
+        method: "DELETE",
+      });
+      await handleResponse<{ success: boolean }>(res);
+      return true;
+    } catch (err) {
+      console.warn("Backend deleteMenuItem failed:", err);
+      return false;
+    }
+  },
+
   async createOrder(payload: CreateOrderPayload): Promise<{ message: string; order: OrderResponse }> {
     try {
       const res = await fetch(`${API_BASE_URL}/api/orders`, {

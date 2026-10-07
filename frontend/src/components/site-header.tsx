@@ -111,12 +111,12 @@ export function SiteHeader() {
               </span>
             </div>
 
-            {/* Mobile Brand text (Matching Live Image 1: JAKLOUD Spice King / ARTISANAL DUM BIRYANI) */}
+            {/* Mobile Brand text */}
             <div className="block lg:hidden min-w-0 leading-tight">
-              <span className="block text-sm font-bold tracking-tight text-white group-hover:text-amber-400 transition-colors">
+              <span className="block text-sm sm:text-base font-bold tracking-tight text-white group-hover:text-amber-400 transition-colors whitespace-nowrap">
                 JAKLOUD Spice King
               </span>
-              <span className="block text-[9px] font-semibold text-zinc-400 tracking-wider uppercase">
+              <span className="block text-[9px] font-semibold text-zinc-400 tracking-wider uppercase whitespace-nowrap">
                 ARTISANAL DUM BIRYANI
               </span>
             </div>
@@ -177,30 +177,8 @@ export function SiteHeader() {
             </Button>
           </div>
 
-          {/* Mobile Right Action Bar (Mobile Screens Only - Matching Image 1) */}
+          {/* Mobile Right Action Bar (Mobile Screens Only) */}
           <div className="flex items-center gap-2 lg:hidden">
-            {/* WhatsApp Quick Icon */}
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition-all active:scale-95"
-              aria-label="WhatsApp Chef"
-            >
-              <MessageSquare className="h-4 w-4" />
-            </a>
-
-            {/* Mobile Handi Tray / Cart Button with Badge */}
-            <button
-              type="button"
-              onClick={() => setCartOpen(true)}
-              className="relative flex h-8 items-center gap-1.5 px-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-semibold hover:bg-amber-500/35 transition-all active:scale-95 cursor-pointer"
-              aria-label="Open Cart"
-            >
-              <ShoppingBag className="h-3.5 w-3.5 text-amber-400" />
-              <span className="font-bold">{count}</span>
-            </button>
-
             {/* Hamburger Menu Toggle Button */}
             <button
               type="button"

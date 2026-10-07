@@ -562,6 +562,35 @@ function setStored<T>(key: string, value: T): void {
 // 4. CORE STORE OBJECT (CRUD API)
 // ==========================================
 
+const API_BASE_URL = typeof window !== "undefined"
+  ? ((import.meta.env["VITE_API_URL"] as string | undefined) || "")
+  : "http://localhost:5000";
+
+function syncBackendMenuItem(id: string, updates: any) {
+  if (typeof window === "undefined") return;
+  fetch(`${API_BASE_URL}/api/menu/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  }).catch((e) => console.warn("Backend sync failed:", e));
+}
+
+function syncBackendCreateMenuItem(item: any) {
+  if (typeof window === "undefined") return;
+  fetch(`${API_BASE_URL}/api/menu`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(item),
+  }).catch((e) => console.warn("Backend sync failed:", e));
+}
+
+function syncBackendDeleteMenuItem(id: string) {
+  if (typeof window === "undefined") return;
+  fetch(`${API_BASE_URL}/api/menu/${id}`, {
+    method: "DELETE",
+  }).catch((e) => console.warn("Backend sync failed:", e));
+}
+
 export const jakloudStore = {
   // MENU OPERATIONS
   getMenu(): DynamicMenuItem[] {
@@ -580,6 +609,7 @@ export const jakloudStore = {
       traysSoldWeek: 0,
     };
     this.saveMenu([newItem, ...current]);
+    syncBackendCreateMenuItem(newItem);
     return newItem;
   },
 
@@ -595,6 +625,7 @@ export const jakloudStore = {
     });
     if (updated) {
       this.saveMenu(next);
+      syncBackendMenuItem(id, updates);
     }
     return updated;
   },
@@ -604,6 +635,7 @@ export const jakloudStore = {
     const next = current.filter((it) => it.id !== id && it.proteinId !== id);
     if (next.length !== current.length) {
       this.saveMenu(next);
+      syncBackendDeleteMenuItem(id);
       return true;
     }
     return false;
@@ -620,6 +652,7 @@ export const jakloudStore = {
       return it;
     });
     this.saveMenu(next);
+    syncBackendMenuItem(id, { available: newStatus });
     return newStatus;
   },
 

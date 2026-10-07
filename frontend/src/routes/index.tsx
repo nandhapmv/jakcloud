@@ -168,7 +168,7 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 1. CINEMATIC HERO BANNER                                      */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden border-b border-white/[0.08]">
+      <section className="relative min-h-[calc(100vh-84px)] flex items-center justify-center overflow-hidden border-b border-white/[0.08] py-8 lg:py-10">
         {/* Background Photography */}
         <img
           src={heroImg}
@@ -182,58 +182,36 @@ function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-[#09090b]/50" />
 
         {/* Hero Content Container */}
-        <div className="relative z-10 mx-auto max-w-5xl px-6 py-20 text-center space-y-6 animate-in fade-in-50 duration-700">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-black/60 px-4 py-1.5 backdrop-blur-xl shadow-sm">
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-            <span className="text-xs font-medium text-amber-300">
-              Limited to 25 Handcrafted Handi Trays Daily
+        <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 text-center space-y-3.5 sm:space-y-4 animate-in fade-in-50 duration-700">
+          {/* Unified Batch & Limit Pill */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-black/75 px-3.5 py-1 backdrop-blur-xl shadow-sm text-xs">
+            <Sparkles className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+            <span className="text-amber-300 font-medium">Limited to 25 Handcrafted Handi Trays Daily</span>
+            <span className="text-zinc-600">•</span>
+            <span className="text-zinc-300">
+              Next Batch: <strong className="text-amber-300 font-medium">{nextDate}</strong> (Order by 2:00 PM Cutoff)
             </span>
           </div>
 
-          {/* JAKLOUD Crest Logo */}
-          <div className="mx-auto flex justify-center">
-            <img
-              src={logoImg}
-              alt="JAKLOUD Spice King Crest"
-              className="relative h-20 w-20 rounded-full border border-amber-500/40 bg-zinc-900 p-1 object-cover shadow-xl"
-              width={80}
-              height={80}
-            />
-          </div>
-
           {/* Display Headline */}
-          <div className="space-y-3 max-w-3xl mx-auto">
-            <p className="text-xs tracking-widest uppercase text-amber-400 font-medium">
+          <div className="space-y-2 max-w-2xl mx-auto">
+            <p className="text-[11px] tracking-[0.22em] uppercase text-amber-400 font-semibold">
               JAKLOUD · Royal Culinary Heritage
             </p>
-            <h1 className="font-display text-4xl sm:text-6xl font-semibold leading-tight text-white text-balance">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-tight text-white text-balance">
               Made To Order <span className="text-amber-400 italic font-normal">Dum Biryani</span>
             </h1>
-            <p className="mx-auto max-w-2xl text-sm sm:text-base text-zinc-300 font-normal leading-relaxed">
+            <p className="mx-auto max-w-xl text-xs sm:text-sm text-zinc-300 font-normal leading-relaxed">
               Springfield's authentic slow-cooked royal Dum Pukht handi trays. Prepared with saffron aged basmati,
               whole roasted spices, and sealed with traditional dough for an unforgettable feast.
             </p>
           </div>
 
-          {/* Next Batch Date Pill */}
-          <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-zinc-900/80 px-4 py-2 text-xs text-zinc-300 shadow-sm">
-            <Calendar className="h-3.5 w-3.5 text-amber-400" />
-            <span>
-              Next Available Batch: <strong className="text-amber-300 font-medium">{nextDate}</strong>
-            </span>
-            <span className="text-zinc-600">•</span>
-            <span className="text-zinc-400 text-xs font-normal">
-              Order by 2:00 PM Cutoff
-            </span>
-          </div>
-
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
             <Button
               asChild
-              size="lg"
-              className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold text-sm px-7 py-5 shadow-md hover:brightness-105 transition-all gap-2 cursor-pointer"
+              className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold text-xs px-5 py-2.5 h-10 shadow-md hover:brightness-105 transition-all gap-1.5 cursor-pointer"
             >
               <Link to="/menu">
                 <UtensilsCrossed className="h-4 w-4" /> Order Dum Handi Now →
@@ -244,7 +222,7 @@ function HomePage() {
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 px-5 py-3 text-sm font-medium text-emerald-400 transition-all shadow-sm"
+              className="flex items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 px-4 py-2 text-xs font-semibold text-emerald-400 transition-all shadow-sm h-10"
             >
               <MessageSquare className="h-4 w-4 text-emerald-400" />
               <span>WhatsApp Order</span>
@@ -252,15 +230,15 @@ function HomePage() {
 
             <a
               href={`tel:${BUSINESS.phone}`}
-              className="flex items-center gap-2 rounded-xl border border-white/10 bg-zinc-900/60 hover:bg-zinc-800 px-5 py-3 text-sm font-medium text-zinc-300 hover:text-amber-400 transition-all shadow-sm"
+              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-zinc-900/70 hover:bg-zinc-800 px-4 py-2 text-xs font-medium text-zinc-300 hover:text-amber-400 transition-all shadow-sm h-10"
             >
               <Phone className="h-4 w-4 text-amber-400" />
               <span>Call: {BUSINESS.phone}</span>
             </a>
           </div>
 
-          {/* Specifications Strip */}
-          <div className="mx-auto max-w-3xl pt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-left">
+          {/* Specifications Strip - Fully visible and balanced */}
+          <div className="mx-auto max-w-3xl pt-2 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-left">
             {[
               { label: "Generous Tray", val: "Serves 4–5 Adults" },
               { label: "Meat Portion", val: "1.6 – 1.8 kg Meat" },
@@ -269,7 +247,7 @@ function HomePage() {
             ].map((spec, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-white/[0.08] bg-zinc-900/50 p-3 backdrop-blur-md text-center sm:text-left"
+                className="rounded-xl border border-white/[0.08] bg-zinc-900/60 p-2.5 backdrop-blur-md text-center sm:text-left"
               >
                 <p className="text-[10px] uppercase tracking-wider text-amber-400 font-medium">{spec.label}</p>
                 <p className="text-xs font-semibold text-zinc-100 mt-0.5">{spec.val}</p>
@@ -307,13 +285,13 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 3. QUALITY STANDARD                                          */}
       {/* ------------------------------------------------------------- */}
-      <section className="mx-auto max-w-7xl px-6 py-16 sm:px-8 space-y-10">
-        <div className="text-center space-y-2 max-w-2xl mx-auto">
+      <section className="mx-auto max-w-7xl px-6 py-10 lg:py-12 sm:px-8 space-y-6">
+        <div className="text-center space-y-1.5 max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-1.5 text-xs text-amber-400 font-medium">
             <Shield className="h-4 w-4 text-emerald-400" />
             <span>Uncompromising Quality Standard</span>
           </div>
-          <h2 className="font-display text-3xl font-semibold text-zinc-100">
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-zinc-100">
             The Pillars of JAKLOUD Dum Pukht
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed">
@@ -322,9 +300,9 @@ function HomePage() {
           </p>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm hover:border-amber-500/30 transition-all">
-            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 w-fit text-emerald-400">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-4 sm:p-5 shadow-sm hover:border-amber-500/30 transition-all">
+            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-2.5 w-fit text-emerald-400">
               <Shield className="h-5 w-5" />
             </div>
             <h3 className="mt-3 text-sm font-semibold text-zinc-100">
@@ -335,8 +313,8 @@ function HomePage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm hover:border-amber-500/30 transition-all">
-            <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-3 w-fit text-rose-400">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-4 sm:p-5 shadow-sm hover:border-amber-500/30 transition-all">
+            <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-2.5 w-fit text-rose-400">
               <Flame className="h-5 w-5" />
             </div>
             <h3 className="mt-3 text-sm font-semibold text-zinc-100">
@@ -347,8 +325,8 @@ function HomePage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm hover:border-amber-500/30 transition-all">
-            <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 w-fit text-amber-400">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-4 sm:p-5 shadow-sm hover:border-amber-500/30 transition-all">
+            <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-2.5 w-fit text-amber-400">
               <Sparkles className="h-5 w-5" />
             </div>
             <h3 className="mt-3 text-sm font-semibold text-zinc-100">
@@ -359,8 +337,8 @@ function HomePage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm hover:border-amber-500/30 transition-all">
-            <div className="rounded-xl bg-zinc-800 border border-white/10 p-3 w-fit text-zinc-300">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-4 sm:p-5 shadow-sm hover:border-amber-500/30 transition-all">
+            <div className="rounded-xl bg-zinc-800 border border-white/10 p-2.5 w-fit text-zinc-300">
               <UtensilsCrossed className="h-5 w-5" />
             </div>
             <h3 className="mt-3 text-sm font-semibold text-zinc-100">
@@ -376,17 +354,17 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 4. SIGNATURE HANDI MENU SHOWCASE                              */}
       {/* ------------------------------------------------------------- */}
-      <section id="menu" className="border-t border-white/[0.08] bg-[#0c0c0e] py-16">
-        <div className="mx-auto max-w-7xl px-6 sm:px-8 space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/[0.08] pb-6">
+      <section id="menu" className="border-t border-white/[0.08] bg-[#0c0c0e] py-10 lg:py-12">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/[0.08] pb-5">
             <div>
               <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">
                 Limited Daily Batches
               </span>
-              <h2 className="mt-1 font-display text-2xl sm:text-4xl font-semibold text-zinc-100">
+              <h2 className="mt-1 font-display text-2xl sm:text-3xl font-semibold text-zinc-100">
                 Signature Dum Handi Trays
               </h2>
-              <p className="mt-1.5 text-xs sm:text-sm text-zinc-400 font-normal max-w-xl">
+              <p className="mt-1 text-xs sm:text-sm text-zinc-400 font-normal max-w-xl">
                 Each tray serves 4–5 adults with 1.6–1.8 kg meat, 1 kg basmati, boiled eggs, roasted cashews, raita,
                 salan, and dessert.
               </p>
@@ -407,8 +385,8 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 5. INTERACTIVE FOOD GALLERY PREVIEW                           */}
       {/* ------------------------------------------------------------- */}
-      <section className="mx-auto max-w-7xl px-6 py-16 sm:px-8 space-y-10">
-        <div className="text-center space-y-2 max-w-2xl mx-auto">
+      <section className="mx-auto max-w-7xl px-6 py-10 lg:py-12 sm:px-8 space-y-6">
+        <div className="text-center space-y-1.5 max-w-2xl mx-auto">
           <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">
             Visual Craftsmanship
           </span>
@@ -430,12 +408,12 @@ function HomePage() {
               <img
                 src={item.url}
                 alt={item.title}
-                className="h-60 w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="h-56 w-full object-cover group-hover:scale-105 transition-transform duration-500"
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
-              <div className="absolute bottom-0 inset-x-0 p-4 space-y-1">
+              <div className="absolute bottom-0 inset-x-0 p-3.5 space-y-1">
                 <span className="rounded-md bg-zinc-900/80 border border-white/10 px-2 py-0.5 text-[10px] font-medium text-amber-300">
                   {item.category}
                 </span>
@@ -456,9 +434,9 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 6. CUSTOMER REVIEWS                                           */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-y border-white/[0.08] bg-[#0c0c0e] py-16">
-        <div className="mx-auto max-w-7xl px-6 sm:px-8 space-y-10">
-          <div className="text-center space-y-2 max-w-2xl mx-auto">
+      <section className="border-y border-white/[0.08] bg-[#0c0c0e] py-10 lg:py-12">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 space-y-6">
+          <div className="text-center space-y-1.5 max-w-2xl mx-auto">
             <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">
               Verified Patron Testimonials
             </span>
@@ -470,13 +448,13 @@ function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3">
             {reviews.map((rev, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm space-y-3 flex flex-col justify-between"
+                className="rounded-2xl border border-white/[0.08] bg-[#121216] p-4 sm:p-5 shadow-sm space-y-3 flex flex-col justify-between"
               >
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   <div className="flex items-center gap-1 text-amber-400">
                     {Array.from({ length: rev.rating }).map((_, idx) => (
                       <Star key={idx} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -487,7 +465,7 @@ function HomePage() {
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                <div className="pt-2.5 border-t border-white/[0.06] flex items-center justify-between text-xs">
                   <div>
                     <h4 className="font-semibold text-zinc-100">{rev.name}</h4>
                     <p className="text-[11px] text-zinc-400 font-normal">{rev.role}</p>
@@ -505,8 +483,8 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 7. PICKUP & DELIVERY LOCATION                                 */}
       {/* ------------------------------------------------------------- */}
-      <section className="mx-auto max-w-7xl px-6 py-16 sm:px-8 space-y-8">
-        <div className="text-center space-y-2 max-w-2xl mx-auto">
+      <section className="mx-auto max-w-7xl px-6 py-10 lg:py-12 sm:px-8 space-y-6">
+        <div className="text-center space-y-1.5 max-w-2xl mx-auto">
           <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">
             Springfield, MO Hub
           </span>
@@ -518,9 +496,9 @@ function HomePage() {
           </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {/* Pickup Card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-6 shadow-sm space-y-3">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm space-y-2.5">
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-400 border border-amber-500/20">
                 <Store className="h-5 w-5" />
@@ -555,7 +533,7 @@ function HomePage() {
           </div>
 
           {/* Delivery Card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-6 shadow-sm space-y-3">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm space-y-2.5">
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-400 border border-amber-500/20">
                 <Truck className="h-5 w-5" />
@@ -591,7 +569,7 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 8. FREQUENTLY ASKED QUESTIONS                                 */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-t border-white/[0.08] bg-[#0c0c0e] py-16">
+      <section className="border-t border-white/[0.08] bg-[#0c0c0e] py-10 lg:py-12">
         <div className="mx-auto max-w-4xl px-6 sm:px-8 space-y-8">
           <div className="text-center space-y-2">
             <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">
