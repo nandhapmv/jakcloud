@@ -39,8 +39,9 @@ export interface CreateOrderPayload {
   fulfilmentDate: string;
   fulfilmentTime: string;
   customer: CustomerInput;
-  paymentMethod?: DynamicOrder["paymentMethod"];
+  paymentMethod?: string;
   paymentStatus?: string;
+  paymentId?: string;
   specialInstructions?: string | undefined;
 }
 
@@ -70,6 +71,7 @@ export interface OrderResponse {
   total: number;
   paymentMethod?: string;
   paymentStatus?: string;
+  paymentId?: string;
   specialInstructions?: string;
   staffNotes?: string;
   createdAt: string;

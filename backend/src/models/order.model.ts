@@ -49,6 +49,7 @@ export interface Order {
   total: number;
   paymentMethod?: string;
   paymentStatus?: string;
+  paymentId?: string;
   specialInstructions?: string;
   staffNotes?: string;
   assignedDriver?: string;

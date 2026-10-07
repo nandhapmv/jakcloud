@@ -4,17 +4,21 @@ Options -Indexes
 # Set default directory index
 DirectoryIndex index.html index.php
 
-# URL Rewriting for Single Page Application routing (SPA)
+# URL Rewriting for Single Page Application routing (SPA) & API
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
-  # Serve existing files and directories directly
+  # 1. Route API requests directly to PHP MySQL Database API
+  RewriteRule ^api/(.*)$ api/index.php?endpoint=$1 [QSA,L]
+  RewriteRule ^api/?$ api/index.php [QSA,L]
+
+  # 2. Serve existing files and directories directly
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # Route all other URLs to index.html for frontend routing
+  # 3. Route all other frontend URLs to index.html for client-side routing
   RewriteRule ^ index.html [L]
 </IfModule>
 

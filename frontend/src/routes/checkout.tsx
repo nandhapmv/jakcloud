@@ -330,8 +330,9 @@ function CheckoutPage() {
             deliveryInstructions: landmark.trim() || undefined,
           }),
         },
-        paymentMethod: "Razorpay Online",
+        paymentMethod: razorpayPaymentId ? `Razorpay Online (${razorpayPaymentId})` : "Razorpay Online",
         paymentStatus: razorpayPaymentId ? "paid" : "pending",
+        paymentId: razorpayPaymentId || undefined,
         specialInstructions: instructions.trim() || undefined,
       });
 

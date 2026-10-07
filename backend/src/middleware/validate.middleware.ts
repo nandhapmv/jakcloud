@@ -28,6 +28,7 @@ export const createOrderSchema = z.object({
   specialInstructions: z.string().optional(),
   paymentMethod: z.string().optional(),
   paymentStatus: z.string().optional(),
+  paymentId: z.string().optional(),
 });
 
 export const contactSchema = z.object({

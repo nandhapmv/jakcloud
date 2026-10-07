@@ -1,0 +1,15 @@
+# JAKLOUD API Directory htaccess
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /api/
+
+  # If the file exists, serve it
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Route everything else to index.php
+  RewriteRule ^(.*)$ index.php?endpoint=$1 [QSA,L]
+</IfModule>
