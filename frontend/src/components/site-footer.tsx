@@ -24,9 +24,9 @@ export function SiteFooter() {
   )}`;
 
   return (
-    <footer className="hidden lg:block mt-20 border-t border-white/[0.08] bg-[#0c0c0e] text-zinc-100 relative overflow-hidden">
+    <footer className="hidden lg:block mt-6 sm:mt-8 border-t border-white/[0.08] bg-[#0c0c0e] text-zinc-100 relative overflow-hidden">
       {/* Main Footer Content */}
-      <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 grid gap-10 md:grid-cols-2 lg:grid-cols-4 relative z-10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid gap-8 md:grid-cols-2 lg:grid-cols-4 relative z-10">
         {/* Column 1: Brand & Craft */}
         <div className="space-y-3.5">
           <Link to="/" className="flex items-center gap-3">
@@ -114,8 +114,8 @@ export function SiteFooter() {
             <p>
               <span className="text-zinc-200 font-medium">Delivery:</span> 2:00 PM – 6:00 PM
             </p>
-            <p className="text-[11px] text-amber-400/80 pt-1">
-              Closed Wednesdays for fresh spice grinding and marinades.
+            <p className="text-[11px] text-emerald-400 font-medium pt-1">
+              Open 7 days a week for slow-cooked artisanal Dum Biryani.
             </p>
             <p className="text-[11px] text-zinc-500">
               Limited to 25 Handi Trays daily for slow-cooked perfection.

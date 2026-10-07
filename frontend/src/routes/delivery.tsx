@@ -210,7 +210,7 @@ export function PickupDeliveryPage() {
                   <Clock className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium text-zinc-200">Lunch Pickup Hours: 11:00 AM – 1:00 PM</p>
-                    <p className="text-[0.68rem] text-zinc-500">Available daily for lunch except Wednesdays</p>
+                    <p className="text-[0.68rem] text-zinc-500">Available daily across all 7 days of the week</p>
                   </div>
                 </div>
 

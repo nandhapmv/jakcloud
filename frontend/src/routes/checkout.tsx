@@ -12,7 +12,6 @@ import {
   Phone,
   MessageSquare,
   Lock,
-  Calendar,
   Store,
   User,
   Mail,
@@ -21,15 +20,10 @@ import {
   Check,
   Flame,
   Tag,
-  X,
   CreditCard,
   Banknote,
   Printer,
-  Compass,
   AlertCircle,
-  ExternalLink,
-  ChevronRight,
-  Info,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -65,9 +59,6 @@ import {
   sanitizeName,
   isValidName,
   sanitizeZipCode,
-  formatCardNumber,
-  formatCardExpiry,
-  sanitizeDigits,
 } from "@/lib/validation";
 import { openRazorpayCheckout } from "@/lib/razorpay";
 
@@ -107,73 +98,6 @@ const VALID_PROMOS: Record<string, { discountPercent: number; discountFixed: num
   SPRINGFIELD5: { discountPercent: 5, discountFixed: 0, label: "5% Local Springfield Neighbor Discount" },
 };
 
-const SPRINGFIELD_LANDMARK_PRESETS = [
-  {
-    name: "Missouri State University (MSU)",
-    address: "901 S National Ave",
-    landmark: "Campus Student Union / Plaster Center",
-    zipCode: "65897",
-    distance: "3.4 miles",
-    transitMin: "18 mins",
-    coords: { x: 42, y: 38 },
-  },
-  {
-    name: "Mercy Hospital / Medical Mile",
-    address: "1235 E Cherokee St",
-    landmark: "Main Hospital Entrance / Medical Mile",
-    zipCode: "65804",
-    distance: "2.1 miles",
-    transitMin: "12 mins",
-    coords: { x: 58, y: 46 },
-  },
-  {
-    name: "Battlefield Mall District",
-    address: "2825 S Glenstone Ave",
-    landmark: "Near Dillard's / Glenstone Corridor",
-    zipCode: "65804",
-    distance: "1.8 miles",
-    transitMin: "10 mins",
-    coords: { x: 62, y: 64 },
-  },
-  {
-    name: "Chesterfield Village",
-    address: "3732 W Chesterfield St",
-    landmark: "Clock Tower Plaza",
-    zipCode: "65807",
-    distance: "5.6 miles",
-    transitMin: "24 mins",
-    coords: { x: 25, y: 72 },
-  },
-  {
-    name: "Galloway Village",
-    address: "4211 S Lone Pine Ave",
-    landmark: "Lone Pine Trailhead / Sequiota Park",
-    zipCode: "65804",
-    distance: "1.2 miles",
-    transitMin: "8 mins",
-    coords: { x: 74, y: 68 },
-  },
-  {
-    name: "Downtown Springfield",
-    address: "300 Park Central Square",
-    landmark: "Historic Park Central Square",
-    zipCode: "65806",
-    distance: "4.8 miles",
-    transitMin: "22 mins",
-    coords: { x: 38, y: 28 },
-  },
-];
-
-const QUICK_INSTRUCTION_TAGS = [
-  "Extra Salan (Dum Gravy)",
-  "Extra Mint & Cucumber Raita",
-  "Separate Spicy & Mild Pots",
-  "Include Eco Plates & Spoons",
-  "Leave at Front Door / Bench",
-  "Call upon Arrival",
-  "Apartment Gate Code Required",
-  "Keep Extra Warm in Thermal Bag",
-];
 
 function CheckoutPage() {
   const { lines, subtotal, clear, count, setQty, removeLine } = useCart();
@@ -189,10 +113,6 @@ function CheckoutPage() {
     let current = new Date(defaultDateObj);
 
     for (let i = 0; i < 4; i++) {
-      while (current.getDay() === 3) {
-        // Skip Wednesday
-        current.setDate(current.getDate() + 1);
-      }
       const label = i === 0 ? "Tomorrow (Next Batch)" : formatDate(current).split(",")[0];
       list.push({
         dateStr: formatDate(current),
@@ -222,23 +142,12 @@ function CheckoutPage() {
   const [landmark, setLandmark] = useState("");
   const [city, setCity] = useState("Springfield");
   const [zipCode, setZipCode] = useState("65809");
-  const [selectedLandmarkName, setSelectedLandmarkName] = useState<string | null>(null);
-
-  // Interactive Map Pin Position (Percentages inside canvas)
-  const [pinCoords, setPinCoords] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
-  const [estimatedDistance, setEstimatedDistance] = useState("2.4 miles");
-  const [estimatedTransit, setEstimatedTransit] = useState("15 mins");
 
   // Special Instructions
   const [instructions, setInstructions] = useState("");
 
   // Payment Method
   const [paymentMethod, setPaymentMethod] = useState<"on_fulfillment" | "card" | "whatsapp">("on_fulfillment");
-
-  // Card Simulation Details
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
 
   // Promo Code State
   const [promoInput, setPromoInput] = useState("");
@@ -319,39 +228,7 @@ function CheckoutPage() {
     toast.info("Promo code removed.");
   };
 
-  // Quick Landmark Selector Handler
-  const handleSelectLandmarkPreset = (preset: (typeof SPRINGFIELD_LANDMARK_PRESETS)[0]) => {
-    setAddress(preset.address);
-    setLandmark(preset.landmark);
-    setZipCode(preset.zipCode);
-    setCity("Springfield");
-    setSelectedLandmarkName(preset.name);
-    setPinCoords(preset.coords);
-    setEstimatedDistance(preset.distance);
-    setEstimatedTransit(preset.transitMin);
-    toast.success(`Selected "${preset.name}" — Address & Map updated!`);
-  };
 
-  // Interactive Map Canvas Click
-  const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
-    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
-
-    setPinCoords({ x, y });
-    const dist = (1.2 + (Math.abs(x - 50) + Math.abs(y - 50)) * 0.08).toFixed(1);
-    setEstimatedDistance(`${dist} miles`);
-    setEstimatedTransit(`${Math.round(Number(dist) * 4 + 8)} mins`);
-    setSelectedLandmarkName("Custom Map Location");
-  };
-
-  // Quick Instruction Append
-  const handleAddInstructionTag = (tag: string) => {
-    if (!instructions.includes(tag)) {
-      setInstructions((prev) => (prev ? `${prev}, ${tag}` : tag));
-      toast.info(`Added note: "${tag}"`);
-    }
-  };
 
   // Direct WhatsApp Message URL
   const whatsappBookingUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
@@ -675,18 +552,20 @@ function CheckoutPage() {
 
             <form onSubmit={handleSubmitOrder} className="space-y-6">
               {/* ===================================================== */}
-              {/* SECTION 1: FULFILMENT METHOD (PICKUP VS DELIVERY)     */}
+              {/* SECTION 1: FULFILMENT & SCHEDULE                      */}
               {/* ===================================================== */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-xl space-y-4">
+              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-display text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                    <Store className="h-5 w-5 text-gold" />
-                    <span>1. Fulfilment Method</span>
+                  <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-100 flex items-center gap-2">
+                    <Store className="h-5 w-5 text-amber-400" />
+                    <span>1. Fulfilment & Schedule</span>
                   </h2>
-                  <span className="text-[0.68rem] text-gold font-bold">Springfield, MO</span>
+                  <span className="text-[11px] font-medium text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full">
+                    Springfield, MO
+                  </span>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   {/* Counter Pickup Option Card */}
                   <button
                     type="button"
@@ -694,35 +573,35 @@ function CheckoutPage() {
                       setFulfilmentType("pickup");
                       setFulfilmentTime(PICKUP_TIMES[0] || "12:00 PM");
                     }}
-                    className={`relative rounded-2xl border p-5 text-left transition-all duration-300 flex flex-col justify-between ${
+                    className={`rounded-xl border p-4 text-left transition-all flex flex-col justify-between cursor-pointer ${
                       fulfilmentType === "pickup"
-                        ? "border-gold bg-gradient-to-b from-[#22140b] to-[#140c08] shadow-[0_0_25px_rgba(212,175,55,0.3)] ring-1 ring-gold/40 text-cream"
-                        : "bg-black/40 border-gold/20 hover:bg-black/60 text-cream/75 hover:border-gold/40"
+                        ? "border-amber-400 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/50"
+                        : "bg-zinc-900/60 border-white/[0.08] hover:border-white/20 text-zinc-400 hover:text-zinc-200"
                     }`}
                   >
                     <div className="flex items-start justify-between w-full">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                            fulfilmentType === "pickup" ? "bg-gold text-black" : "bg-gold/15 text-gold"
+                          className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
+                            fulfilmentType === "pickup" ? "bg-amber-400 text-zinc-950 font-bold" : "bg-zinc-800 text-zinc-300"
                           }`}
                         >
-                          <Store className="h-5 w-5" />
+                          <Store className="h-4.5 w-4.5" />
                         </div>
                         <div>
-                          <p className="font-bold text-sm text-cream">Counter Pickup</p>
-                          <p className="text-[0.68rem] text-emerald-400 font-semibold">FREE ($0.00)</p>
+                          <p className="font-semibold text-sm text-zinc-100">Counter Pickup</p>
+                          <p className="text-[11px] text-emerald-400 font-medium">FREE ($0.00)</p>
                         </div>
                       </div>
                       {fulfilmentType === "pickup" && (
-                        <div className="h-5 w-5 rounded-full bg-gold text-black flex items-center justify-center">
+                        <div className="h-5 w-5 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center">
                           <Check className="h-3 w-3 stroke-[3]" />
                         </div>
                       )}
                     </div>
-                    <div className="mt-4 pt-3 border-t border-gold/15 text-xs text-cream/70 space-y-1">
-                      <p className="font-medium text-cream">{BUSINESS.address}</p>
-                      <p className="text-[0.65rem] text-cream/60">Ready in thermal heat-retention carrier (11 AM – 6 PM)</p>
+                    <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[11px] text-zinc-400 space-y-0.5">
+                      <p className="font-medium text-zinc-200">{BUSINESS.address}</p>
+                      <p className="text-zinc-500">Pickup window: 11:00 AM – 1:00 PM (Lunch)</p>
                     </div>
                   </button>
 
@@ -733,45 +612,43 @@ function CheckoutPage() {
                       setFulfilmentType("delivery");
                       setFulfilmentTime(DELIVERY_TIMES[0] || "2:00 PM");
                     }}
-                    className={`relative rounded-2xl border p-5 text-left transition-all duration-300 flex flex-col justify-between ${
+                    className={`rounded-xl border p-4 text-left transition-all flex flex-col justify-between cursor-pointer ${
                       fulfilmentType === "delivery"
-                        ? "border-chili bg-gradient-to-b from-[#26100c] to-[#140c08] shadow-[0_0_25px_rgba(185,28,28,0.35)] ring-1 ring-chili/40 text-cream"
-                        : "bg-black/40 border-gold/20 hover:bg-black/60 text-cream/75 hover:border-chili/40"
+                        ? "border-amber-400 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/50"
+                        : "bg-zinc-900/60 border-white/[0.08] hover:border-white/20 text-zinc-400 hover:text-zinc-200"
                     }`}
                   >
                     <div className="flex items-start justify-between w-full">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                            fulfilmentType === "delivery"
-                              ? "bg-gradient-to-tr from-chili to-gold text-white"
-                              : "bg-chili/15 text-chili"
+                          className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
+                            fulfilmentType === "delivery" ? "bg-amber-400 text-zinc-950 font-bold" : "bg-zinc-800 text-zinc-300"
                           }`}
                         >
-                          <Truck className="h-5 w-5" />
+                          <Truck className="h-4.5 w-4.5" />
                         </div>
                         <div>
-                          <p className="font-bold text-sm text-cream">Doorstep Delivery</p>
-                          <p className="text-[0.68rem] text-gold font-semibold">
+                          <p className="font-semibold text-sm text-zinc-100">Doorstep Delivery</p>
+                          <p className="text-[11px] text-amber-300 font-medium">
                             {count >= 5 ? "FREE (5+ Trays)" : `$${DELIVERY_FEE}.00 Flat Rate`}
                           </p>
                         </div>
                       </div>
                       {fulfilmentType === "delivery" && (
-                        <div className="h-5 w-5 rounded-full bg-gradient-to-r from-chili to-gold text-white flex items-center justify-center">
+                        <div className="h-5 w-5 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center">
                           <Check className="h-3 w-3 stroke-[3]" />
                         </div>
                       )}
                     </div>
-                    <div className="mt-4 pt-3 border-t border-gold/15 text-xs text-cream/70 space-y-1">
-                      <p className="font-medium text-cream">Springfield 10-Mile Radar</p>
-                      <p className="text-[0.65rem] text-cream/60">Delivered hot between 2:00 PM – 6:00 PM</p>
+                    <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[11px] text-zinc-400 space-y-0.5">
+                      <p className="font-medium text-zinc-200">Springfield 10-Mile Radius</p>
+                      <p className="text-zinc-500">Delivered piping hot: 2:00 PM – 6:00 PM</p>
                     </div>
                   </button>
                 </div>
 
-                {/* Date & Time Selection via Interactive Calendar & Clock */}
-                <div className="pt-2 border-t border-gold/15">
+                {/* Date & Time Picker */}
+                <div className="pt-2 border-t border-white/[0.06]">
                   <DumDateTimePicker
                     selectedDate={selectedDate}
                     onDateChange={(newDate) => setSelectedDate(newDate)}
@@ -783,123 +660,109 @@ function CheckoutPage() {
               </div>
 
               {/* ===================================================== */}
-              {/* SECTION 2: CUSTOMER CONTACT DETAILS (FLOATING LABELS) */}
+              {/* SECTION 2: CUSTOMER CONTACT DETAILS                   */}
               {/* ===================================================== */}
-              <div className="rounded-3xl border border-gold/25 bg-[#120c08]/95 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
+              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-display text-xl font-bold text-cream flex items-center gap-2">
-                    <User className="h-5 w-5 text-gold" />
-                    <span>2. Customer Information</span>
+                  <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-100 flex items-center gap-2">
+                    <User className="h-5 w-5 text-amber-400" />
+                    <span>2. Contact Details</span>
                   </h2>
-                  <span className="text-[0.68rem] text-gold font-mono">Confidential & Encrypted</span>
+                  <span className="text-[11px] text-zinc-400">Order & SMS Confirmation</span>
                 </div>
 
-                <div className="grid gap-5 sm:grid-cols-2">
-                  {/* Full Name Field with Floating Label */}
-                  <div className="sm:col-span-2 relative group">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {/* Full Name */}
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <Label htmlFor="fullName" className="text-xs font-medium text-zinc-300">
+                      Full Name *
+                    </Label>
                     <div className="relative">
+                      <User className="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-400" />
                       <Input
                         id="fullName"
                         required
-                        placeholder=" "
+                        placeholder="John Doe"
                         value={name}
                         onChange={(e) => setName(sanitizeName(e.target.value))}
-                        className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium text-sm rounded-2xl pl-12 pr-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
+                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                       />
-                      <User className="absolute left-4 top-4.5 h-5 w-5 text-gold/60 peer-focus:text-gold transition-colors" />
-                      <label
-                        htmlFor="fullName"
-                        className="absolute left-12 top-2 text-[0.65rem] font-bold text-gold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-cream/50 peer-focus:top-2 peer-focus:text-[0.65rem] peer-focus:text-gold pointer-events-none"
-                      >
-                        Full Name (Letters Only) *
-                      </label>
                     </div>
                   </div>
 
-                  {/* Phone Number Field with Floating Label (US ONLY) */}
-                  <div className="relative group">
+                  {/* US Mobile Phone */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="mobilePhone" className="text-xs font-medium text-zinc-300">
+                        US Phone Number *
+                      </Label>
+                      {isValidUsPhone(phone) && (
+                        <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                          <Check className="h-3 w-3" /> Valid US Number
+                        </span>
+                      )}
+                    </div>
                     <div className="relative">
-                      <div className="absolute left-12 top-4.5 flex items-center gap-1 pointer-events-none text-xs text-gold/70 z-10 font-mono">
+                      <div className="absolute left-3.5 top-3 flex items-center gap-1 text-xs text-zinc-400 font-mono">
                         <span>🇺🇸</span>
-                        <span className="text-[11px]">+1</span>
+                        <span>+1</span>
                       </div>
                       <Input
                         id="mobilePhone"
                         type="tel"
                         inputMode="numeric"
                         required
-                        placeholder=" "
+                        placeholder="(417) 897-9754"
                         maxLength={14}
                         value={phone}
                         onChange={(e) => setPhone(formatUsPhone(e.target.value))}
-                        className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium font-mono text-sm rounded-2xl pl-20 pr-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
+                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-16 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                       />
-                      <Phone className="absolute left-4 top-4.5 h-5 w-5 text-gold/60 peer-focus:text-gold transition-colors" />
-                      <label
-                        htmlFor="mobilePhone"
-                        className="absolute left-12 top-2 text-[0.65rem] font-bold text-gold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-cream/50 peer-focus:top-2 peer-focus:text-[0.65rem] peer-focus:text-gold pointer-events-none"
-                      >
-                        US Mobile Phone (10 Digits) *
-                      </label>
-                      {isValidUsPhone(phone) && (
-                        <CheckCircle2 className="absolute right-4 top-5 h-4 w-4 text-emerald-400" />
-                      )}
                     </div>
-                    <p className="text-[0.65rem] text-cream/50 mt-1 pl-2">
-                      {isValidUsPhone(phone) ? (
-                        <span className="text-emerald-400 font-medium">✓ Valid US mobile number for live kitchen SMS</span>
-                      ) : (
-                        "US 10-digit mobile number for real-time Dum Prep & Dispatch SMS"
-                      )}
-                    </p>
                   </div>
 
-                  {/* Email Field with Floating Label */}
-                  <div className="relative group">
+                  {/* Email Address */}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="emailAddress" className="text-xs font-medium text-zinc-300">
+                      Email Address *
+                    </Label>
                     <div className="relative">
+                      <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-400" />
                       <Input
                         id="emailAddress"
                         type="email"
                         required
-                        placeholder=" "
+                        placeholder="john@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium text-sm rounded-2xl pl-12 pr-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
+                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                       />
-                      <Mail className="absolute left-4 top-4.5 h-5 w-5 text-gold/60 peer-focus:text-gold transition-colors" />
-                      <label
-                        htmlFor="emailAddress"
-                        className="absolute left-12 top-2 text-[0.65rem] font-bold text-gold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-cream/50 peer-focus:top-2 peer-focus:text-[0.65rem] peer-focus:text-gold pointer-events-none"
-                      >
-                        Email Address *
-                      </label>
                     </div>
-                    <p className="text-[0.65rem] text-cream/50 mt-1 pl-2">Instant booking receipt & tax invoice sent here</p>
                   </div>
                 </div>
 
-                {/* WhatsApp Notification Opt-in */}
+                {/* WhatsApp Notification Toggle */}
                 <div
                   onClick={() => setWhatsappOptIn(!whatsappOptIn)}
-                  className="flex items-center justify-between rounded-2xl bg-black/40 border border-gold/20 p-3.5 cursor-pointer hover:border-gold/40 transition-colors"
+                  className="flex items-center justify-between rounded-xl bg-zinc-900/60 border border-white/[0.06] p-3 cursor-pointer hover:border-white/15 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-xl bg-emerald-950/80 border border-emerald-500/50 flex items-center justify-center text-emerald-400">
-                      <MessageSquare className="h-4 w-4" />
+                    <div className="h-7 w-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                      <MessageSquare className="h-3.5 w-3.5" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-cream">Send live status updates to WhatsApp</p>
-                      <p className="text-[0.65rem] text-cream/60">Receive kitchen slow-cook photos and driver ETA</p>
+                      <p className="text-xs font-semibold text-zinc-200">WhatsApp live updates</p>
+                      <p className="text-[10px] text-zinc-400">Receive kitchen cooking notifications & driver status</p>
                     </div>
                   </div>
                   <div
-                    className={`h-5 w-10 rounded-full transition-colors relative flex items-center p-0.5 ${
-                      whatsappOptIn ? "bg-emerald-500" : "bg-neutral-800"
+                    className={`h-5 w-9 rounded-full transition-colors relative flex items-center p-0.5 ${
+                      whatsappOptIn ? "bg-emerald-500" : "bg-zinc-700"
                     }`}
                   >
                     <div
                       className={`h-4 w-4 rounded-full bg-white transition-transform ${
-                        whatsappOptIn ? "translate-x-5" : "translate-x-0"
+                        whatsappOptIn ? "translate-x-4" : "translate-x-0"
                       }`}
                     />
                   </div>
@@ -907,154 +770,112 @@ function CheckoutPage() {
               </div>
 
               {/* ===================================================== */}
-              {/* SECTION 3: DELIVERY ADDRESS & INTERACTIVE MAP (DELIVERY) */}
+              {/* SECTION 3: DELIVERY ADDRESS (IF DELIVERY SELECTED)    */}
               {/* ===================================================== */}
               {fulfilmentType === "delivery" && (
-                <div className="rounded-3xl border border-chili/30 bg-[#120c08]/95 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6 animate-in fade-in duration-300">
+                <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-4 animate-in fade-in duration-200">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-display text-xl font-bold text-cream flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-saffron" />
-                      <span>3. Springfield Delivery Address & Map</span>
+                    <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-100 flex items-center gap-2">
+                      <MapPin className="h-5 w-5 text-amber-400" />
+                      <span>3. Springfield Delivery Address</span>
                     </h2>
-                    <span className="text-[0.68rem] text-saffron font-bold">10-Mile Radius</span>
+                    <span className="text-[11px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                      10-Mile Radius
+                    </span>
                   </div>
 
-                  {/* Quick Springfield Landmark Selector Presets */}
-                  <div className="space-y-2">
-                    <p className="text-[0.68rem] font-bold uppercase tracking-wider text-gold flex items-center gap-1.5">
-                      <Compass className="h-3.5 w-3.5" />
-                      <span>Quick Select Springfield Landmarks & Districts:</span>
-                    </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {SPRINGFIELD_LANDMARK_PRESETS.map((preset, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => handleSelectLandmarkPreset(preset)}
-                          className={`rounded-xl p-2.5 text-left border transition-all text-xs ${
-                            selectedLandmarkName === preset.name
-                              ? "bg-gradient-to-r from-chili/40 to-gold/30 border-gold text-gold font-bold shadow-md"
-                              : "bg-black/50 border-gold/15 text-cream/80 hover:bg-black/80 hover:border-gold/35"
-                          }`}
-                        >
-                          <span className="font-semibold block truncate text-cream">{preset.name}</span>
-                          <span className="text-[0.62rem] text-cream/55 block">
-                            {preset.distance} • ~{preset.transitMin}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Address Input Fields with Floating Labels */}
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-3.5 sm:grid-cols-2">
                     {/* Street Address */}
-                    <div className="sm:col-span-2 relative group">
+                    <div className="sm:col-span-2 space-y-1.5">
+                      <Label htmlFor="streetAddress" className="text-xs font-medium text-zinc-300">
+                        Street Address *
+                      </Label>
                       <div className="relative">
+                        <MapPin className="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-400" />
                         <Input
                           id="streetAddress"
                           required
-                          placeholder=" "
+                          placeholder="e.g. 1234 S National Ave"
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
-                          className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium text-sm rounded-2xl pl-12 pr-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
+                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                         />
-                        <MapPin className="absolute left-4 top-4.5 h-5 w-5 text-gold/60 peer-focus:text-gold transition-colors" />
-                        <label
-                          htmlFor="streetAddress"
-                          className="absolute left-12 top-2 text-[0.65rem] font-bold text-gold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-cream/50 peer-focus:top-2 peer-focus:text-[0.65rem] peer-focus:text-gold pointer-events-none"
-                        >
-                          Street Address *
-                        </label>
                       </div>
                     </div>
 
                     {/* Suite / Apartment */}
-                    <div className="relative group">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="aptSuite" className="text-xs font-medium text-zinc-300">
+                        Apt / Suite / Unit (Optional)
+                      </Label>
                       <div className="relative">
+                        <Building className="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-400" />
                         <Input
                           id="aptSuite"
-                          placeholder=" "
+                          placeholder="Apt 4B"
                           value={suite}
                           onChange={(e) => setSuite(e.target.value)}
-                          className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium text-sm rounded-2xl pl-12 pr-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
+                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                         />
-                        <Building className="absolute left-4 top-4.5 h-5 w-5 text-gold/60 peer-focus:text-gold transition-colors" />
-                        <label
-                          htmlFor="aptSuite"
-                          className="absolute left-12 top-2 text-[0.65rem] font-bold text-gold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-cream/50 peer-focus:top-2 peer-focus:text-[0.65rem] peer-focus:text-gold pointer-events-none"
-                        >
-                          Apt / Suite / Unit (Optional)
-                        </label>
                       </div>
                     </div>
 
                     {/* Landmark / Gate Code */}
-                    <div className="relative group">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="landmarkInstructions" className="text-xs font-medium text-zinc-300">
+                        Gate Code / Landmark (Optional)
+                      </Label>
                       <div className="relative">
+                        <Navigation className="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-400" />
                         <Input
                           id="landmarkInstructions"
-                          placeholder=" "
+                          placeholder="e.g. Gate code #1234 / Leave on porch"
                           value={landmark}
                           onChange={(e) => setLandmark(e.target.value)}
-                          className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium text-sm rounded-2xl pl-12 pr-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
+                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                         />
-                        <Navigation className="absolute left-4 top-4.5 h-5 w-5 text-gold/60 peer-focus:text-gold transition-colors" />
-                        <label
-                          htmlFor="landmarkInstructions"
-                          className="absolute left-12 top-2 text-[0.65rem] font-bold text-gold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-cream/50 peer-focus:top-2 peer-focus:text-[0.65rem] peer-focus:text-gold pointer-events-none"
-                        >
-                          Landmark / Gate Code
-                        </label>
                       </div>
                     </div>
 
                     {/* City */}
-                    <div className="relative group">
-                      <div className="relative">
-                        <Input
-                          id="cityName"
-                          required
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                          className="h-14 bg-black/60 border-gold/30 text-cream font-medium text-sm rounded-2xl px-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
-                        />
-                        <span className="absolute left-4 top-1.5 text-[0.65rem] font-bold text-gold uppercase tracking-wider">
-                          City
-                        </span>
-                      </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="cityName" className="text-xs font-medium text-zinc-300">
+                        City
+                      </Label>
+                      <Input
+                        id="cityName"
+                        required
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl px-3.5 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                      />
                     </div>
 
                     {/* Springfield ZIP Code */}
-                    <div className="relative group">
-                      <div className="relative">
-                        <Input
-                          id="zipCodeInput"
-                          type="text"
-                          inputMode="numeric"
-                          required
-                          placeholder=" "
-                          maxLength={5}
-                          value={zipCode}
-                          onChange={(e) => setZipCode(sanitizeZipCode(e.target.value))}
-                          className="peer h-14 bg-black/60 border-gold/30 text-cream font-medium font-mono text-sm rounded-2xl px-4 pt-4 pb-1 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
-                        />
-                        <label
-                          htmlFor="zipCodeInput"
-                          className="absolute left-4 top-2 text-[0.65rem] font-bold text-gold uppercase tracking-wider transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:text-cream/50 peer-focus:top-2 peer-focus:text-[0.65rem] peer-focus:text-gold pointer-events-none"
-                        >
-                          Springfield ZIP Code (5 Digits) *
-                        </label>
-                      </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="zipCodeInput" className="text-xs font-medium text-zinc-300">
+                        ZIP Code (5 Digits) *
+                      </Label>
+                      <Input
+                        id="zipCodeInput"
+                        type="text"
+                        inputMode="numeric"
+                        required
+                        placeholder="65804"
+                        maxLength={5}
+                        value={zipCode}
+                        onChange={(e) => setZipCode(sanitizeZipCode(e.target.value))}
+                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl px-3.5 font-mono focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                      />
                     </div>
                   </div>
 
-                  {/* Live ZIP & Address Radius Status Badge */}
+                  {/* Springfield Radius Status Badge */}
                   <div
-                    className={`rounded-2xl p-3.5 text-xs flex items-center justify-between border ${
+                    className={`rounded-xl px-3.5 py-2.5 text-xs flex items-center justify-between border ${
                       zipValidation.valid
-                        ? "bg-emerald-950/70 border-emerald-500/50 text-emerald-300"
-                        : "bg-amber-950/70 border-amber-500/50 text-amber-200"
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+                        : "bg-amber-500/10 border-amber-500/30 text-amber-200"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -1063,73 +884,7 @@ function CheckoutPage() {
                       ) : (
                         <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
                       )}
-                      <span className="font-semibold">{zipValidation.message}</span>
-                    </div>
-                    <span className="text-[0.68rem] text-cream/70 font-mono">
-                      {estimatedDistance} • ~{estimatedTransit}
-                    </span>
-                  </div>
-
-                  {/* Interactive Springfield Google Maps Location Picker Mockup */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold text-cream flex items-center gap-1.5">
-                        <Navigation className="h-3.5 w-3.5 text-gold" />
-                        <span>Interactive Springfield Location Picker (Click to adjust pin):</span>
-                      </p>
-                      <span className="text-[0.65rem] text-gold font-mono">
-                        Hub: 3625 S Bedford Ave
-                      </span>
-                    </div>
-
-                    <div
-                      onClick={handleMapClick}
-                      className="relative h-64 sm:h-72 w-full rounded-3xl bg-[#0e0a07] border-2 border-gold/30 overflow-hidden cursor-crosshair shadow-inner group"
-                    >
-                      {/* Grid Radar Lines */}
-                      <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:20px_20px] opacity-20 pointer-events-none" />
-
-                      {/* Concentric 10-Mile Radius Circles */}
-                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-60 w-60 rounded-full border border-gold/20 border-dashed pointer-events-none" />
-                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-40 w-40 rounded-full border border-gold/35 pointer-events-none" />
-                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-20 w-20 rounded-full border border-gold/50 bg-gold/5 pointer-events-none" />
-
-                      {/* Map Annotation Labels */}
-                      <div className="absolute top-3 left-3 text-[0.65rem] font-bold text-gold/80 uppercase tracking-wider bg-black/70 px-2.5 py-1 rounded-lg border border-gold/20 backdrop-blur-sm pointer-events-none">
-                        Springfield Metro 10-Mile Radar
-                      </div>
-
-                      {/* Kitchen Hub Beacon */}
-                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center pointer-events-none">
-                        <div className="h-6 w-6 rounded-full bg-gold/30 flex items-center justify-center animate-ping" />
-                        <div className="absolute h-5 w-5 rounded-full bg-gold border border-white text-black flex items-center justify-center shadow-lg">
-                          <Store className="h-3 w-3" />
-                        </div>
-                      </div>
-
-                      {/* Customer Delivery Pin (Interactive Position) */}
-                      <div
-                        style={{ left: `${pinCoords.x}%`, top: `${pinCoords.y}%` }}
-                        className="absolute -translate-x-1/2 -translate-y-full z-20 transition-all duration-300 pointer-events-none"
-                      >
-                        <div className="flex flex-col items-center">
-                          <div className="rounded-xl bg-black/90 border border-gold/60 px-2.5 py-1 shadow-2xl backdrop-blur-md text-center whitespace-nowrap mb-1 animate-in fade-in">
-                            <p className="font-display text-[0.65rem] font-bold text-gold">
-                              {selectedLandmarkName || "Delivery Drop-off"}
-                            </p>
-                            <p className="text-[0.58rem] text-cream/75">
-                              {estimatedDistance} • ~{estimatedTransit}
-                            </p>
-                          </div>
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-chili to-gold border-2 border-white text-white flex items-center justify-center shadow-[0_0_20px_rgba(212,160,23,0.9)] animate-bounce">
-                            <MapPin className="h-4 w-4" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="absolute bottom-2 right-2 text-[0.62rem] text-cream/50 bg-black/80 px-2 py-0.5 rounded border border-gold/15">
-                        Click anywhere to reposition drop-off pin
-                      </div>
+                      <span className="font-medium">{zipValidation.message}</span>
                     </div>
                   </div>
                 </div>
@@ -1138,56 +893,35 @@ function CheckoutPage() {
               {/* ===================================================== */}
               {/* SECTION 4: KITCHEN PREPARATION & SPECIAL NOTES        */}
               {/* ===================================================== */}
-              <div className="rounded-3xl border border-gold/25 bg-[#120c08]/95 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-4">
+              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-3">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-display text-xl font-bold text-cream flex items-center gap-2">
-                    <Flame className="h-5 w-5 text-chili" />
-                    <span>4. Kitchen Preparation & Special Instructions</span>
+                  <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-100 flex items-center gap-2">
+                    <Flame className="h-5 w-5 text-amber-400" />
+                    <span>4. Kitchen Notes (Optional)</span>
                   </h2>
-                  <span className="text-[0.68rem] text-gold font-semibold">Custom Cooking</span>
+                  <span className="text-[11px] text-zinc-400">Dietary & Preferences</span>
                 </div>
 
-                {/* Quick Instruction Click Tags */}
-                <div className="space-y-1.5">
-                  <p className="text-[0.68rem] font-bold uppercase tracking-wider text-cream/70">
-                    Quick Add Cooking & Delivery Requests:
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {QUICK_INSTRUCTION_TAGS.map((tag, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleAddInstructionTag(tag)}
-                        className="rounded-xl bg-black/60 border border-gold/20 hover:border-gold/60 hover:bg-gold/15 px-3 py-1 text-[0.68rem] text-cream/80 transition-colors"
-                      >
-                        + {tag}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="relative group">
-                  <Textarea
-                    id="specialInstructions"
-                    value={instructions}
-                    onChange={(e) => setInstructions(e.target.value)}
-                    placeholder="Gate code, drop-off spot, dietary allergies, heating preferences, extra napkins..."
-                    rows={3}
-                    className="bg-black/60 border-gold/25 text-cream text-xs rounded-2xl p-4 focus:border-gold focus:ring-2 focus:ring-gold/30 transition-all"
-                  />
-                </div>
+                <Textarea
+                  id="specialInstructions"
+                  value={instructions}
+                  onChange={(e) => setInstructions(e.target.value)}
+                  placeholder="Allergies, extra gravy request, heating notes, or delivery drop-off spot..."
+                  rows={2}
+                  className="bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl p-3 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                />
               </div>
 
               {/* ===================================================== */}
               {/* SECTION 5: PAYMENT PREFERENCE                         */}
               {/* ===================================================== */}
-              <div className="rounded-3xl border border-gold/25 bg-[#120c08]/95 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-5">
+              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-display text-xl font-bold text-cream flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-gold" />
+                  <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-100 flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-amber-400" />
                     <span>5. Payment Method</span>
                   </h2>
-                  <span className="text-[0.68rem] text-emerald-400 font-semibold">Zero Surcharge</span>
+                  <span className="text-[11px] text-emerald-400 font-medium">Zero Surcharges</span>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
@@ -1195,70 +929,47 @@ function CheckoutPage() {
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("on_fulfillment")}
-                    className={`rounded-2xl p-4 text-left border transition-all ${
+                    className={`rounded-xl p-3.5 text-left border transition-all cursor-pointer ${
                       paymentMethod === "on_fulfillment"
-                        ? "border-gold bg-gold/15 shadow-md text-cream font-bold"
-                        : "bg-black/40 border-gold/20 text-cream/70 hover:bg-black/60"
+                        ? "border-amber-400 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/50 text-zinc-100 font-semibold"
+                        : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200 hover:border-white/20"
                     }`}
                   >
-                    <Banknote className="h-5 w-5 text-gold mb-2" />
-                    <p className="font-bold text-xs">Pay on Fulfilment</p>
-                    <p className="text-[0.65rem] text-cream/60 mt-0.5">Cash / Card upon arrival / Venmo</p>
+                    <Banknote className="h-5 w-5 text-amber-400 mb-1.5" />
+                    <p className="font-semibold text-xs text-zinc-100">Pay on Fulfilment</p>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">Cash / Card / Venmo upon arrival</p>
                   </button>
 
                   {/* Razorpay Online */}
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("card")}
-                    className={`rounded-2xl p-4 text-left border transition-all ${
+                    className={`rounded-xl p-3.5 text-left border transition-all cursor-pointer ${
                       paymentMethod === "card"
-                        ? "border-gold bg-gold/15 shadow-md text-cream font-bold ring-1 ring-gold/40"
-                        : "bg-black/40 border-gold/20 text-cream/70 hover:bg-black/60"
+                        ? "border-amber-400 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/50 text-zinc-100 font-semibold"
+                        : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200 hover:border-white/20"
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <CreditCard className="h-5 w-5 text-gold" />
-                      <span className="text-[9px] font-mono bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30">
-                        Live Test
-                      </span>
-                    </div>
-                    <p className="font-bold text-xs">Razorpay Secure</p>
-                    <p className="text-[0.65rem] text-cream/60 mt-0.5">Cards, UPI, Netbanking & Wallets</p>
+                    <CreditCard className="h-5 w-5 text-amber-400 mb-1.5" />
+                    <p className="font-semibold text-xs text-zinc-100">Online Payment</p>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">Cards, UPI & Netbanking (SSL)</p>
                   </button>
 
                   {/* WhatsApp Direct */}
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("whatsapp")}
-                    className={`rounded-2xl p-4 text-left border transition-all ${
+                    className={`rounded-xl p-3.5 text-left border transition-all cursor-pointer ${
                       paymentMethod === "whatsapp"
-                        ? "border-emerald-500 bg-emerald-950/40 text-emerald-300 font-bold"
-                        : "bg-black/40 border-gold/20 text-cream/70 hover:bg-black/60"
+                        ? "border-emerald-500 bg-emerald-950/40 text-emerald-300 font-semibold ring-1 ring-emerald-500/50"
+                        : "bg-zinc-900/60 border-white/[0.08] text-zinc-400 hover:text-zinc-200 hover:border-white/20"
                     }`}
                   >
-                    <MessageSquare className="h-5 w-5 text-emerald-400 mb-2" />
-                    <p className="font-bold text-xs">WhatsApp VIP Booking</p>
-                    <p className="text-[0.65rem] text-cream/60 mt-0.5">Direct Chef Confirmation</p>
+                    <MessageSquare className="h-5 w-5 text-emerald-400 mb-1.5" />
+                    <p className="font-semibold text-xs text-zinc-100">WhatsApp VIP</p>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">Direct Chef Confirmation</p>
                   </button>
                 </div>
-
-                {/* Razorpay Live Test Mode Info Banner */}
-                {paymentMethod === "card" && (
-                  <div className="rounded-2xl bg-amber-950/20 border border-gold/30 p-4 space-y-2 animate-in fade-in">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-gold font-bold flex items-center gap-1.5">
-                        <Lock className="h-3.5 w-3.5 text-emerald-400" />
-                        <span>Razorpay Test Mode Active</span>
-                      </p>
-                      <span className="font-mono text-[10px] text-zinc-400 bg-black/50 px-2 py-0.5 rounded border border-white/10">
-                        rzp_test_SwedUUn1KgRMs0
-                      </span>
-                    </div>
-                    <p className="text-xs text-cream/70 font-normal">
-                      Clicking below opens the official Razorpay test checkout window supporting test Credit/Debit Cards, UPI, Netbanking, and Wallets in a secure sandbox.
-                    </p>
-                  </div>
-                )}
               </div>
 
               {/* Confirm Order Action Button */}
@@ -1266,13 +977,13 @@ function CheckoutPage() {
                 type="submit"
                 disabled={isSubmitting || lines.length === 0}
                 size="lg"
-                className="w-full rounded-2xl bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold text-base sm:text-lg py-7 shadow-[0_0_30px_rgba(185,28,28,0.5)] hover:scale-[1.01] transition-all gap-2"
+                className="w-full rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-zinc-950 font-bold text-base py-6 shadow-lg shadow-amber-500/20 hover:scale-[1.01] hover:brightness-105 transition-all gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   "Reserving Handi Batch..."
                 ) : (
                   <>
-                    <Sparkles className="h-5 w-5 animate-spin" />
+                    <Sparkles className="h-5 w-5" />
                     <span>Confirm Handi Booking — {formatMoney(calculations.grandTotal)}</span>
                   </>
                 )}
@@ -1284,60 +995,60 @@ function CheckoutPage() {
           {/* RIGHT: STICKY ORDER SUMMARY (4-5 COLS)                    */}
           {/* ========================================================= */}
           <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 space-y-5">
-            <div className="rounded-3xl border-2 border-gold/40 bg-gradient-to-b from-[#1c120a] via-[#140c07] to-[#0a0705] p-6 shadow-2xl backdrop-blur-2xl space-y-6">
-              <div className="flex items-center justify-between border-b border-gold/20 pb-4">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-xl space-y-5">
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
                 <div>
-                  <span className="text-[0.65rem] font-bold uppercase tracking-widest text-gold">Order Review</span>
-                  <h2 className="flex items-center gap-2 font-display text-xl font-bold text-cream">
-                    <ShoppingBag className="h-5 w-5 text-gold" />
-                    <span>Summary ({count} Trays)</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400">Order Review</span>
+                  <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-zinc-100">
+                    <ShoppingBag className="h-5 w-5 text-amber-400" />
+                    <span>Summary ({count} {count === 1 ? "Tray" : "Trays"})</span>
                   </h2>
                 </div>
-                <Button asChild variant="ghost" size="sm" className="text-xs text-gold hover:bg-gold/15 rounded-xl font-bold">
+                <Button asChild variant="ghost" size="sm" className="text-xs text-amber-400 hover:bg-white/[0.06] rounded-xl font-medium">
                   <Link to="/cart">Edit Cart</Link>
                 </Button>
               </div>
 
               {count === 0 ? (
                 <div className="text-center py-8 space-y-3">
-                  <p className="text-xs text-cream/60">Your cart is currently empty.</p>
-                  <Button asChild className="rounded-xl bg-gold text-black font-bold text-xs px-4">
+                  <p className="text-xs text-zinc-400">Your cart is currently empty.</p>
+                  <Button asChild className="rounded-xl bg-amber-400 text-zinc-950 font-bold text-xs px-4 hover:bg-amber-300">
                     <Link to="/menu">Explore Handi Menu</Link>
                   </Button>
                 </div>
               ) : (
                 <>
                   {/* Cart Item Cards */}
-                  <div className="max-h-72 space-y-3 overflow-y-auto divide-y divide-gold/15 pr-1">
+                  <div className="max-h-72 space-y-3 overflow-y-auto divide-y divide-white/[0.06] pr-1">
                     {lines.map((line) => {
                       const dishImage = DISH_IMAGES[line.proteinId] || heroImg;
                       const isHalal = line.proteinId !== "pork";
 
                       return (
                         <div key={line.key} className="pt-3 first:pt-0 flex items-start gap-3 text-xs">
-                          <div className="relative h-14 w-14 rounded-xl overflow-hidden border border-gold/30 shrink-0">
+                          <div className="relative h-13 w-13 rounded-xl overflow-hidden border border-white/[0.08] shrink-0">
                             <img src={dishImage} alt={line.name} className="h-full w-full object-cover" />
                             {isHalal && (
-                              <span className="absolute bottom-0.5 right-0.5 bg-emerald-950/90 text-emerald-400 text-[0.5rem] font-bold px-1 rounded">
+                              <span className="absolute bottom-0.5 right-0.5 bg-emerald-950/90 text-emerald-400 text-[9px] font-bold px-1 rounded">
                                 Halal
                               </span>
                             )}
                           </div>
 
                           <div className="flex-1 min-w-0 space-y-0.5">
-                            <div className="flex justify-between font-bold text-cream">
+                            <div className="flex justify-between font-medium text-zinc-100">
                               <span className="truncate pr-1">
                                 {line.qty}× {line.name}
                               </span>
-                              <span className="text-gold font-display shrink-0">
+                              <span className="text-amber-300 font-mono font-semibold shrink-0">
                                 {formatMoney(line.unitPrice * line.qty)}
                               </span>
                             </div>
-                            <p className="text-[0.68rem] text-cream/70">
+                            <p className="text-[11px] text-zinc-400">
                               {line.aloo ? "• Royal Dum Aloo (Free)" : "• No Aloo"} ·{" "}
-                              {line.extraSpicy ? "🌶️ Spicy" : "🌿 No Spicy (Mild)"}
+                              {line.extraSpicy ? "🌶️ Spicy" : "🌿 Mild"}
                             </p>
-                            {line.notes && <p className="text-[0.62rem] text-gold/80 italic truncate">{line.notes}</p>}
+                            {line.notes && <p className="text-[10px] text-amber-400/80 italic truncate">{line.notes}</p>}
                           </div>
                         </div>
                       );
@@ -1345,20 +1056,20 @@ function CheckoutPage() {
                   </div>
 
                   {/* Promo Code Input Field */}
-                  <div className="pt-2 border-t border-gold/15 space-y-2">
+                  <div className="pt-2 border-t border-white/[0.06] space-y-2">
                     {appliedPromo ? (
-                      <div className="flex items-center justify-between rounded-xl bg-emerald-950/60 border border-emerald-500/50 p-2.5 text-xs text-emerald-300">
+                      <div className="flex items-center justify-between rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-2.5 text-xs text-emerald-300">
                         <div className="flex items-center gap-2">
                           <Tag className="h-3.5 w-3.5 text-emerald-400" />
                           <div>
                             <span className="font-bold uppercase font-mono">{appliedPromo.code}</span>
-                            <span className="text-[0.65rem] block text-emerald-300/80">{appliedPromo.label}</span>
+                            <span className="text-[10px] block text-emerald-400/80">{appliedPromo.label}</span>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={handleRemovePromo}
-                          className="text-[0.65rem] text-emerald-400 hover:text-white px-2 py-0.5 rounded bg-black/40"
+                          className="text-[10px] text-emerald-400 hover:text-white px-2 py-0.5 rounded bg-black/40 cursor-pointer"
                         >
                           ✕
                         </button>
@@ -1369,12 +1080,12 @@ function CheckoutPage() {
                           placeholder="Promo code (e.g. SPICEKING)"
                           value={promoInput}
                           onChange={(e) => setPromoInput(e.target.value)}
-                          className="bg-black/60 border-gold/25 text-cream text-xs rounded-xl uppercase font-mono"
+                          className="bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-xs rounded-xl uppercase font-mono"
                         />
                         <Button
                           type="submit"
                           disabled={!promoInput.trim()}
-                          className="rounded-xl bg-gold text-black hover:bg-gold/90 text-xs font-bold px-3 shrink-0"
+                          className="rounded-xl bg-amber-400 text-zinc-950 hover:bg-amber-300 text-xs font-bold px-3 shrink-0 cursor-pointer"
                         >
                           Apply
                         </Button>
@@ -1383,43 +1094,43 @@ function CheckoutPage() {
                   </div>
 
                   {/* Itemized Calculation Summary */}
-                  <div className="space-y-2 border-t border-gold/20 pt-3 text-xs">
-                    <div className="flex justify-between text-cream/80">
-                      <span>Subtotal ({count} Trays):</span>
-                      <span>{formatMoney(calculations.subtotal)}</span>
+                  <div className="space-y-2 border-t border-white/[0.06] pt-3 text-xs">
+                    <div className="flex justify-between text-zinc-300">
+                      <span>Subtotal ({count} {count === 1 ? "Tray" : "Trays"}):</span>
+                      <span className="font-mono">{formatMoney(calculations.subtotal)}</span>
                     </div>
 
                     {calculations.discountAmount > 0 && (
                       <div className="flex justify-between text-emerald-400 font-semibold">
                         <span>Promo Discount ({appliedPromo?.code}):</span>
-                        <span>−{formatMoney(calculations.discountAmount)}</span>
+                        <span className="font-mono">−{formatMoney(calculations.discountAmount)}</span>
                       </div>
                     )}
 
-                    <div className="flex justify-between text-cream/70">
-                      <span>Springfield Food Tax (8.6%):</span>
-                      <span>{formatMoney(calculations.tax)}</span>
+                    <div className="flex justify-between text-zinc-400">
+                      <span>Springfield Tax (8.6%):</span>
+                      <span className="font-mono">{formatMoney(calculations.tax)}</span>
                     </div>
 
-                    <div className="flex justify-between text-cream/70">
+                    <div className="flex justify-between text-zinc-400">
                       <span>Fulfilment ({fulfilmentType === "pickup" ? "Pickup" : "Delivery"}):</span>
-                      <span>{calculations.deliveryCost === 0 ? "Free ($0.00)" : formatMoney(calculations.deliveryCost)}</span>
+                      <span className="font-mono">{calculations.deliveryCost === 0 ? "Free ($0.00)" : formatMoney(calculations.deliveryCost)}</span>
                     </div>
 
-                    <div className="flex justify-between border-t border-gold/25 pt-3 font-display text-xl font-bold text-cream">
+                    <div className="flex justify-between border-t border-white/[0.08] pt-3 font-display text-lg font-bold text-zinc-100">
                       <span>Grand Total:</span>
-                      <span className="text-gold drop-shadow-md">{formatMoney(calculations.grandTotal)}</span>
+                      <span className="text-amber-300 font-mono text-xl">{formatMoney(calculations.grandTotal)}</span>
                     </div>
                   </div>
 
                   {/* Fulfilment Schedule Indicator */}
-                  <div className="rounded-2xl bg-black/50 border border-gold/20 p-3.5 text-xs text-cream/80 space-y-1">
-                    <p className="flex items-center gap-1.5 text-gold font-semibold">
-                      <Clock className="h-3.5 w-3.5" /> Order Scheduled For:
+                  <div className="rounded-xl bg-zinc-900/60 border border-white/[0.06] p-3 text-xs text-zinc-300 space-y-1">
+                    <p className="flex items-center gap-1.5 text-amber-400 font-semibold text-[11px]">
+                      <Clock className="h-3.5 w-3.5" /> Scheduled For:
                     </p>
-                    <p className="text-[0.72rem] pl-5">
-                      <strong className="text-cream">{selectedDate}</strong> at{" "}
-                      <strong className="text-gold">{fulfilmentTime}</strong>
+                    <p className="text-xs pl-5 text-zinc-200">
+                      <strong>{selectedDate}</strong> at{" "}
+                      <strong className="text-amber-300">{fulfilmentTime}</strong>
                     </p>
                   </div>
 
@@ -1429,25 +1140,25 @@ function CheckoutPage() {
                       href={whatsappBookingUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/50 bg-emerald-950/70 hover:bg-emerald-900/80 p-3 text-xs font-bold text-emerald-400 transition-all shadow-md"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 p-2.5 text-xs font-semibold text-emerald-400 transition-all shadow-sm"
                     >
                       <MessageSquare className="h-4 w-4" />
-                      <span>WhatsApp Direct VIP Booking</span>
+                      <span>WhatsApp Direct Booking</span>
                     </a>
 
                     <a
                       href={`tel:${BUSINESS.phone}`}
-                      className="flex items-center justify-center gap-1.5 rounded-xl border border-gold/20 bg-black/60 hover:bg-gold/15 p-2 text-[0.7rem] font-semibold text-gold transition-all"
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-white/[0.08] bg-zinc-900/60 hover:bg-zinc-800 p-2 text-xs font-medium text-zinc-300 transition-all"
                     >
-                      <Phone className="h-3.5 w-3.5" />
+                      <Phone className="h-3.5 w-3.5 text-amber-400" />
                       <span>Kitchen Hotline: {BUSINESS.phone}</span>
                     </a>
                   </div>
 
                   {/* Halal & Fresh Dum Assurance Seal */}
-                  <div className="flex items-center gap-2 rounded-xl bg-black/40 border border-gold/15 p-2.5 text-[0.68rem] text-gold">
+                  <div className="flex items-center gap-2 rounded-xl bg-zinc-900/40 border border-white/[0.06] p-2.5 text-[11px] text-zinc-400">
                     <Shield className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>100% Zabiha Halal Certified • Fresh Clay Coal Cooking</span>
+                    <span>100% Zabiha Halal • Slow-cooked wood & coal Dum</span>
                   </div>
                 </>
               )}

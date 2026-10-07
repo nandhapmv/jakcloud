@@ -4,7 +4,7 @@
   "bookingHorizonDays": 7,
   "isKitchenOpen": true,
   "emergencyPauseReason": "",
-  "closedWeekdays": [3],
+  "closedWeekdays": [],
   "deliveryFee": 10,
   "freeDeliveryTrayThreshold": 3,
   "alooCharge": 7,

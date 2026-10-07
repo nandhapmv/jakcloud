@@ -275,7 +275,7 @@ export const INITIAL_KITCHEN_SETTINGS: KitchenSettings = {
   bookingHorizonDays: 7, // 7 days (1 week) default horizon
   isKitchenOpen: true,
   emergencyPauseReason: "",
-  closedWeekdays: [3], // Wednesday
+  closedWeekdays: [], // Open 7 days a week
   deliveryFee: 10,
   freeDeliveryTrayThreshold: 5,
   alooCharge: 7, // Free aloo ($0)
@@ -744,6 +744,13 @@ export const jakloudStore = {
     const next = { ...current, ...updates };
     setStored(KEYS.SETTINGS, next);
     syncBackendSettings(updates);
+    return next;
+  },
+
+  saveSettings(settings: Partial<KitchenSettings>): KitchenSettings {
+    const current = this.getSettings();
+    const next = { ...current, ...settings };
+    setStored(KEYS.SETTINGS, next);
     return next;
   },
 

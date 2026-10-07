@@ -79,18 +79,21 @@ function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 pb-20">
-      <section className="relative border-b border-white/[0.08] bg-[#121216] px-4 py-12 text-center">
-        <h1 className="font-display text-3xl sm:text-4xl font-semibold text-zinc-100">Talk to Spice King</h1>
-        <p className="mx-auto mt-2 max-w-xl text-xs sm:text-sm text-zinc-400 font-normal">
-          Email, phone, text, or drop us a message below. We respond promptly during kitchen hours (7:00 AM to 2:00 PM).
-        </p>
+    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 pb-16">
+      <section className="relative border-b border-white/[0.08] bg-[#121216] px-4 sm:px-6 lg:px-8 py-8 sm:py-10 text-left">
+        <div className="mx-auto max-w-7xl space-y-1">
+          <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">Customer Support & Inquiries</span>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-semibold text-zinc-100">Talk to Spice King</h1>
+          <p className="max-w-2xl text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed">
+            Email, phone, text, or drop us a message below. We respond promptly during kitchen hours (7:00 AM to 2:00 PM).
+          </p>
+        </div>
       </section>
 
-      <div className="mx-auto max-w-5xl px-4 py-10 space-y-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           {/* Contact details */}
-          <div className="space-y-3.5 rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-xl text-xs font-normal">
+          <div className="space-y-3.5 rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-sm hover:border-amber-500/30 transition-all text-xs font-normal">
             <h2 className="font-display text-lg font-semibold text-amber-400">Reach Us</h2>
             <a href={`tel:${BUSINESS.phone}`} className="flex items-center gap-2.5 text-zinc-300 hover:text-amber-300 transition-colors">
               <Phone className="h-4 w-4 shrink-0 text-amber-400" /> <span>Call or text {BUSINESS.phone}</span>
@@ -115,15 +118,15 @@ function ContactPage() {
           </div>
 
           {/* Operating hours */}
-          <div className="space-y-2.5 rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 text-xs shadow-xl text-zinc-400 font-normal">
+          <div className="space-y-2.5 rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 text-xs shadow-sm hover:border-amber-500/30 transition-all text-zinc-400 font-normal">
             <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-amber-400">
               <Clock className="h-4 w-4 text-amber-400" /> Daily Kitchen Schedule
             </h2>
             <p><span className="text-zinc-200 font-medium">Order Cutoff:</span> 7:00 AM – 2:00 PM</p>
             <p><span className="text-zinc-200 font-medium">Hot Counter Pickup:</span> 11:00 AM – 6:00 PM</p>
             <p><span className="text-zinc-200 font-medium">Doorstep Delivery:</span> 2:00 PM – 6:00 PM</p>
-            <p className="text-zinc-500">Open Sunday, Monday, Tuesday, Thursday, Friday, Saturday</p>
-            <p className="text-amber-400/80 text-[0.68rem]">Closed Wednesdays for fresh spice grinding and marinations.</p>
+            <p className="text-emerald-400 font-medium">Open 7 Days a Week (Monday – Sunday)</p>
+            <p className="text-zinc-400 text-[0.68rem]">Fresh slow-cooked Dum Handis prepared daily upon order.</p>
             <p className="rounded-xl bg-[#18181f] border border-white/[0.06] p-2.5 text-[0.68rem] text-zinc-400">
               Orders must be placed by 2:00 PM for next-day pickup or delivery, subject to our 25-tray daily slow-cooked batch limit.
             </p>
@@ -131,10 +134,10 @@ function ContactPage() {
         </div>
 
         {/* Send message form */}
-        <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-8 shadow-xl space-y-4">
-          <div>
+        <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-8 shadow-sm space-y-4">
+          <div className="text-left space-y-0.5">
             <h2 className="font-display text-xl font-semibold text-zinc-100">Send Us a Direct Message</h2>
-            <p className="text-xs text-zinc-400 font-normal mt-0.5">
+            <p className="text-xs text-zinc-400 font-normal">
               Have questions about catering, private celebrations, ingredients, or custom spice requests? Let us know.
             </p>
           </div>

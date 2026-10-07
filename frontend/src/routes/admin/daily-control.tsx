@@ -29,9 +29,8 @@ import {
 import { toast } from "sonner";
 
 import logoImg from "@/assets/logo.png";
-import heroBiryaniImg from "@/assets/hero-biryani.jpg";
 import { useAuth } from "@/lib/auth";
-import { formatMoney, BUSINESS, ORDER_CUTOFF_HOUR } from "@/lib/menu";
+import { formatMoney, BUSINESS, ORDER_CUTOFF_HOUR, formatDate } from "@/lib/menu";
 import { useKitchenSettings, useDynamicOrders } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -123,6 +122,14 @@ function DailyOrderControlPage() {
   const circleRadius = 78;
   const circumference = 2 * Math.PI * circleRadius;
   const strokeDashoffset = circumference - (capacityPercent / 100) * circumference;
+
+  // Live Rolling Window Date Calculations (Today -> Today + Horizon)
+  const rollingWindowStart = useMemo(() => new Date(), []);
+  const rollingWindowEnd = useMemo(() => {
+    const end = new Date();
+    end.setDate(end.getDate() + (horizonDays || 7));
+    return end;
+  }, [horizonDays]);
 
   // Handle Master Ordering Toggle
   const handleToggleMasterOrdering = (checked: boolean) => {
@@ -539,47 +546,116 @@ function DailyOrderControlPage() {
               </div>
 
               {/* Dynamic Booking Slot Horizon Window */}
-              <div className="rounded-2xl border border-gold/20 bg-black/40 p-3.5 space-y-2">
+              <div className="rounded-2xl border border-gold/30 bg-black/40 p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="horizon-input" className="text-xs text-gold font-semibold flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 text-gold" /> Advance Slot Booking Horizon:
+                  <Label htmlFor="horizon-days-input" className="text-xs text-gold font-bold flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4 text-gold" /> Advance Slot Booking Horizon (Days):
                   </Label>
-                  <span className="font-mono text-xs text-cream/70">{horizonDays} Days Open</span>
+                  <span className="font-mono text-xs font-bold text-amber-300 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-md">
+                    {horizonDays} Days Open
+                  </span>
                 </div>
 
-                <p className="text-[0.65rem] text-cream/60">
-                  Control how far in advance diners can select Dum dates (1 week, 10 days, or 1 month). Dates beyond this are automatically locked in the customer calendar.
+                <p className="text-[0.68rem] text-cream/70 leading-relaxed">
+                  Controls the rolling advance booking window for diners (default 7 days). Diners can pick dates from today up to <strong className="text-amber-300">+{horizonDays} days</strong>. Every night at 12:00 AM midnight, the window automatically shifts forward by 1 day (1 day passes, 1 day adds).
                 </p>
 
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {[
-                    { label: "7 Days (1 Week - Default)", val: 7 },
-                    { label: "10 Days Window", val: 10 },
-                    { label: "30 Days (1 Month)", val: 30 },
-                  ].map((preset) => (
-                    <button
-                      key={preset.val}
-                      type="button"
-                      onClick={() => setHorizonDays(preset.val)}
-                      className={`rounded-lg px-3 py-1 text-xs font-medium transition-all ${
-                        horizonDays === preset.val
-                          ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
-                          : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/40"
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
+                {/* Direct Number Stepper & Input */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setHorizonDays((prev) => Math.max(1, prev - 1))}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-black/60 text-gold hover:bg-gold/20 text-lg font-bold transition-colors cursor-pointer"
+                    title="Decrease 1 day"
+                  >
+                    -
+                  </button>
+                  <Input
+                    id="horizon-days-input"
+                    type="number"
+                    min={1}
+                    max={90}
+                    value={horizonDays}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      setHorizonDays(isNaN(val) ? 7 : Math.max(1, Math.min(90, val)));
+                    }}
+                    className="h-10 text-center font-display text-lg font-bold text-cream rounded-xl border-gold/30 bg-black/60 focus:border-gold"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setHorizonDays((prev) => Math.min(90, prev + 1))}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-black/60 text-gold hover:bg-gold/20 text-lg font-bold transition-colors cursor-pointer"
+                    title="Increase 1 day"
+                  >
+                    +
+                  </button>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      updateSettings({ bookingHorizonDays: horizonDays });
+                      toast.success(`Booking horizon updated to ${horizonDays} rolling days!`);
+                    }}
+                    className="h-10 bg-gold text-black hover:bg-amber-400 font-bold text-xs px-3 shadow-md transition-all shrink-0 cursor-pointer"
+                  >
+                    Apply Horizon
+                  </Button>
+                </div>
+
+                {/* Quick Horizon Presets */}
+                <div className="space-y-1.5 pt-0.5">
+                  <span className="text-[0.65rem] text-cream/50 uppercase tracking-wider font-semibold block">
+                    Quick Horizon Presets:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { label: "7 Days (Default - 1 Wk)", val: 7 },
+                      { label: "10 Days Window", val: 10 },
+                      { label: "14 Days (2 Weeks)", val: 14 },
+                      { label: "21 Days (3 Weeks)", val: 21 },
+                      { label: "30 Days (1 Month)", val: 30 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.val}
+                        type="button"
+                        onClick={() => setHorizonDays(preset.val)}
+                        className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all cursor-pointer ${
+                          horizonDays === preset.val
+                            ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
+                            : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/40 hover:text-cream"
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Live Rolling Window Preview Badge */}
+                <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 p-2.5 text-xs text-amber-200/90 space-y-1">
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-amber-400" /> Live Rolling Range:
+                    </span>
+                    <span className="font-mono text-[11px] text-amber-300">
+                      {formatDate(rollingWindowStart)} → {formatDate(rollingWindowEnd)}
+                    </span>
+                  </div>
+                  <p className="text-[0.65rem] text-cream/60 leading-relaxed">
+                    Diners visiting today can select dates up to <strong>{formatDate(rollingWindowEnd)}</strong>. Tomorrow morning, this range automatically rolls forward by 1 day.
+                  </p>
                 </div>
               </div>
 
-              {/* Wednesday Closure Notice */}
+              {/* 7-Day Operation Notice */}
               <div className="rounded-2xl border border-gold/20 bg-black/40 p-4 space-y-1 text-xs">
                 <div className="flex items-center gap-2 text-gold font-semibold">
-                  <Sun className="h-4 w-4 text-saffron" /> Wednesday Kitchen Rest & Spice Grinding
+                  <Sun className="h-4 w-4 text-emerald-400" /> 7-Day Continuous Handi Dum Operation
                 </div>
                 <p className="text-[0.7rem] text-cream/70 leading-relaxed">
-                  System automatically skips Wednesdays during next-day rollover to allow deep handi seasoning and spice roasting. Next available date will roll to Thursday.
+                  Kitchen operates all 7 days of the week (including Wednesdays). Diners can schedule Handi trays for any day within the active booking horizon window.
                 </p>
               </div>
 

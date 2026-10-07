@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
 import {
   Clock,
   MapPin,
@@ -22,28 +21,12 @@ import {
   Calendar,
   Layers,
   ArrowRight,
-  Eye,
-  X,
 } from "lucide-react";
 
 import heroImg from "@/assets/hero-biryani.jpg";
-import dumHandiImg from "@/assets/dum-handi.jpg";
-import logoImg from "@/assets/logo.png";
-import chickenImg from "@/assets/chicken-biryani.jpg";
-import muttonImg from "@/assets/mutton-biryani.jpg";
-import paneerImg from "@/assets/paneer-biryani.jpg";
-import prawnImg from "@/assets/prawn-biryani.jpg";
-
 import { Button } from "@/components/ui/button";
 import { MenuSection } from "@/components/menu-section";
 import { formatDate, nextAvailableDate, BUSINESS } from "@/lib/menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { MobileAppView } from "@/components/mobile-app-view";
 
 export const Route = createFileRoute("/")({
@@ -68,50 +51,10 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const nextDate = formatDate(nextAvailableDate());
-  const [lightboxImg, setLightboxImg] = useState<{ url: string; title: string; desc: string } | null>(null);
 
   const whatsappUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
     "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKLOUD.",
   )}`;
-
-  const galleryItems = [
-    {
-      url: chickenImg,
-      title: "Royal Chicken Dum Biryani",
-      desc: "Slow-cooked bone-in chicken thighs layered in fragrant saffron basmati rice with whole spices.",
-      category: "Signature Handi",
-    },
-    {
-      url: muttonImg,
-      title: "Hyderabadi Shahi Mutton Dum",
-      desc: "Tender baby goat cuts slow-braised for 4 hours in pure desi ghee and roasted spice marinades.",
-      category: "Feast Tray",
-    },
-    {
-      url: dumHandiImg,
-      title: "Traditional Sealed Dum Handi",
-      desc: "Clay vessel sealed with whole wheat dough to trap steam and infuse pure floral saffron aromatics.",
-      category: "Culinary Craft",
-    },
-    {
-      url: paneerImg,
-      title: "Royal Shahi Paneer Dum",
-      desc: "Fresh golden paneer cubes with spiced baby potatoes and royal Mughlai saffron gravy.",
-      category: "Vegetarian Royal",
-    },
-    {
-      url: prawnImg,
-      title: "Jumbo King Tiger Prawn Dum",
-      desc: "Succulent ocean tiger prawns marinated in coastal spices and layered in aged long-grain basmati.",
-      category: "Seafood Specialty",
-    },
-    {
-      url: heroImg,
-      title: "Ghee Roasted Garnishes Platter",
-      desc: "Golden fried crispy onions (birista), toasted whole cashews, boiled eggs, and fresh mint leaves.",
-      category: "Gourmet Plating",
-    },
-  ];
 
   const reviews = [
     {
@@ -168,34 +111,34 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 1. CINEMATIC HERO BANNER                                      */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative min-h-[calc(100vh-84px)] flex items-center justify-center overflow-hidden border-b border-white/[0.08] py-8 lg:py-10">
+      <section className="relative flex items-center justify-center overflow-hidden border-b border-white/[0.08] py-10 lg:py-12">
         {/* Background Photography */}
         <img
           src={heroImg}
           alt="Cinematic platter of royal Hyderabadi dum biryani"
-          className="absolute inset-0 h-full w-full object-cover object-center brightness-50 scale-105 transition-transform duration-10000"
+          className="absolute inset-0 h-full w-full object-cover object-center brightness-40 scale-105"
           width={1920}
           height={1080}
         />
 
         {/* Dark Multi-Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-[#09090b]/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-[#09090b]/55" />
 
         {/* Hero Content Container */}
-        <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 text-center space-y-3.5 sm:space-y-4 animate-in fade-in-50 duration-700">
-          {/* Unified Batch & Limit Pill */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-black/75 px-3.5 py-1 backdrop-blur-xl shadow-sm text-xs">
+        <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 text-center space-y-4 animate-in fade-in-50 duration-700">
+          {/* Refined Batch Status Pill */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-black/80 px-4 py-1.5 backdrop-blur-xl shadow-sm text-xs">
             <Sparkles className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-            <span className="text-amber-300 font-medium">Limited to 25 Handcrafted Handi Trays Daily</span>
+            <span className="text-amber-300 font-medium">Limited to 25 Handi Trays Daily</span>
             <span className="text-zinc-600">•</span>
             <span className="text-zinc-300">
-              Next Batch: <strong className="text-amber-300 font-medium">{nextDate}</strong> (Order by 2:00 PM Cutoff)
+              Next Batch: <strong className="text-amber-300 font-semibold">{nextDate}</strong>
             </span>
           </div>
 
           {/* Display Headline */}
           <div className="space-y-2 max-w-2xl mx-auto">
-            <p className="text-[11px] tracking-[0.22em] uppercase text-amber-400 font-semibold">
+            <p className="text-[11px] tracking-[0.25em] uppercase text-amber-400 font-semibold">
               JAKLOUD · Royal Culinary Heritage
             </p>
             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-tight text-white text-balance">
@@ -207,52 +150,25 @@ function HomePage() {
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
-            <Button
-              asChild
-              className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold text-xs px-5 py-2.5 h-10 shadow-md hover:brightness-105 transition-all gap-1.5 cursor-pointer"
+          {/* Clean Focused Action Button */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <a
+              href="#menu"
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold text-xs px-5 py-2.5 h-10 shadow-md hover:brightness-105 transition-all"
             >
-              <Link to="/menu">
-                <UtensilsCrossed className="h-4 w-4" /> Order Dum Handi Now →
-              </Link>
-            </Button>
+              <UtensilsCrossed className="h-4 w-4" />
+              <span>Explore Handi Trays ↓</span>
+            </a>
 
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 px-4 py-2 text-xs font-semibold text-emerald-400 transition-all shadow-sm h-10"
+              className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 px-4 py-2.5 text-xs font-semibold text-emerald-400 transition-all shadow-sm h-10"
             >
               <MessageSquare className="h-4 w-4 text-emerald-400" />
               <span>WhatsApp Order</span>
             </a>
-
-            <a
-              href={`tel:${BUSINESS.phone}`}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-zinc-900/70 hover:bg-zinc-800 px-4 py-2 text-xs font-medium text-zinc-300 hover:text-amber-400 transition-all shadow-sm h-10"
-            >
-              <Phone className="h-4 w-4 text-amber-400" />
-              <span>Call: {BUSINESS.phone}</span>
-            </a>
-          </div>
-
-          {/* Specifications Strip - Fully visible and balanced */}
-          <div className="mx-auto max-w-3xl pt-2 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-left">
-            {[
-              { label: "Generous Tray", val: "Serves 4–5 Adults" },
-              { label: "Meat Portion", val: "1.6 – 1.8 kg Meat" },
-              { label: "Zabiha Halal", val: "100% Certified" },
-              { label: "Free Bonus", val: "Chef's Dessert Pack" },
-            ].map((spec, i) => (
-              <div
-                key={i}
-                className="rounded-xl border border-white/[0.08] bg-zinc-900/60 p-2.5 backdrop-blur-md text-center sm:text-left"
-              >
-                <p className="text-[10px] uppercase tracking-wider text-amber-400 font-medium">{spec.label}</p>
-                <p className="text-xs font-semibold text-zinc-100 mt-0.5">{spec.val}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -283,10 +199,15 @@ function HomePage() {
       </div>
 
       {/* ------------------------------------------------------------- */}
+      {/* 3. HANDI MENU SELECTION (EXACT MOBILE APP DESIGN)             */}
+      {/* ------------------------------------------------------------- */}
+      <MenuSection />
+
+      {/* ------------------------------------------------------------- */}
       {/* 3. QUALITY STANDARD                                          */}
       {/* ------------------------------------------------------------- */}
-      <section className="mx-auto max-w-7xl px-6 py-10 lg:py-12 sm:px-8 space-y-6">
-        <div className="text-center space-y-1.5 max-w-2xl mx-auto">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-5">
+        <div className="text-left space-y-1 max-w-2xl">
           <div className="inline-flex items-center gap-1.5 text-xs text-amber-400 font-medium">
             <Shield className="h-4 w-4 text-emerald-400" />
             <span>Uncompromising Quality Standard</span>
@@ -352,91 +273,11 @@ function HomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 4. SIGNATURE HANDI MENU SHOWCASE                              */}
-      {/* ------------------------------------------------------------- */}
-      <section id="menu" className="border-t border-white/[0.08] bg-[#0c0c0e] py-10 lg:py-12">
-        <div className="mx-auto max-w-7xl px-6 sm:px-8 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/[0.08] pb-5">
-            <div>
-              <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">
-                Limited Daily Batches
-              </span>
-              <h2 className="mt-1 font-display text-2xl sm:text-3xl font-semibold text-zinc-100">
-                Signature Dum Handi Trays
-              </h2>
-              <p className="mt-1 text-xs sm:text-sm text-zinc-400 font-normal max-w-xl">
-                Each tray serves 4–5 adults with 1.6–1.8 kg meat, 1 kg basmati, boiled eggs, roasted cashews, raita,
-                salan, and dessert.
-              </p>
-            </div>
-
-            <Button asChild className="rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 font-medium text-xs shrink-0 gap-1">
-              <Link to="/menu">
-                View Full Menu & Pricing →
-              </Link>
-            </Button>
-          </div>
-
-          {/* Integrated Menu Section */}
-          <MenuSection />
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------- */}
-      {/* 5. INTERACTIVE FOOD GALLERY PREVIEW                           */}
-      {/* ------------------------------------------------------------- */}
-      <section className="mx-auto max-w-7xl px-6 py-10 lg:py-12 sm:px-8 space-y-6">
-        <div className="text-center space-y-1.5 max-w-2xl mx-auto">
-          <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">
-            Visual Craftsmanship
-          </span>
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-zinc-100">
-            The Art of Dum Cooking
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-400 font-normal">
-            Click any image to inspect the steam, saffron layering, and royal golden garnishes.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {galleryItems.map((item, idx) => (
-            <div
-              key={idx}
-              onClick={() => setLightboxImg(item)}
-              className="group relative rounded-2xl overflow-hidden border border-white/[0.08] bg-zinc-900/60 shadow-sm cursor-pointer hover:border-amber-500/40 transition-all"
-            >
-              <img
-                src={item.url}
-                alt={item.title}
-                className="h-56 w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-
-              <div className="absolute bottom-0 inset-x-0 p-3.5 space-y-1">
-                <span className="rounded-md bg-zinc-900/80 border border-white/10 px-2 py-0.5 text-[10px] font-medium text-amber-300">
-                  {item.category}
-                </span>
-                <h4 className="font-semibold text-sm text-zinc-100 group-hover:text-amber-300 transition-colors">
-                  {item.title}
-                </h4>
-                <p className="text-xs text-zinc-400 line-clamp-1 font-normal">{item.desc}</p>
-              </div>
-
-              <div className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 border border-white/10 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Eye className="h-3.5 w-3.5" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------- */}
       {/* 6. CUSTOMER REVIEWS                                           */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-y border-white/[0.08] bg-[#0c0c0e] py-10 lg:py-12">
-        <div className="mx-auto max-w-7xl px-6 sm:px-8 space-y-6">
-          <div className="text-center space-y-1.5 max-w-2xl mx-auto">
+      <section className="border-y border-white/[0.08] bg-[#0c0c0e] py-8 lg:py-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-5">
+          <div className="text-left space-y-1 max-w-2xl">
             <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">
               Verified Patron Testimonials
             </span>
@@ -452,7 +293,7 @@ function HomePage() {
             {reviews.map((rev, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-white/[0.08] bg-[#121216] p-4 sm:p-5 shadow-sm space-y-3 flex flex-col justify-between"
+                className="rounded-2xl border border-white/[0.08] bg-[#121216] p-4 sm:p-5 shadow-sm space-y-3 flex flex-col justify-between hover:border-amber-500/30 transition-all"
               >
                 <div className="space-y-2">
                   <div className="flex items-center gap-1 text-amber-400">
@@ -483,8 +324,8 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 7. PICKUP & DELIVERY LOCATION                                 */}
       {/* ------------------------------------------------------------- */}
-      <section className="mx-auto max-w-7xl px-6 py-10 lg:py-12 sm:px-8 space-y-6">
-        <div className="text-center space-y-1.5 max-w-2xl mx-auto">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-5">
+        <div className="text-left space-y-1 max-w-2xl">
           <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">
             Springfield, MO Hub
           </span>
@@ -498,7 +339,7 @@ function HomePage() {
 
         <div className="grid gap-4 md:grid-cols-2">
           {/* Pickup Card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm space-y-2.5">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm space-y-2.5 hover:border-amber-500/30 transition-all">
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-400 border border-amber-500/20">
                 <Store className="h-5 w-5" />
@@ -533,7 +374,7 @@ function HomePage() {
           </div>
 
           {/* Delivery Card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm space-y-2.5">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm space-y-2.5 hover:border-amber-500/30 transition-all">
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-400 border border-amber-500/20">
                 <Truck className="h-5 w-5" />
@@ -569,9 +410,9 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 8. FREQUENTLY ASKED QUESTIONS                                 */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-t border-white/[0.08] bg-[#0c0c0e] py-10 lg:py-12">
-        <div className="mx-auto max-w-4xl px-6 sm:px-8 space-y-8">
-          <div className="text-center space-y-2">
+      <section className="border-t border-white/[0.08] bg-[#0c0c0e] py-8 lg:py-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-5">
+          <div className="text-left space-y-1 max-w-2xl">
             <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">
               Got Questions?
             </span>
@@ -580,54 +421,25 @@ function HomePage() {
             </h2>
           </div>
 
-          <div className="space-y-3">
+          <div className="grid gap-4 md:grid-cols-2">
             {faqs.map((faq, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-white/[0.08] bg-[#121216] p-4 space-y-1.5 text-xs shadow-sm"
+                className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-sm hover:border-amber-500/30 transition-all flex flex-col justify-start"
               >
-                <h4 className="text-xs sm:text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                  <span className="text-amber-400 font-mono">0{i + 1}.</span> {faq.q}
+                <h4 className="text-sm sm:text-base font-semibold text-zinc-100 flex items-start gap-2.5">
+                  <span className="text-amber-400 font-mono font-bold shrink-0">0{i + 1}.</span>
+                  <span>{faq.q}</span>
                 </h4>
-                <p className="text-zinc-400 font-normal leading-relaxed pl-6">{faq.a}</p>
+                <p className="mt-2 text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed">
+                  {faq.a}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ------------------------------------------------------------- */}
-      {/* 9. LIGHTBOX PHOTO MODAL                                       */}
-      {/* ------------------------------------------------------------- */}
-      <Dialog open={!!lightboxImg} onOpenChange={(open) => !open && setLightboxImg(null)}>
-        <DialogContent className="border-white/10 bg-[#121216] text-zinc-100 sm:max-w-2xl p-0 overflow-hidden">
-          {lightboxImg && (
-            <div>
-              <img src={lightboxImg.url} alt={lightboxImg.title} className="h-80 w-full object-cover" />
-              <div className="p-5 space-y-2 text-xs">
-                <DialogTitle className="text-lg font-semibold text-zinc-100">
-                  {lightboxImg.title}
-                </DialogTitle>
-                <DialogDescription className="text-zinc-400 text-xs leading-relaxed font-normal">
-                  {lightboxImg.desc}
-                </DialogDescription>
-                <div className="pt-3 flex justify-between items-center border-t border-white/10">
-                  <Button asChild className="rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 font-medium text-xs">
-                    <Link to="/menu">Order This Dish →</Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setLightboxImg(null)}
-                    className="border-white/10 text-zinc-400 text-xs font-normal"
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
       </div>
     </>
   );

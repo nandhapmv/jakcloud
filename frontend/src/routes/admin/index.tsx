@@ -359,12 +359,12 @@ function AdminOverviewPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#080503] font-sans text-cream selection:bg-gold/30 selection:text-gold">
+    <div className="flex h-screen w-full overflow-hidden bg-[#080503] font-sans text-cream selection:bg-gold/30 selection:text-gold">
       {/* ------------------------------------------------------------- */}
       {/* 1. LEFT SIDEBAR                                               */}
       {/* ------------------------------------------------------------- */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-gold/20 bg-[#100b07] transition-all duration-300 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-screen flex-col border-r border-gold/20 bg-[#100b07] transition-all duration-300 lg:relative lg:translate-x-0 shrink-0 ${
           sidebarCollapsed ? "lg:w-20" : "lg:w-72"
         } ${mobileNavOpen ? "w-72 translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"}`}
       >
@@ -721,9 +721,9 @@ function AdminOverviewPage() {
       {/* ------------------------------------------------------------- */}
       {/* 2. MAIN VIEWPORT                                              */}
       {/* ------------------------------------------------------------- */}
-      <div className="flex flex-1 flex-col overflow-x-hidden">
-        {/* TOP NAVBAR */}
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-gold/20 bg-[#120c08]/95 px-4 backdrop-blur-xl sm:px-8">
+      <div className="flex flex-1 flex-col h-screen min-w-0 overflow-hidden">
+        {/* TOP NAVBAR (Permanently fixed at top) */}
+        <header className="h-20 shrink-0 z-30 flex items-center justify-between border-b border-gold/20 bg-[#120c08]/95 px-4 backdrop-blur-xl sm:px-8">
           {/* Left: Mobile Toggle & Clean Live Search */}
           <div className="flex items-center gap-3 sm:gap-4 flex-1 max-w-md lg:max-w-lg">
             <button
@@ -942,11 +942,12 @@ function AdminOverviewPage() {
         {/* ------------------------------------------------------------- */}
         {/* 3. SECTION CONTENT                                            */}
         {/* ------------------------------------------------------------- */}
-        <main className="flex-1 p-4 sm:p-8 space-y-8 max-w-7xl mx-auto w-full">
-          {/* ========================================================= */}
-          {/* TAB 1: DASHBOARD OVERVIEW                                 */}
-          {/* ========================================================= */}
-          {activeSection === "dashboard" && (
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8 space-y-8 w-full">
+          <div className="max-w-7xl mx-auto space-y-8 pb-12">
+            {/* ========================================================= */}
+            {/* TAB 1: DASHBOARD OVERVIEW                                 */}
+            {/* ========================================================= */}
+            {activeSection === "dashboard" && (
             <div className="space-y-8 animate-in fade-in-50 duration-500">
               {/* Executive Welcome Banner */}
               <div className="relative overflow-hidden rounded-3xl border border-gold/30 bg-gradient-to-r from-[#170f0a] via-[#120c08] to-[#1a100a] p-6 sm:p-8 shadow-[var(--shadow-royal)]">
@@ -1999,6 +2000,7 @@ function AdminOverviewPage() {
               </div>
             </div>
           )}
+          </div>
         </main>
       </div>
 

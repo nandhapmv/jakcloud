@@ -98,20 +98,17 @@ export const CATEGORIES = [
   "Seafood Specialty",
 ] as const;
 
-export const CLOSED_WEEKDAY = 3; // Wednesday
+export const CLOSED_WEEKDAY = -1; // All 7 days open (No forced weekday closure)
 
 export function formatMoney(value: number) {
   return `$${value.toFixed(2)}`;
 }
 
-/** Next available fulfilment date: next day, after the 2:00 PM cutoff roll, skipping Wednesdays. */
+/** Next available fulfilment date: next day (or day-after if after cutoff), open 7 days a week. */
 export function nextAvailableDate(now = new Date()) {
   const date = new Date(now);
   date.setHours(0, 0, 0, 0);
   date.setDate(date.getDate() + (now.getHours() >= ORDER_CUTOFF_HOUR ? 2 : 1));
-  while (date.getDay() === CLOSED_WEEKDAY) {
-    date.setDate(date.getDate() + 1);
-  }
   return date;
 }
 

@@ -317,24 +317,24 @@ export function BiryaniSelectionPage() {
   }, [allBiryaniCards, selectedCategory, spiceFilter, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-24">
+    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-20">
       {/* 1. HERO HEADER BANNER */}
-      <section className="relative border-b border-white/[0.08] bg-[#121216] py-12 px-4 sm:px-8 text-center overflow-hidden">
-        <div className="relative z-10 mx-auto max-w-4xl space-y-3">
+      <section className="relative border-b border-white/[0.08] bg-[#121216] py-8 sm:py-10 px-4 sm:px-6 lg:px-8 text-left overflow-hidden">
+        <div className="relative z-10 mx-auto max-w-7xl space-y-2.5">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-medium text-amber-300">
             <Sparkles className="h-3.5 w-3.5 text-amber-400" />
             <span>Nizam Dum Pukht Recipes</span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-zinc-100">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-zinc-100">
             Handcrafted <span className="text-amber-400">Dum Biryani</span> Menu
           </h1>
 
-          <p className="mx-auto max-w-2xl text-xs sm:text-sm text-zinc-400 leading-relaxed font-normal">
+          <p className="max-w-2xl text-xs sm:text-sm text-zinc-400 leading-relaxed font-normal">
             Slow-cooked in dough-sealed handi vessels over gentle flame. Every single tray generously serves 4–5 adults with 1.6–1.8 kg protein, 1 kg aged basmati, boiled eggs, roasted cashews, raita, salan, and dessert.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-start gap-3 pt-1">
             <div className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-[#18181f] px-3.5 py-1.5 text-xs text-zinc-300">
               <Calendar className="h-3.5 w-3.5 text-amber-400" />
               <span>Next Handi Batch: <strong className="text-amber-300 font-medium">{nextDate}</strong></span>
@@ -355,7 +355,7 @@ export function BiryaniSelectionPage() {
 
       {/* 2. FILTER & SEARCH CONTROL BAR */}
       <section className="sticky top-16 z-30 border-b border-white/[0.08] bg-[#121216]/90 backdrop-blur-xl py-3 shadow-md">
-        <div className="mx-auto max-w-7xl px-4 sm:px-8 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             {[
               { id: "all", label: "All Biryanis (6)" },
@@ -408,7 +408,7 @@ export function BiryaniSelectionPage() {
       </section>
 
       {/* 3. BIRYANI CARDS GRID */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-8 py-10 space-y-10">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {filteredBiryanis.length === 0 ? (
           <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-10 text-center space-y-3">
             <UtensilsCrossed className="h-8 w-8 text-amber-400 mx-auto opacity-60" />

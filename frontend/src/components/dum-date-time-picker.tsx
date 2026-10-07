@@ -13,7 +13,6 @@ import {
   Lock,
 } from "lucide-react";
 import {
-  CLOSED_WEEKDAY,
   PICKUP_TIMES,
   DELIVERY_TIMES,
   nextAvailableDate,
@@ -78,17 +77,25 @@ export function DumDateTimePicker({
     return `${cutoffHour}:00 AM`;
   }, [cutoffHour]);
 
-  // Determine earliest valid date based on cutoff
+  // Determine earliest valid date based on cutoff (open 7 days a week)
   const earliestValidDate = useMemo(() => {
     const now = new Date();
     const date = new Date(now);
     date.setHours(0, 0, 0, 0);
     date.setDate(date.getDate() + (now.getHours() >= cutoffHour ? 2 : 1));
-    while (date.getDay() === CLOSED_WEEKDAY) {
-      date.setDate(date.getDate() + 1);
-    }
     return date;
   }, [cutoffHour]);
+
+  // Dynamic Rolling Window info for diner display
+  const rollingWindowRange = useMemo(() => {
+    const start = new Date();
+    const end = new Date();
+    end.setDate(end.getDate() + horizonDays);
+    return {
+      startStr: formatDate(start),
+      endStr: formatDate(end),
+    };
+  }, [horizonDays]);
 
   // Month navigation view state
   const [viewYear, setViewYear] = useState(() => earliestValidDate.getFullYear());
@@ -108,12 +115,10 @@ export function DumDateTimePicker({
       let foundOpenDate: Date | null = null;
 
       for (let i = 0; i < horizonDays + 7; i++) {
-        if (probe.getDay() !== CLOSED_WEEKDAY) {
-          const cap = jakloudStore.getCapacityForDate(probe);
-          if (!cap.isSoldOut) {
-            foundOpenDate = new Date(probe);
-            break;
-          }
+        const cap = jakloudStore.getCapacityForDate(probe);
+        if (!cap.isSoldOut) {
+          foundOpenDate = new Date(probe);
+          break;
         }
         probe.setDate(probe.getDate() + 1);
       }
@@ -158,18 +163,13 @@ export function DumDateTimePicker({
       return { disabled: true, reason: `${cutoffLabel} cutoff passed for next-day dum`, capacity: cap };
     }
 
-    // 4. Wednesday closed
-    if (candidate.getDay() === CLOSED_WEEKDAY) {
-      return { disabled: true, reason: "Kitchen Closed on Wednesdays (Rest & Marinade)", capacity: cap };
-    }
-
     // 5. Horizon limit check (e.g. 7 days / 10 days / 30 days)
     const maxHorizonDate = new Date(today);
     maxHorizonDate.setDate(maxHorizonDate.getDate() + horizonDays);
     if (candidate > maxHorizonDate) {
       return {
         disabled: true,
-        reason: `Slot opens in advance (${horizonDays}-day booking window)`,
+        reason: `Slot opens in advance (${horizonDays}-day rolling booking window)`,
         capacity: cap,
       };
     }
@@ -201,7 +201,6 @@ export function DumDateTimePicker({
       disabled: boolean;
       reason?: string;
       dateStr: string;
-      isWednesday: boolean;
       isEarliest: boolean;
       isSoldOut?: boolean;
       capacity: ReturnType<typeof jakloudStore.getCapacityForDate>;
@@ -222,7 +221,6 @@ export function DumDateTimePicker({
         disabled: check.disabled,
         reason: check.reason,
         dateStr: formatDate(dObj),
-        isWednesday: dObj.getDay() === CLOSED_WEEKDAY,
         isEarliest: dObj.toDateString() === earliestValidDate.toDateString(),
         isSoldOut: check.isSoldOut,
         capacity: check.capacity,
@@ -241,7 +239,6 @@ export function DumDateTimePicker({
         disabled: check.disabled,
         reason: check.reason,
         dateStr: formatDate(dObj),
-        isWednesday: dObj.getDay() === CLOSED_WEEKDAY,
         isEarliest: dObj.toDateString() === earliestValidDate.toDateString(),
         isSoldOut: check.isSoldOut,
         capacity: check.capacity,
@@ -263,7 +260,6 @@ export function DumDateTimePicker({
         disabled: check.disabled,
         reason: check.reason,
         dateStr: formatDate(dObj),
-        isWednesday: dObj.getDay() === CLOSED_WEEKDAY,
         isEarliest: dObj.toDateString() === earliestValidDate.toDateString(),
         isSoldOut: check.isSoldOut,
         capacity: check.capacity,
@@ -319,7 +315,7 @@ export function DumDateTimePicker({
       const d = new Date(cur);
       d.setDate(d.getDate() + i);
       const cap = jakloudStore.getCapacityForDate(d);
-      if (!cap.isSoldOut && d.getDay() !== CLOSED_WEEKDAY) {
+      if (!cap.isSoldOut) {
         if (d.getDay() === 5 && presets.length < 3) {
           presets.push({ label: "Friday Feast", date: d });
         } else if (d.getDay() === 6 && presets.length < 4) {
@@ -415,120 +411,49 @@ export function DumDateTimePicker({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* DYNAMIC TRAFFIC LIGHT CAPACITY LINE (GREEN / YELLOW / RED)     */}
+      {/* CLEAN CAPACITY AVAILABILITY BADGE                             */}
       {/* ------------------------------------------------------------- */}
-      <div className="rounded-xl border border-white/[0.08] bg-zinc-950/90 p-2.5 space-y-2 backdrop-blur-md shadow-sm">
-        <div className="flex items-center justify-between text-[11px]">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span
-              className={`h-2.5 w-2.5 rounded-full shrink-0 ${
-                selectedCapacity.status === "green"
-                  ? "bg-emerald-500 shadow-[0_0_8px_#10b981]"
-                  : selectedCapacity.status === "yellow"
-                  ? "bg-amber-400 shadow-[0_0_8px_#f59e0b]"
-                  : selectedCapacity.status === "red"
-                  ? "bg-rose-500 animate-pulse shadow-[0_0_8px_#ef4444]"
-                  : "bg-zinc-600"
-              }`}
-            />
-            <span className="font-semibold text-zinc-200 truncate">
-              {selectedCapacity.status === "green" && (
-                <span className="text-emerald-400">Slots Available ({selectedCapacity.remainingSlots} Trays Left)</span>
-              )}
-              {selectedCapacity.status === "yellow" && (
-                <span className="text-amber-300">Filling Fast ({selectedCapacity.remainingSlots} Trays Left)</span>
-              )}
-              {selectedCapacity.status === "red" && (
-                <span className="text-rose-400">Almost Sold Out ({selectedCapacity.remainingSlots} Left)!</span>
-              )}
-              {selectedCapacity.status === "sold_out" && (
-                <span className="text-zinc-400">Sold Out · Rolling to Next Day</span>
-              )}
-            </span>
-          </div>
-
-          <div className="text-[10px] font-mono text-zinc-400 flex items-center gap-1 shrink-0">
-            <span className="text-zinc-500">Booked:</span>
-            <span className="font-bold text-amber-300">
-              {selectedCapacity.bookedCount}/{selectedCapacity.limit}
-            </span>
-          </div>
+      <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-zinc-900/60 border border-white/[0.08] text-xs">
+        <div className="flex items-center gap-2">
+          <span
+            className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+              selectedCapacity.status === "green"
+                ? "bg-emerald-500 shadow-[0_0_8px_#10b981]"
+                : selectedCapacity.status === "yellow"
+                ? "bg-amber-400 shadow-[0_0_8px_#f59e0b]"
+                : selectedCapacity.status === "red"
+                ? "bg-rose-500 animate-pulse shadow-[0_0_8px_#ef4444]"
+                : "bg-zinc-600"
+            }`}
+          />
+          <span className="font-medium text-zinc-200">
+            {selectedCapacity.status === "green" && (
+              <span className="text-emerald-400 font-semibold">{selectedCapacity.remainingSlots} Trays Available</span>
+            )}
+            {selectedCapacity.status === "yellow" && (
+              <span className="text-amber-300 font-semibold">Filling Fast ({selectedCapacity.remainingSlots} Left)</span>
+            )}
+            {selectedCapacity.status === "red" && (
+              <span className="text-rose-400 font-semibold">Almost Sold Out ({selectedCapacity.remainingSlots} Left)</span>
+            )}
+            {selectedCapacity.status === "sold_out" && (
+              <span className="text-zinc-400">Sold Out · Rolling to Next Day</span>
+            )}
+          </span>
         </div>
 
-        {/* The Traffic Light Progress Line */}
-        <div className="space-y-1">
-          <div className="relative h-2 w-full rounded-full bg-zinc-900 border border-white/10 overflow-hidden">
-            {/* Background 3-Zone Reference Markers (Red: 0-30%, Yellow: 30-60%, Green: 60-100%) */}
-            <div className="absolute inset-0 flex opacity-25 pointer-events-none">
-              <div className="w-[30%] bg-rose-500/40 h-full border-r border-zinc-800" />
-              <div className="w-[30%] bg-amber-500/40 h-full border-r border-zinc-800" />
-              <div className="w-[40%] bg-emerald-500/40 h-full" />
-            </div>
-
-            {/* Glowing Active Dynamic Bar representing remaining slots */}
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                selectedCapacity.status === "green"
-                  ? "bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.7)]"
-                  : selectedCapacity.status === "yellow"
-                  ? "bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-400 shadow-[0_0_10px_rgba(245,158,11,0.7)]"
-                  : selectedCapacity.status === "red"
-                  ? "bg-gradient-to-r from-rose-600 via-rose-500 to-red-400 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]"
-                  : "bg-zinc-700"
-              }`}
-              style={{
-                width: `${Math.max(6, (selectedCapacity.remainingSlots / selectedCapacity.limit) * 100)}%`,
-              }}
-            />
-          </div>
-
-          {/* Traffic Light Zone Guide (7-10 Green, 4-6 Yellow, 1-3 Red) */}
-          <div className="flex items-center justify-between text-[9px] text-zinc-400 pt-0.5 px-0.5 font-medium">
-            <span className="flex items-center gap-1 text-rose-400/90">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" /> 1–3 Red
-            </span>
-            <span className="flex items-center gap-1 text-amber-400/90">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> 4–6 Yellow
-            </span>
-            <span className="flex items-center gap-1 text-emerald-400/90">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> 7–10 Green
-            </span>
-          </div>
-        </div>
-
-        {/* Auto-lock & rollover advisory if date reached limit */}
-        {selectedCapacity.isSoldOut && (
-          <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 p-2 text-[10px] text-rose-300 flex items-center gap-1.5">
-            <AlertCircle className="h-3.5 w-3.5 text-rose-400 shrink-0" />
-            <span>This day's {dailyLimit}-tray oven capacity is 100% booked. Automatically shifting to next available date.</span>
-          </div>
-        )}
+        <span className="text-[11px] text-amber-400/80 font-medium">
+          Fresh Handi Batch
+        </span>
       </div>
 
-      {/* Quick Visual Time Chips (Direct 1-Tap on Mobile) */}
-      <div className="space-y-1.5 pt-0.5">
-        <span className="block text-[10px] text-zinc-400 font-medium">Quick Time Slots:</span>
-        <div className="flex flex-wrap gap-1.5">
-          {availableTimeSlots.map((time) => {
-            const isSelected = selectedTime === time;
-            return (
-              <button
-                key={time}
-                type="button"
-                onClick={() => onTimeChange(time)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1 shadow-sm ${
-                  isSelected
-                    ? "bg-amber-500 text-zinc-950 font-bold border border-amber-400 scale-[1.03]"
-                    : "bg-zinc-900/80 border border-white/10 text-zinc-300 hover:border-amber-500/40 hover:text-amber-300"
-                }`}
-              >
-                <Clock className={`h-3 w-3 ${isSelected ? "text-zinc-950" : "text-amber-400"}`} />
-                <span>{time}</span>
-              </button>
-            );
-          })}
+      {/* Auto-lock & rollover advisory if date reached limit */}
+      {selectedCapacity.isSoldOut && (
+        <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 p-2.5 text-xs text-rose-300 flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-rose-400 shrink-0" />
+          <span>This day is fully booked. Please choose another date.</span>
         </div>
-      </div>
+      )}
 
       {/* ============================================================= */}
       {/* 1. INTERACTIVE FULL CALENDAR MODAL                             */}
@@ -546,6 +471,17 @@ export function DumDateTimePicker({
                   Daily capacity limited to {dailyLimit} artisanal trays. Order by {cutoffLabel}.
                 </DialogDescription>
               </div>
+            </div>
+
+            {/* Dynamic Rolling Advance Window Banner */}
+            <div className="mt-2.5 flex items-center justify-between rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-200">
+              <span className="flex items-center gap-1.5 font-medium">
+                <Sparkles className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                <span>Rolling {horizonDays}-Day Booking Window</span>
+              </span>
+              <span className="text-[10px] text-amber-300/80 font-mono">
+                Open through {rollingWindowRange.endStr.split(",")[1]}
+              </span>
             </div>
           </DialogHeader>
 
@@ -577,8 +513,8 @@ export function DumDateTimePicker({
 
           {/* Days of Week Header */}
           <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-zinc-400 uppercase tracking-wider py-1 border-b border-white/[0.05]">
-            {DAY_NAMES_SHORT.map((day, idx) => (
-              <span key={day} className={idx === 3 ? "text-rose-400/80 font-bold" : ""}>
+            {DAY_NAMES_SHORT.map((day) => (
+              <span key={day}>
                 {day}
               </span>
             ))}
@@ -609,11 +545,7 @@ export function DumDateTimePicker({
                   <span className="text-xs font-semibold">{cell.day}</span>
 
                   {/* Badges / Dots for availability */}
-                  {cell.isWednesday ? (
-                    <span className="text-[7px] text-rose-400 font-semibold leading-none scale-90">
-                      Closed
-                    </span>
-                  ) : cell.isSoldOut ? (
+                  {cell.isSoldOut ? (
                     <span className="text-[7px] text-rose-400 font-bold leading-none scale-90">
                       Full
                     </span>

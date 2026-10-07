@@ -44,7 +44,6 @@ import {
 import {
   BUSINESS,
   ORDER_CUTOFF_HOUR,
-  CLOSED_WEEKDAY,
   formatDate,
   nextAvailableDate,
 } from "@/lib/menu";
