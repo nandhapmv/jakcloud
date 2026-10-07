@@ -134,7 +134,6 @@ function CheckoutPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [whatsappOptIn, setWhatsappOptIn] = useState(true);
 
   // Delivery Address Form
   const [address, setAddress] = useState("");
@@ -738,33 +737,6 @@ function CheckoutPage() {
                         className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                       />
                     </div>
-                  </div>
-                </div>
-
-                {/* WhatsApp Notification Toggle */}
-                <div
-                  onClick={() => setWhatsappOptIn(!whatsappOptIn)}
-                  className="flex items-center justify-between rounded-xl bg-zinc-900/60 border border-white/[0.06] p-3 cursor-pointer hover:border-white/15 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="h-7 w-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                      <MessageSquare className="h-3.5 w-3.5" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-zinc-200">WhatsApp live updates</p>
-                      <p className="text-[10px] text-zinc-400">Receive kitchen cooking notifications & driver status</p>
-                    </div>
-                  </div>
-                  <div
-                    className={`h-5 w-9 rounded-full transition-colors relative flex items-center p-0.5 ${
-                      whatsappOptIn ? "bg-emerald-500" : "bg-zinc-700"
-                    }`}
-                  >
-                    <div
-                      className={`h-4 w-4 rounded-full bg-white transition-transform ${
-                        whatsappOptIn ? "translate-x-4" : "translate-x-0"
-                      }`}
-                    />
                   </div>
                 </div>
               </div>
