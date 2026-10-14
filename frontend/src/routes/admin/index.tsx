@@ -164,8 +164,11 @@ function AdminOverviewPage() {
   const [dashDateFilter, setDashDateFilter] = useState<DashboardDateFilter>("today");
   const [customDate, setCustomDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
 
-  // Orders tab filter
+  // Orders tab filters (Date-wise & Item-wise breakdown)
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>("all");
+  const [ordersDateFilter, setOrdersDateFilter] = useState<string>("all");
+  const [ordersCustomDate, setOrdersCustomDate] = useState<string>("");
+  const [selectedDishFilter, setSelectedDishFilter] = useState<string>("all");
 
   // Live clock
   useEffect(() => {
@@ -467,17 +470,132 @@ function AdminOverviewPage() {
   }, [orders]);
 
   const filteredOrders = useMemo(() => {
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const todayStr = new Date().toDateString();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowIso = tomorrow.toISOString().slice(0, 10);
+    const tomorrowStr = tomorrow.toDateString();
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayIso = yesterday.toISOString().slice(0, 10);
+    const yesterdayStr = yesterday.toDateString();
+
     return orders.filter((o) => {
-      const matchesStatus = orderStatusFilter === "all" || o.status === orderStatusFilter;
-      const matchesSearch =
-        !searchQuery.trim() ||
-        o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        o.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        o.customer.phone.includes(searchQuery) ||
-        o.items.some((i) => i.name.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchesStatus && matchesSearch;
+      // 1. Status Filter
+      if (orderStatusFilter !== "all" && o.status !== orderStatusFilter) return false;
+
+      // 2. Dish/Item Filter
+      if (selectedDishFilter !== "all") {
+        const hasDish = o.items.some((it) => it.name.trim().toLowerCase() === selectedDishFilter.toLowerCase());
+        if (!hasDish) return false;
+      }
+
+      // 3. Date Filter (matches both fulfilmentDate and createdAt)
+      const orderCreatedIso = new Date(o.createdAt).toISOString().slice(0, 10);
+      const orderCreatedStr = new Date(o.createdAt).toDateString();
+      const orderFulfil = (o.fulfilmentDate || "").toLowerCase();
+
+      if (ordersDateFilter === "today") {
+        const isToday =
+          orderCreatedIso === todayIso ||
+          orderCreatedStr === todayStr ||
+          orderFulfil.includes("today") ||
+          orderFulfil.includes(todayIso);
+        if (!isToday) return false;
+      } else if (ordersDateFilter === "tomorrow") {
+        const isTomorrow =
+          orderCreatedIso === tomorrowIso ||
+          orderCreatedStr === tomorrowStr ||
+          orderFulfil.includes("tomorrow") ||
+          orderFulfil.includes(tomorrowIso);
+        if (!isTomorrow) return false;
+      } else if (ordersDateFilter === "yesterday") {
+        const isYesterday =
+          orderCreatedIso === yesterdayIso ||
+          orderCreatedStr === yesterdayStr ||
+          orderFulfil.includes(yesterdayIso);
+        if (!isYesterday) return false;
+      } else if (ordersDateFilter === "last7") {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        if (new Date(o.createdAt).getTime() < sevenDaysAgo.getTime()) return false;
+      } else if (ordersDateFilter === "custom" && ordersCustomDate) {
+        const matchesDate =
+          orderCreatedIso === ordersCustomDate ||
+          orderFulfil.includes(ordersCustomDate);
+        if (!matchesDate) return false;
+      }
+
+      // 4. Search Filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesSearch =
+          o.orderNumber.toLowerCase().includes(q) ||
+          o.customer.name.toLowerCase().includes(q) ||
+          o.customer.phone.includes(q) ||
+          o.items.some((i) => i.name.toLowerCase().includes(q));
+        if (!matchesSearch) return false;
+      }
+
+      return true;
     });
-  }, [orders, orderStatusFilter, searchQuery]);
+  }, [orders, orderStatusFilter, ordersDateFilter, ordersCustomDate, selectedDishFilter, searchQuery]);
+
+  // Item-wise Handi / Dish Prep Breakdown for Kitchen clarity
+  interface DishPrepCount {
+    name: string;
+    totalTrays: number;
+    withAloo: number;
+    noAloo: number;
+    extraSpicy: number;
+    regularSpicy: number;
+    orderCount: number;
+    totalRevenue: number;
+  }
+
+  const itemWisePrepSummary = useMemo(() => {
+    const summary: Record<string, DishPrepCount> = {};
+
+    filteredOrders.forEach((order) => {
+      order.items.forEach((item) => {
+        const name = item.name.trim();
+        if (!summary[name]) {
+          summary[name] = {
+            name,
+            totalTrays: 0,
+            withAloo: 0,
+            noAloo: 0,
+            extraSpicy: 0,
+            regularSpicy: 0,
+            orderCount: 0,
+            totalRevenue: 0,
+          };
+        }
+        summary[name].totalTrays += item.qty;
+        summary[name].orderCount += 1;
+        summary[name].totalRevenue += (item.unitPrice || 0) * item.qty;
+        if (item.aloo) {
+          summary[name].withAloo += item.qty;
+        } else {
+          summary[name].noAloo += item.qty;
+        }
+        if (item.extraSpicy) {
+          summary[name].extraSpicy += item.qty;
+        } else {
+          summary[name].regularSpicy += item.qty;
+        }
+      });
+    });
+
+    return Object.values(summary).sort((a, b) => b.totalTrays - a.totalTrays);
+  }, [filteredOrders]);
+
+  const totalFilteredTrays = useMemo(() => {
+    return filteredOrders.reduce((sum, o) => sum + o.items.reduce((s, it) => s + it.qty, 0), 0);
+  }, [filteredOrders]);
 
   const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
 
@@ -1762,24 +1880,192 @@ function AdminOverviewPage() {
                       Open Dedicated Order Manager →
                     </Link>
                   </Button>
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-                    {(["all", "confirmed", "preparing", "ready", "completed", "cancelled"] as const).map(
-                      (st) => (
-                        <button
-                          key={st}
-                          onClick={() => setOrderStatusFilter(st)}
-                          className={`rounded-full px-3.5 py-1 text-xs font-medium capitalize transition-all shrink-0 ${
-                            orderStatusFilter === st
-                              ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
-                              : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/50 hover:text-cream"
-                          }`}
-                        >
-                          {st}
-                        </button>
-                      ),
+                </div>
+              </div>
+
+              {/* 1. DATE-WISE FILTER TOOLBAR FOR ORDERS */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-2xl border border-gold/25 bg-[#120c08]/90 p-4 backdrop-blur-xl shadow-lg">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/15 text-gold border border-gold/30">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-cream uppercase tracking-wider block">
+                      Queue Date Filter
+                    </span>
+                    <span className="text-[0.68rem] text-gold font-mono">
+                      {ordersDateFilter === "all" ? "All Fulfillment Dates" : ordersDateFilter === "custom" ? `Date: ${ordersCustomDate || "Pick Date"}` : `Fulfillment: ${ordersDateFilter.toUpperCase()}`}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Quick Filter Buttons */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                    {[
+                      { id: "all", label: "All Orders" },
+                      { id: "today", label: "Today" },
+                      { id: "tomorrow", label: "Tomorrow" },
+                      { id: "yesterday", label: "Yesterday" },
+                      { id: "last7", label: "Past 7 Days" },
+                    ].map((btn) => (
+                      <button
+                        key={btn.id}
+                        onClick={() => {
+                          setOrdersDateFilter(btn.id);
+                          setOrdersCustomDate("");
+                        }}
+                        className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                          ordersDateFilter === btn.id
+                            ? "bg-gradient-to-r from-chili via-saffron to-gold text-white shadow-md shadow-chili/30"
+                            : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/50 hover:text-gold"
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Pick Exact Date */}
+                  <div className="flex items-center gap-1.5 border-l border-gold/20 pl-2">
+                    <label className="text-[0.68rem] text-gold/70 font-medium hidden sm:inline">
+                      Specific Date:
+                    </label>
+                    <input
+                      type="date"
+                      value={ordersCustomDate}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setOrdersCustomDate(e.target.value);
+                          setOrdersDateFilter("custom");
+                        }
+                      }}
+                      className={`h-8 rounded-xl border px-2.5 text-xs font-mono transition-all cursor-pointer ${
+                        ordersDateFilter === "custom"
+                          ? "border-gold bg-gold/20 text-gold font-bold shadow-[0_0_10px_rgba(212,160,23,0.3)]"
+                          : "border-gold/25 bg-black/50 text-cream/80 hover:border-gold/50"
+                      } focus:outline-none focus:border-gold`}
+                    />
+                    {ordersDateFilter === "custom" && (
+                      <button
+                        onClick={() => {
+                          setOrdersDateFilter("all");
+                          setOrdersCustomDate("");
+                        }}
+                        className="text-[0.65rem] text-gold/80 hover:text-gold underline ml-1 cursor-pointer"
+                      >
+                        Reset
+                      </button>
                     )}
                   </div>
                 </div>
+              </div>
+
+              {/* 2. ITEM-WISE ORDER SUMMARY & PREP BREAKDOWN CARDS */}
+              <div className="rounded-2xl border border-gold/25 bg-[#120c08]/90 p-5 backdrop-blur-xl shadow-xl space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gold/15 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Flame className="h-4 w-4 text-chili animate-pulse" />
+                    <h3 className="font-display text-base font-bold text-cream">
+                      Item-Wise Kitchen Prep Summary
+                    </h3>
+                    <span className="rounded-full bg-gold/20 border border-gold/30 px-2.5 py-0.5 text-xs font-bold text-gold font-mono">
+                      {totalFilteredTrays} Total Handi Trays Required
+                    </span>
+                  </div>
+                  {selectedDishFilter !== "all" && (
+                    <button
+                      onClick={() => setSelectedDishFilter("all")}
+                      className="text-xs text-saffron hover:underline flex items-center gap-1 font-medium cursor-pointer"
+                    >
+                      Clear Dish Filter (Show All {orders.length} Orders) ✕
+                    </button>
+                  )}
+                </div>
+
+                {itemWisePrepSummary.length === 0 ? (
+                  <div className="py-6 text-center text-xs text-cream/50">
+                    No biryani handis scheduled or required for this selected timeframe.
+                  </div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pt-1">
+                    {itemWisePrepSummary.map((item) => (
+                      <div
+                        key={item.name}
+                        onClick={() => {
+                          setSelectedDishFilter(selectedDishFilter === item.name ? "all" : item.name);
+                        }}
+                        className={`rounded-2xl border p-4 transition-all cursor-pointer group ${
+                          selectedDishFilter === item.name
+                            ? "border-gold bg-gold/15 shadow-lg shadow-gold/20 scale-[1.02]"
+                            : "border-gold/25 bg-[#140e09]/90 hover:border-gold/60 hover:bg-gold/5"
+                        }`}
+                        title="Click to view only this dish in the orders table below"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="font-display text-sm font-bold text-cream group-hover:text-gold transition-colors line-clamp-1" title={item.name}>
+                            {item.name}
+                          </h4>
+                          <span className="shrink-0 rounded-full bg-gold text-black font-extrabold text-xs px-2.5 py-0.5 shadow-md shadow-gold/30 font-mono">
+                            {item.totalTrays} {item.totalTrays === 1 ? "Tray" : "Trays"}
+                          </span>
+                        </div>
+
+                        {/* Customization Details */}
+                        <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[0.68rem]">
+                          {item.withAloo > 0 && (
+                            <span className="rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 font-medium">
+                              🥔 {item.withAloo} Aloo
+                            </span>
+                          )}
+                          {item.noAloo > 0 && (
+                            <span className="rounded-md bg-white/10 text-cream/70 border border-white/15 px-1.5 py-0.5">
+                              🚫 {item.noAloo} No Aloo
+                            </span>
+                          )}
+                          {item.extraSpicy > 0 && (
+                            <span className="rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 font-medium">
+                              🌶️ {item.extraSpicy} Extra Spicy
+                            </span>
+                          )}
+                          {item.regularSpicy > 0 && (
+                            <span className="rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5">
+                              ✨ {item.regularSpicy} Regular
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="mt-3 pt-2.5 border-t border-gold/15 flex items-center justify-between text-[0.7rem]">
+                          <span className="text-cream/60">
+                            {item.orderCount} order{item.orderCount === 1 ? "" : "s"}
+                          </span>
+                          <span className="font-mono font-bold text-gold">
+                            {formatMoney(item.totalRevenue)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 3. STATUS FILTER PILLS & LIVE TABLE */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                {(["all", "confirmed", "preparing", "ready", "completed", "cancelled"] as const).map(
+                  (st) => (
+                    <button
+                      key={st}
+                      onClick={() => setOrderStatusFilter(st)}
+                      className={`rounded-full px-3.5 py-1 text-xs font-medium capitalize transition-all shrink-0 cursor-pointer ${
+                        orderStatusFilter === st
+                          ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
+                          : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/50 hover:text-cream"
+                      }`}
+                    >
+                      {st}
+                    </button>
+                  ),
+                )}
               </div>
 
               <div className="rounded-3xl border border-gold/25 bg-[#120c08]/85 shadow-2xl overflow-hidden backdrop-blur-xl">
