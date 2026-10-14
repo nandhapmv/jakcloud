@@ -53,10 +53,14 @@ app.get("/", (_req, res) => {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+import { syncSettingsFromDatabase } from "./models/settings.model.js";
+
 // Auto-initialize MySQL Database tables on boot
-initDatabase().catch((err) => {
-  console.warn("⚠️ Initial DB connection attempt completed:", err.message);
-});
+initDatabase()
+  .then(() => syncSettingsFromDatabase())
+  .catch((err) => {
+    console.warn("⚠️ Initial DB connection attempt completed:", err.message);
+  });
 
 app.listen(port, () => {
   console.log(`🚀 JAKLOUD Spice King Backend running on http://localhost:${port}`);

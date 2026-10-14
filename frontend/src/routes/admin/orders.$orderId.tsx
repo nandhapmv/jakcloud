@@ -827,10 +827,12 @@ function OrderDetailsPage() {
                     {order.deliveryFee > 0 ? formatMoney(order.deliveryFee) : "Free Pickup"}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Prepared Food Tax (Included)</span>
-                  <span className="text-cream font-mono">{formatMoney(order.tax)}</span>
-                </div>
+                {order.tax > 0 && (
+                  <div className="flex justify-between">
+                    <span>Tax</span>
+                    <span className="text-cream font-mono">{formatMoney(order.tax)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between border-t border-gold/15 pt-3 text-base font-bold text-cream">
                   <span className="font-display">Total Paid</span>
                   <span className="text-gold font-display text-lg">

@@ -23,7 +23,7 @@ export const config = {
     cutoffHour: 15, // 3:00 PM (Updated per requirement)
     deliveryFee: 10.0,
     alooCharge: 7.0,
-    taxRate: 0.086, // 8.6%
+    taxRate: 0, // 0%
   },
   razorpay: {
     keyId: process.env.RAZORPAY_KEY_ID || "rzp_test_SwedUUn1KgRMs0",

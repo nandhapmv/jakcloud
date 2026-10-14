@@ -39,9 +39,9 @@ export interface CreateOrderPayload {
   fulfilmentDate: string;
   fulfilmentTime: string;
   customer: CustomerInput;
-  paymentMethod?: string;
-  paymentStatus?: string;
-  paymentId?: string;
+  paymentMethod?: string | undefined;
+  paymentStatus?: string | undefined;
+  paymentId?: string | undefined;
   specialInstructions?: string | undefined;
 }
 
@@ -286,8 +286,8 @@ export const api = {
         fulfilmentDate: payload.fulfilmentDate,
         fulfilmentTime: payload.fulfilmentTime,
         customer: payload.customer,
-        paymentMethod: payload.paymentMethod || "Razorpay Online",
-        paymentStatus: payload.paymentStatus || "pending",
+        paymentMethod: (payload.paymentMethod as DynamicOrder["paymentMethod"]) || "Razorpay / Card Gateway",
+        paymentStatus: (payload.paymentStatus as DynamicOrder["paymentStatus"]) || undefined,
         specialInstructions: payload.specialInstructions,
       });
 

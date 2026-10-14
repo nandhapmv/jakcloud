@@ -24,6 +24,8 @@ import {
   Banknote,
   Printer,
   AlertCircle,
+  Camera,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,6 +50,7 @@ import {
   type ProteinId,
 } from "@/lib/menu";
 import { api, type OrderResponse } from "@/lib/api";
+import { jakloudStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -113,7 +116,7 @@ function CheckoutPage() {
     let current = new Date(defaultDateObj);
 
     for (let i = 0; i < 4; i++) {
-      const label = i === 0 ? "Tomorrow (Next Batch)" : formatDate(current).split(",")[0];
+      const label = i === 0 ? "Tomorrow (Next Batch)" : (formatDate(current).split(",")[0] || "");
       list.push({
         dateStr: formatDate(current),
         label,
@@ -193,9 +196,9 @@ function CheckoutPage() {
     }
 
     const discountedSubtotal = Math.max(0, subtotal - discountAmount);
-    const tax = discountedSubtotal * 0.086; // 8.6% Springfield tax
+    const tax = 0;
     const deliveryCost = fulfilmentType === "delivery" ? (count >= 5 ? 0 : DELIVERY_FEE) : 0;
-    const grandTotal = discountedSubtotal + tax + deliveryCost;
+    const grandTotal = discountedSubtotal + deliveryCost;
 
     return {
       subtotal,
@@ -276,6 +279,19 @@ function CheckoutPage() {
         toast.error("Please provide a valid Springfield ZIP code within our 10-mile radius.");
         return;
       }
+    }
+
+    // Verify date capacity against admin limit
+    const cap = jakloudStore.getCapacityForDate(selectedDate);
+    if (cap.isSoldOut || cap.remainingSlots <= 0) {
+      toast.error(`The kitchen is completely sold out for ${selectedDate}. Please select another date.`);
+      return;
+    }
+    if (count > cap.remainingSlots) {
+      toast.error(
+        `Only ${cap.remainingSlots} slot${cap.remainingSlots > 1 ? "s" : ""} left for ${selectedDate}, but you have ${count} trays in your cart. Please select another date or reduce tray count.`
+      );
+      return;
     }
 
     try {
@@ -378,11 +394,63 @@ function CheckoutPage() {
             </div>
 
             {/* Booking Ref Badge */}
-            <div className="inline-flex items-center gap-3 rounded-2xl bg-black/80 border-2 border-gold/40 px-6 py-3 font-mono text-sm sm:text-base font-bold text-gold shadow-xl">
-              <span>Booking Reference:</span>
-              <span className="text-white tracking-widest bg-gold/20 px-3 py-1 rounded-xl border border-gold/30">
-                {confirmedOrder.orderNumber}
-              </span>
+            <div className="flex flex-col items-center gap-2">
+              <div className="inline-flex items-center gap-3 rounded-2xl bg-black/80 border-2 border-gold/40 px-6 py-3 font-mono text-sm sm:text-base font-bold text-gold shadow-xl">
+                <span>Booking Reference:</span>
+                <span className="text-white tracking-widest bg-gold/20 px-3 py-1 rounded-xl border border-gold/30">
+                  {confirmedOrder.orderNumber}
+                </span>
+              </div>
+              {confirmedOrder.orderNumber.match(/-(\d+)$/) && (
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 px-4 py-1 text-xs font-bold text-amber-300">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                  <span>Today's Handi Order #{parseInt(confirmedOrder.orderNumber.match(/-(\d+)$/)![1], 10)}</span>
+                </div>
+              )}
+            </div>
+
+            {/* PROMINENT TAKE SCREENSHOT CALLOUT CARD */}
+            <div className="max-w-xl mx-auto rounded-3xl bg-gradient-to-b from-amber-500/25 via-amber-600/15 to-amber-950/40 border-2 border-amber-400/90 p-5 sm:p-6 text-center space-y-3 shadow-[0_0_35px_rgba(245,158,11,0.25)]">
+              <div className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 text-black px-4 py-1.5 text-xs sm:text-sm font-black uppercase tracking-wider shadow">
+                <Camera className="h-4 w-4 stroke-[2.5]" />
+                <span>PLEASE TAKE A SCREENSHOT OF THIS SCREEN</span>
+              </div>
+              <div className="space-y-1">
+                <p className="text-base sm:text-lg font-bold text-amber-200">
+                  📸 దయచేసి ఈ స్క్రీన్‌షాట్ తీసుకోండి!
+                </p>
+                <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed max-w-md mx-auto">
+                  Take a screenshot of this receipt now to show at kitchen pickup or to your delivery driver.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.print();
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 px-4 py-2 text-xs font-semibold text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                >
+                  <Printer className="h-4 w-4 text-amber-400" />
+                  <span>Save / Print Receipt</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigator?.clipboard) {
+                      navigator.clipboard.writeText(confirmedOrder.orderNumber);
+                      toast.success("Order ID copied to clipboard!");
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 px-4 py-2 text-xs font-semibold text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                >
+                  <Copy className="h-4 w-4 text-amber-400" />
+                  <span>Copy Order ID</span>
+                </button>
+              </div>
             </div>
 
             {/* Fulfilment & Summary Breakdown Grid */}
@@ -442,10 +510,12 @@ function CheckoutPage() {
                 </div>
 
                 <div className="pt-2 border-t border-gold/15 space-y-1 text-[0.72rem]">
-                  <div className="flex justify-between text-cream/75">
-                    <span>Tax (8.6%) & Charges:</span>
-                    <span>{formatMoney(confirmedOrder.tax + confirmedOrder.deliveryFee)}</span>
-                  </div>
+                  {confirmedOrder.deliveryFee > 0 && (
+                    <div className="flex justify-between text-cream/75">
+                      <span>Delivery Fee:</span>
+                      <span>{formatMoney(confirmedOrder.deliveryFee)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between font-display text-base font-bold text-cream pt-1">
                     <span>Total Amount:</span>
                     <span className="text-gold">{formatMoney(confirmedOrder.total)}</span>
@@ -1062,10 +1132,6 @@ function CheckoutPage() {
                       </div>
                     )}
 
-                    <div className="flex justify-between text-zinc-400">
-                      <span>Springfield Tax (8.6%):</span>
-                      <span className="font-mono">{formatMoney(calculations.tax)}</span>
-                    </div>
 
                     <div className="flex justify-between text-zinc-400">
                       <span>Fulfilment ({fulfilmentType === "pickup" ? "Pickup" : "Delivery"}):</span>

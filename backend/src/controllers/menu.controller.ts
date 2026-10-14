@@ -53,10 +53,13 @@ async function persistMenuItems(items: MenuItem[]): Promise<void> {
           const badge = (it as any).badge || it.note || "";
           const imgUrl = (it as any).image || "";
           const available = (it as any).available !== false ? 1 : 0;
+          const traySize = (it as any).traySize || (it as any).serves || "Serves 4–5";
+          const serves = (it as any).serves || (it as any).traySize || "Serves 4–5";
+          const meatWeight = (it as any).meatWeight || "";
 
           await pool.query(
-            `INSERT INTO menu_items (id, protein_id, name, category, price, price_with_aloo, badge, description, kcal, kcal_aloo, available, image_url)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `INSERT INTO menu_items (id, protein_id, name, category, price, price_with_aloo, badge, description, tray_size, serves, meat_weight, kcal, kcal_aloo, available, image_url)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE
                name = VALUES(name),
                category = VALUES(category),
@@ -64,6 +67,9 @@ async function persistMenuItems(items: MenuItem[]): Promise<void> {
                price_with_aloo = VALUES(price_with_aloo),
                badge = VALUES(badge),
                description = VALUES(description),
+               tray_size = VALUES(tray_size),
+               serves = VALUES(serves),
+               meat_weight = VALUES(meat_weight),
                kcal = VALUES(kcal),
                kcal_aloo = VALUES(kcal_aloo),
                available = VALUES(available),
@@ -77,6 +83,9 @@ async function persistMenuItems(items: MenuItem[]): Promise<void> {
               it.priceWithAloo ?? it.price,
               badge,
               it.description || "",
+              traySize,
+              serves,
+              meatWeight,
               it.kcal || 0,
               it.kcalAloo || 0,
               available,
@@ -110,6 +119,9 @@ export async function getMenu(_req: Request, res: Response) {
             note: r.badge || "",
             badge: r.badge || "",
             description: r.description || "",
+            traySize: r.tray_size || r.serves || "Serves 4–5",
+            serves: r.serves || r.tray_size || "Serves 4–5",
+            meatWeight: r.meat_weight || "",
             kcal: Number(r.kcal) || 0,
             kcalAloo: Number(r.kcal_aloo) || 0,
             available: Boolean(r.available),
@@ -179,6 +191,9 @@ export async function updateMenuItem(req: Request, res: Response) {
           : (activeMenuItems[foundIndex].priceWithAloo ?? activeMenuItems[foundIndex].price),
       kcal: updates.kcal !== undefined ? Number(updates.kcal) : activeMenuItems[foundIndex].kcal,
       kcalAloo: updates.kcalAloo !== undefined ? Number(updates.kcalAloo) : activeMenuItems[foundIndex].kcalAloo,
+      traySize: updates.traySize !== undefined ? updates.traySize : ((activeMenuItems[foundIndex] as any).traySize || "Serves 4–5"),
+      serves: updates.serves !== undefined ? updates.serves : ((activeMenuItems[foundIndex] as any).serves || updates.traySize || "Serves 4–5"),
+      meatWeight: updates.meatWeight !== undefined ? updates.meatWeight : ((activeMenuItems[foundIndex] as any).meatWeight || ""),
     };
     activeMenuItems[foundIndex] = updatedItem;
   } else {
@@ -195,6 +210,9 @@ export async function updateMenuItem(req: Request, res: Response) {
       note: updates.badge || "Handi Dum",
       badge: updates.badge || "",
       description: updates.description || "",
+      traySize: updates.traySize || updates.serves || "Serves 4–5",
+      serves: updates.serves || updates.traySize || "Serves 4–5",
+      meatWeight: updates.meatWeight || "",
       kcal: Number(updates.kcal) || 1700,
       kcalAloo: Number(updates.kcalAloo) || 1850,
       available: updates.available !== false,
@@ -226,6 +244,9 @@ export async function createMenuItem(req: Request, res: Response) {
     note: payload.badge || "Handi Dum",
     badge: payload.badge || "",
     description: payload.description || "",
+    traySize: payload.traySize || payload.serves || "Serves 4–5",
+    serves: payload.serves || payload.traySize || "Serves 4–5",
+    meatWeight: payload.meatWeight || "",
     kcal: Number(payload.kcal) || 1700,
     kcalAloo: Number(payload.kcalAloo) || 1850,
     available: payload.available !== false,

@@ -132,9 +132,9 @@ export function CartPage() {
     }
 
     const discountedSubtotal = Math.max(0, subtotal - discountAmount);
-    const tax = discountedSubtotal * 0.086; // 8.6% Springfield tax
+    const tax = 0;
     const deliveryCost = fulfilmentType === "delivery" ? (count >= 5 ? 0 : DELIVERY_FEE) : 0;
-    const grandTotal = discountedSubtotal + tax + deliveryCost;
+    const grandTotal = discountedSubtotal + deliveryCost;
 
     return {
       subtotal,
@@ -178,7 +178,7 @@ export function CartPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-100 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-24">
+    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-100 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-32 sm:pb-36">
       {/* ------------------------------------------------------------- */}
       {/* 1. HERO HEADER                                                */}
       {/* ------------------------------------------------------------- */}
@@ -209,7 +209,7 @@ export function CartPage() {
       {/* ------------------------------------------------------------- */}
       {/* 2. MAIN 2-COLUMN CART LAYOUT                                  */}
       {/* ------------------------------------------------------------- */}
-      <main className="mx-auto max-w-7xl px-6 sm:px-8 py-10">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         {count === 0 ? (
           /* EMPTY CART SCREEN WITH RECOMMENDATIONS */
           <div className="max-w-3xl mx-auto space-y-8 text-center py-6">
@@ -592,10 +592,6 @@ export function CartPage() {
                     </div>
                   )}
 
-                  <div className="flex justify-between">
-                    <span>Springfield Food Tax (8.6%):</span>
-                    <span className="font-mono text-zinc-200">{formatMoney(calculations.tax)}</span>
-                  </div>
 
                   <div className="flex justify-between">
                     <span>Fulfilment ({fulfilmentType === "pickup" ? "Pickup" : "Delivery"}):</span>
@@ -648,6 +644,22 @@ export function CartPage() {
           </div>
         )}
       </main>
+
+      {/* Floating Sticky Checkout Bar for Mobile Screens */}
+      {count > 0 && (
+        <div className="lg:hidden fixed bottom-4 inset-x-4 z-40 animate-in slide-in-from-bottom-5 duration-300">
+          <Button
+            onClick={() => navigate({ to: "/checkout" })}
+            className="w-full rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold text-xs sm:text-sm py-4 shadow-2xl flex items-center justify-between px-4 hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer border border-amber-300/40"
+          >
+            <span className="flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4" />
+              <span>Checkout ({count} {count === 1 ? "Tray" : "Trays"})</span>
+            </span>
+            <span className="font-mono text-zinc-950 font-black">{formatMoney(calculations.grandTotal)} →</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

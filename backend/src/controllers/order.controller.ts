@@ -13,10 +13,101 @@ import {
   type Order,
   type OrderStatus,
 } from "../models/order.model.js";
+import { getKitchenSettings } from "../models/settings.model.js";
+
+function normalizeDateKey(input: string | Date | undefined | null): string {
+  if (!input) return "";
+  if (input instanceof Date && !isNaN(input.getTime())) {
+    const y = input.getFullYear();
+    const m = String(input.getMonth() + 1).padStart(2, "0");
+    const d = String(input.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  const str = String(input).trim();
+  if (!str) return "";
+
+  const isoMatch = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (isoMatch && isoMatch[1] && isoMatch[2] && isoMatch[3]) {
+    return `${isoMatch[1]}-${isoMatch[2].padStart(2, "0")}-${isoMatch[3].padStart(2, "0")}`;
+  }
+
+  const lower = str.toLowerCase();
+  const now = new Date();
+  if (lower === "today" || lower.startsWith("today")) {
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  if (lower === "tomorrow" || lower.startsWith("tomorrow")) {
+    const tmrw = new Date(now);
+    tmrw.setDate(tmrw.getDate() + 1);
+    const y = tmrw.getFullYear();
+    const m = String(tmrw.getMonth() + 1).padStart(2, "0");
+    const d = String(tmrw.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  const textMatch = str.match(/(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2})(?:[,\s]+(\d{4}))?/i);
+  if (textMatch && textMatch[1] && textMatch[2]) {
+    const mPrefix = textMatch[1].slice(0, 3).toLowerCase();
+    const mIdx = monthNames.indexOf(mPrefix);
+    if (mIdx !== -1) {
+      let year = textMatch[3] ? parseInt(textMatch[3], 10) : now.getFullYear();
+      if (!textMatch[3] && mIdx < now.getMonth() - 6) {
+        year += 1;
+      }
+      const month = String(mIdx + 1).padStart(2, "0");
+      const day = String(parseInt(textMatch[2], 10)).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+  }
+
+  const parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) {
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth() + 1).padStart(2, "0");
+    const d = String(parsed.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  return lower;
+}
 
 export async function createOrder(req: Request, res: Response) {
   try {
     const { items, fulfilmentType, fulfilmentDate, fulfilmentTime, customer, specialInstructions, paymentMethod, paymentStatus, paymentId } = req.body;
+
+    // Validate kitchen open state and date capacity limit
+    const settings = getKitchenSettings();
+    if (!settings.isKitchenOpen) {
+      return res.status(400).json({ error: "Kitchen is currently closed for online orders." });
+    }
+
+    const requestedTrays = items.reduce((sum: number, it: any) => sum + (Number(it.qty) || 1), 0);
+    const targetKey = normalizeDateKey(fulfilmentDate);
+    const dateLimit =
+      targetKey && settings.dateLimits && settings.dateLimits[targetKey] !== undefined
+        ? Number(settings.dateLimits[targetKey])
+        : Number(settings.dailyTrayLimit) || 10;
+
+    const existingOrders = listAllOrders();
+    const bookedTrays = existingOrders
+      .filter((o) => o.status !== "cancelled" && normalizeDateKey(o.fulfilmentDate) === targetKey)
+      .reduce((sum, o) => sum + o.items.reduce((s, it) => s + (Number(it.qty) || 1), 0), 0);
+
+    const remainingSlots = Math.max(0, dateLimit - bookedTrays);
+    if (remainingSlots <= 0) {
+      return res.status(400).json({
+        error: `Kitchen is completely sold out for ${fulfilmentDate}. Please choose another date.`,
+      });
+    }
+    if (requestedTrays > remainingSlots) {
+      return res.status(400).json({
+        error: `Only ${remainingSlots} slot${remainingSlots > 1 ? "s" : ""} remaining for ${fulfilmentDate}. You requested ${requestedTrays} trays.`,
+      });
+    }
 
     const { orderItems, subtotal, tax, deliveryFee, total } = calculateOrderTotals(
       items,

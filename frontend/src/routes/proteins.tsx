@@ -263,7 +263,7 @@ export function ProteinSelectionPage() {
       {/* 2. CATEGORY FILTER TABS */}
       <div className="border-b border-white/[0.08] bg-[#121216]/80 backdrop-blur-xl py-3 px-4 sm:px-8">
         <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
             {[
               { id: "all", label: "All 4 Proteins" },
               { id: "halal", label: "100% Zabiha Halal (3)" },

@@ -211,10 +211,10 @@ export function DumDateTimePicker({
       year: number;
       isCurrentMonth: boolean;
       disabled: boolean;
-      reason?: string;
+      reason?: string | undefined;
       dateStr: string;
       isEarliest: boolean;
-      isSoldOut?: boolean;
+      isSoldOut?: boolean | undefined;
       capacity: ReturnType<typeof jakloudStore.getCapacityForDate>;
     }[] = [];
 
@@ -424,40 +424,64 @@ export function DumDateTimePicker({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* CLEAN CAPACITY AVAILABILITY BADGE                             */}
+      {/* DYNAMIC TRAFFIC-LIGHT CAPACITY LINE (NO RAW NUMBERS)          */}
       {/* ------------------------------------------------------------- */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-zinc-900/60 border border-white/[0.08] text-xs">
-        <div className="flex items-center gap-2">
-          <span
-            className={`h-2.5 w-2.5 rounded-full shrink-0 ${
-              selectedCapacity.status === "green"
-                ? "bg-emerald-500 shadow-[0_0_8px_#10b981]"
-                : selectedCapacity.status === "yellow"
-                ? "bg-amber-400 shadow-[0_0_8px_#f59e0b]"
-                : selectedCapacity.status === "red"
-                ? "bg-rose-500 animate-pulse shadow-[0_0_8px_#ef4444]"
-                : "bg-zinc-600"
-            }`}
-          />
-          <span className="font-medium text-zinc-200">
-            {selectedCapacity.status === "green" && (
-              <span className="text-emerald-400 font-semibold">{selectedCapacity.remainingSlots} Trays Available</span>
-            )}
-            {selectedCapacity.status === "yellow" && (
-              <span className="text-amber-300 font-semibold">Filling Fast ({selectedCapacity.remainingSlots} Left)</span>
-            )}
-            {selectedCapacity.status === "red" && (
-              <span className="text-rose-400 font-semibold">Almost Sold Out ({selectedCapacity.remainingSlots} Left)</span>
-            )}
-            {selectedCapacity.status === "sold_out" && (
-              <span className="text-zinc-400">Sold Out · Rolling to Next Day</span>
-            )}
+      <div className="px-3.5 py-2.5 rounded-xl bg-zinc-900/70 border border-white/[0.08] text-xs space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span
+              className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+                selectedCapacity.status === "green"
+                  ? "bg-emerald-500 shadow-[0_0_8px_#10b981]"
+                  : selectedCapacity.status === "yellow"
+                  ? "bg-amber-400 shadow-[0_0_8px_#f59e0b]"
+                  : selectedCapacity.status === "red"
+                  ? "bg-rose-500 animate-pulse shadow-[0_0_8px_#ef4444]"
+                  : "bg-zinc-600"
+              }`}
+            />
+            <span className="font-semibold text-zinc-100">
+              {selectedCapacity.status === "green" && (
+                <span className="text-emerald-400">Available</span>
+              )}
+              {selectedCapacity.status === "yellow" && (
+                <span className="text-amber-300">Filling Fast</span>
+              )}
+              {selectedCapacity.status === "red" && (
+                <span className="text-rose-400">Limited Slots</span>
+              )}
+              {selectedCapacity.status === "sold_out" && (
+                <span className="text-zinc-400">Sold Out Today</span>
+              )}
+            </span>
+          </div>
+
+          <span className="text-[11px] text-zinc-400 font-medium">
+            Fresh Handi Batch
           </span>
         </div>
 
-        <span className="text-[11px] text-amber-400/80 font-medium">
-          Fresh Handi Batch
-        </span>
+        {/* Dynamic Capacity Line decreasing as orders increase */}
+        <div className="h-1.5 w-full rounded-full bg-zinc-800/90 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ease-out ${
+              selectedCapacity.status === "green"
+                ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                : selectedCapacity.status === "yellow"
+                ? "bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                : selectedCapacity.status === "red"
+                ? "bg-rose-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
+                : "bg-zinc-600"
+            }`}
+            style={{
+              width: `${
+                selectedCapacity.status === "sold_out"
+                  ? 0
+                  : Math.max(8, Math.round((selectedCapacity.remainingSlots / (selectedCapacity.limit || 10)) * 100))
+              }%`,
+            }}
+          />
+        </div>
       </div>
 
       {/* Auto-lock & rollover advisory if date reached limit */}
@@ -580,20 +604,15 @@ export function DumDateTimePicker({
                       Full
                     </span>
                   ) : !cell.disabled && cell.isCurrentMonth ? (
-                    <span className="flex items-center gap-0.5 mt-0.5">
-                      <span
-                        className={`h-1 w-1 rounded-full ${
-                          cell.capacity.status === "green"
-                            ? "bg-emerald-400"
-                            : cell.capacity.status === "yellow"
-                            ? "bg-amber-400"
-                            : "bg-rose-400"
-                        }`}
-                      />
-                      <span className="text-[7px] text-zinc-400 font-mono leading-none">
-                        {cell.capacity.remainingSlots}
-                      </span>
-                    </span>
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full mt-0.5 ${
+                        cell.capacity.status === "green"
+                          ? "bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.6)]"
+                          : cell.capacity.status === "yellow"
+                          ? "bg-amber-400 shadow-[0_0_4px_rgba(251,191,36,0.6)]"
+                          : "bg-rose-400 shadow-[0_0_4px_rgba(251,113,133,0.6)]"
+                      }`}
+                    />
                   ) : null}
 
                   {cell.isEarliest && !cell.disabled && !isSelected && (
@@ -607,13 +626,13 @@ export function DumDateTimePicker({
           {/* Kitchen Rule Indicator Notes */}
           <div className="pt-1.5 border-t border-white/[0.06] flex items-center justify-center gap-3 text-[8.5px] text-zinc-400 font-normal">
             <span className="flex items-center gap-1 text-emerald-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> 7–10 Trays Open
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Available
             </span>
             <span className="flex items-center gap-1 text-amber-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> 4–6 Left
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Filling Fast
             </span>
             <span className="flex items-center gap-1 text-rose-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-400" /> 1–3 Left
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-400" /> Limited
             </span>
           </div>
 

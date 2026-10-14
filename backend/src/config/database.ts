@@ -88,6 +88,9 @@ async function createTablesIfNotExist() {
       price_with_aloo DECIMAL(10,2) NOT NULL,
       badge VARCHAR(128) DEFAULT '',
       description TEXT,
+      tray_size VARCHAR(128) DEFAULT 'Serves 4–5',
+      serves VARCHAR(64) DEFAULT 'Serves 4–5',
+      meat_weight VARCHAR(128) DEFAULT '',
       kcal INT DEFAULT 0,
       kcal_aloo INT DEFAULT 0,
       available TINYINT(1) DEFAULT 1,
@@ -96,6 +99,17 @@ async function createTablesIfNotExist() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  // Migrate columns if table already existed
+  try {
+    await pool.query("ALTER TABLE menu_items ADD COLUMN tray_size VARCHAR(128) DEFAULT 'Serves 4–5'");
+  } catch {}
+  try {
+    await pool.query("ALTER TABLE menu_items ADD COLUMN serves VARCHAR(64) DEFAULT 'Serves 4–5'");
+  } catch {}
+  try {
+    await pool.query("ALTER TABLE menu_items ADD COLUMN meat_weight VARCHAR(128) DEFAULT ''");
+  } catch {}
 
   // 3. Customers Table
   await pool.query(`

@@ -181,9 +181,9 @@ export function CustomizeOrderPage() {
     });
 
     const subtotal = trayTotal + addonsSum;
-    const tax = subtotal * 0.086;
+    const tax = 0;
     const deliveryCost = fulfilmentType === "delivery" ? (trayCount >= 5 ? 0 : DELIVERY_FEE) : 0;
-    const grandTotal = subtotal + tax + deliveryCost;
+    const grandTotal = subtotal + deliveryCost;
 
     return {
       baseUnitPrice,
@@ -231,7 +231,7 @@ export function CustomizeOrderPage() {
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-24">
+    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-32 sm:pb-36">
       {/* 1. HEADER HERO BANNER */}
       <section className="relative border-b border-white/[0.08] bg-[#121216] py-12 px-4 sm:px-8 text-center overflow-hidden">
         <div className="relative z-10 mx-auto max-w-4xl space-y-3">
@@ -632,10 +632,6 @@ export function CustomizeOrderPage() {
                   </div>
                 )}
 
-                <div className="flex justify-between text-zinc-500">
-                  <span>Food Tax (8.6%):</span>
-                  <span>{formatMoney(calculations.tax)}</span>
-                </div>
 
                 <div className="flex justify-between text-zinc-500">
                   <span>Fulfilment ({fulfilmentType === "pickup" ? "Pickup" : "Delivery"}):</span>

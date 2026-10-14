@@ -35,6 +35,9 @@ import {
   Building,
   Mail,
   UtensilsCrossed,
+  Camera,
+  Copy,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatUsPhone, isValidUsPhone, sanitizeName, isValidName } from "@/lib/validation";
@@ -177,6 +180,8 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
         note: d.badge || "Handi Dum",
         description: d.description,
         meatWeight: d.meatWeight,
+        traySize: d.traySize || (d as any).serves || "Serves 4–5",
+        serves: (d as any).serves || d.traySize || "Serves 4–5",
         riceWeight: d.riceWeight,
         kcal: d.kcal,
         kcalAloo: d.kcalAloo || (d.kcal ? d.kcal + 157 : 1850),
@@ -195,9 +200,6 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<"home" | "menu" | "cart" | "profile">(initialTab);
-  
-  // Step in Home Tab: "biryani_card" (first Biryani category) -> "protein_menu" (click to open proteins)
-  const [homeStep, setHomeStep] = useState<"biryani_card" | "protein_menu">("biryani_card");
   
   const [fulfilmentMode, setFulfilmentMode] = useState<"pickup" | "delivery">("pickup");
 
@@ -234,9 +236,9 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   // Calculate live financial totals
   const currentAlooFee = settings?.alooCharge ?? ALOO_CHARGE;
   const currentDeliveryFee = fulfilmentMode === "delivery" ? (settings?.deliveryFee ?? DELIVERY_FEE) : 0;
-  const taxRate = 0.086; // 8.6%
-  const calculatedTax = subtotal * taxRate;
-  const grandTotal = subtotal + currentDeliveryFee + calculatedTax;
+  const taxRate = 0;
+  const calculatedTax = 0;
+  const grandTotal = subtotal + currentDeliveryFee;
 
   // 1-Tap Geolocation Location Handler
   const handleUseCurrentLocation = () => {
@@ -320,6 +322,18 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
 
   const handleProceedToPayment = () => {
     if (!validateCustomerDetails()) return;
+    const cap = jakloudStore.getCapacityForDate(selectedDate);
+    const cartTrayCount = lines.reduce((sum, l) => sum + l.qty, 0);
+    if (cap.isSoldOut || cap.remainingSlots <= 0) {
+      toast.error(`The kitchen is completely sold out for ${selectedDate}. Please select another date.`);
+      return;
+    }
+    if (cartTrayCount > cap.remainingSlots) {
+      toast.error(
+        `Only ${cap.remainingSlots} slot${cap.remainingSlots > 1 ? "s" : ""} left for ${selectedDate}, but you have ${cartTrayCount} trays in your cart. Please select another date.`
+      );
+      return;
+    }
     setCheckoutStep("payment");
   };
 
@@ -349,14 +363,15 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   const handleUpdateProteinQty = (dish: any, delta: number) => {
     const existingLines = lines.filter((l) => l.proteinId === dish.id);
     if (delta > 0) {
-      if (existingLines.length > 0) {
-        setQty(existingLines[0].key, existingLines[0].qty + delta);
+      const firstLine = existingLines[0];
+      if (firstLine) {
+        setQty(firstLine.key, firstLine.qty + delta);
       } else {
         handleAddProteinToCart(dish);
       }
     } else if (delta < 0) {
-      if (existingLines.length > 0) {
-        const targetLine = existingLines[existingLines.length - 1];
+      const targetLine = existingLines[existingLines.length - 1];
+      if (targetLine) {
         setQty(targetLine.key, targetLine.qty - 1);
       }
     }
@@ -427,7 +442,6 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       `────────────────────────`,
       `Subtotal: ${formatMoney(order.subtotal)}`,
       order.deliveryFee > 0 ? `Delivery Fee: ${formatMoney(order.deliveryFee)}` : `Delivery: FREE Pickup`,
-      `Tax (8.6%): ${formatMoney(order.tax)}`,
       `TOTAL AMOUNT: ${formatMoney(order.total)}`,
       `Payment: ${order.paymentMethod}`,
       `────────────────────────`,
@@ -460,6 +474,20 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       unitPrice: l.unitPrice,
       lineTotal: l.unitPrice * l.qty,
     }));
+
+    // Validate date capacity before initiating payment or submitting order
+    const cap = jakloudStore.getCapacityForDate(selectedDate);
+    const cartTrayCount = lines.reduce((sum, l) => sum + (Number(l.qty) || 1), 0);
+    if (cap.isSoldOut || cap.remainingSlots <= 0) {
+      toast.error(`The kitchen is completely sold out for ${selectedDate}. Please select another date.`);
+      return;
+    }
+    if (cartTrayCount > cap.remainingSlots) {
+      toast.error(
+        `Only ${cap.remainingSlots} slot${cap.remainingSlots > 1 ? "s" : ""} left for ${selectedDate}, but you have ${cartTrayCount} trays in your cart. Please select another date.`
+      );
+      return;
+    }
 
     // If Razorpay Online is selected, launch real Razorpay Checkout modal
     let razorpayId: string | null = null;
@@ -495,8 +523,8 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
     }
 
     try {
-      // 1. Sync to backend Express API & database
-      await api.createOrder({
+      // 1. Sync to backend Express API & database (which also safely syncs into local store once)
+      const res = await api.createOrder({
         items: lines.map((l) => ({
           proteinId: l.proteinId,
           aloo: l.aloo,
@@ -518,417 +546,228 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
             deliveryInstructions: deliveryLandmark.trim() || undefined,
           }),
         },
-        paymentMethod,
+        paymentMethod: razorpayId ? `Razorpay Online (${razorpayId})` : paymentMethod,
         paymentStatus: paymentMethod === "Razorpay Online" ? "paid" : "pending",
+        paymentId: razorpayId || undefined,
         specialInstructions:
           fulfilmentMode === "delivery"
             ? `Delivery to ${fullAddress}`
             : "Made to order fresh handi dum biryani.",
       });
+
+      const confirmed = (res?.order as unknown as DynamicOrder) || null;
+      if (confirmed) {
+        setCreatedOrder(confirmed);
+        setCheckoutStep("success");
+        clearCart();
+        toast.success(`Order #${confirmed.orderNumber} placed successfully!`);
+      } else {
+        toast.success("Order placed successfully!");
+        setCheckoutStep("success");
+        clearCart();
+      }
     } catch (err: any) {
-      console.warn("Backend API sync completed with fallback:", err?.message);
+      toast.error(err?.message || "Failed to place order. Please try again.");
     }
-
-    // 2. Also register in local client store for instant UX & receipt
-    const newOrder = jakloudStore.createOrder({
-      fulfilmentType: fulfilmentMode,
-      fulfilmentDate: selectedDate,
-      fulfilmentTime: selectedTime,
-      customer: {
-        name: customerName.trim(),
-        phone: customerPhone.trim(),
-        email: customerEmail.trim() || "customer@jakloud.com",
-        address: fullAddress,
-        city: "Springfield",
-        zipCode: "65809",
-      },
-      items: orderItems,
-      subtotal,
-      tax: calculatedTax,
-      deliveryFee: currentDeliveryFee,
-      total: grandTotal,
-      paymentMethod,
-      paymentStatus: paymentMethod === "Razorpay Online" ? "PAID" : "Cash on Pickup",
-      specialInstructions:
-        fulfilmentMode === "delivery"
-          ? `Delivery to ${fullAddress}`
-          : "Made to order fresh handi dum biryani.",
-    });
-
-    setCreatedOrder(newOrder);
-    setCheckoutStep("success");
-    clearCart();
-    toast.success(`Order #${newOrder.orderNumber} placed successfully!`);
   };
 
   return (
-    <div className="min-h-screen w-full max-w-full bg-[#09090b] text-zinc-100 font-sans selection:bg-amber-500/20 selection:text-amber-300 pb-32">
+    <div className="min-h-screen w-full max-w-full bg-[#09090b] text-zinc-100 font-sans selection:bg-amber-500/20 selection:text-amber-300 pb-36 sm:pb-44 overflow-x-hidden">
       {/* ========================================================================= */}
       {/* TAB CONTENT: HOME TAB                                                     */}
       {/* ========================================================================= */}
       {activeTab === "home" && (
-        <main className="w-full max-w-md mx-auto px-4 pt-3.5 space-y-3.5 animate-in fade-in duration-200 overflow-x-hidden">
-          {/* STEP 1: INITIAL CATEGORY VIEW (BIRYANI SHOWCASE CARD) */}
-          {homeStep === "biryani_card" && (
-            <div className="space-y-3.5 w-full">
-              {/* Refined Banner */}
-              <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[#161412] via-[#100f12] to-[#0c0c0e] p-4 shadow-md">
-                <div className="relative z-10 space-y-1 text-center">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-[10px] font-medium text-amber-300 mb-0.5">
-                    <Sparkles className="h-3 w-3 text-amber-400" /> Limited to 25 Handi Trays Daily
-                  </span>
-                  <h1 className="text-xl font-semibold text-zinc-100 font-display">
-                    Made to Order <span className="text-amber-400 italic">Dum Biryani</span>
-                  </h1>
-                  <p className="text-xs text-zinc-400 font-normal">
-                    Springfield slow-cooked royal dum pukht feast · Serves 4–5 adults
-                  </p>
-                </div>
-              </div>
-
-              {/* Outlet Location & Mode Selector */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setLocationModalOpen(true)}
-                  className="flex-1 min-w-0 rounded-xl bg-[#121216] border border-white/[0.08] p-2.5 flex items-center justify-between text-left hover:border-amber-500/30 transition-all shadow-sm cursor-pointer"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <MapPin className="h-4 w-4 text-amber-400 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-zinc-200 truncate">JAKLOUD Kitchen</p>
-                      <p className="text-[10px] text-zinc-400 truncate">3625 S Bedford Ave, MO</p>
-                    </div>
-                  </div>
-                  <span className="shrink-0 text-[10px] text-amber-400 font-medium">
-                    Change →
-                  </span>
-                </button>
-
-                {/* Pickup vs Delivery Pill Switch */}
-                <div className="rounded-xl bg-[#121216] border border-white/[0.08] p-1 flex items-center shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setFulfilmentMode("pickup")}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
-                      fulfilmentMode === "pickup"
-                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm"
-                        : "text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    Pickup
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFulfilmentMode("delivery")}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
-                      fulfilmentMode === "delivery"
-                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm"
-                        : "text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    Delivery
-                  </button>
-                </div>
-              </div>
-
-              {/* MAIN BIRYANI HERO CARD (CLICK TO OPEN PROTEIN MENU) */}
-              <div
-                onClick={() => setHomeStep("protein_menu")}
-                className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/[0.08] bg-[#121216] p-3.5 shadow-md hover:border-amber-500/40 active:scale-[0.99] transition-all space-y-3"
-              >
-                {/* Visual Image Banner */}
-                <div className="relative h-44 w-full overflow-hidden rounded-xl bg-black border border-white/[0.05]">
-                  <img
-                    src={chickenImg}
-                    alt="Royal Spice King Dum Biryani"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                  
-                  {/* Top Badges */}
-                  <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-                    <span className="rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-amber-300 text-[10px] font-medium px-2.5 py-0.5">
-                      Slow Dum Pukht
-                    </span>
-                    <span className="rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-zinc-300 text-[10px] font-medium px-2.5 py-0.5">
-                      Serves 4–5
-                    </span>
-                  </div>
-
-                  {/* Bottom Text */}
-                  <div className="absolute bottom-2.5 left-3 right-3 flex items-end justify-between">
-                    <div className="min-w-0 pr-2">
-                      <h2 className="text-base font-semibold text-white leading-tight truncate">
-                        Royal Dum Biryani Handi Trays
-                      </h2>
-                      <p className="text-[11px] text-zinc-300 font-normal">
-                        {displayMenu.length} fresh protein choices · Saffron aged basmati
-                      </p>
-                    </div>
-                    <span className="shrink-0 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-medium px-2.5 py-1 font-mono">
-                      From {formatMoney(lowestPrice)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Features Highlights */}
-                <div className="space-y-2.5 pt-0.5">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="rounded-xl bg-zinc-900/60 border border-white/[0.05] p-2 text-center">
-                      <span className="block text-[10px] font-medium text-amber-400">
-                        {displayMenu.length} Protein Options
-                      </span>
-                      <span className="block text-[10px] text-zinc-400 font-normal mt-0.5">
-                        Chicken, Mutton, Beef, Pork, Seafood, Veg
-                      </span>
-                    </div>
-
-                    <div className="rounded-xl bg-zinc-900/60 border border-white/[0.05] p-2 text-center">
-                      <span className="block text-[10px] font-medium text-amber-400">
-                        🥔 Royal Dum Aloo
-                      </span>
-                      <span className="block text-[10px] text-emerald-400 font-semibold mt-0.5">
-                        100% Free Option Included
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-zinc-400 leading-relaxed font-normal">
-                    Sealed in traditional dough handis with Kashmiri saffron, whole spices, and desi ghee.
-                  </p>
-
-                  {/* Clean CTA Button */}
-                  <button
-                    type="button"
-                    onClick={() => setHomeStep("protein_menu")}
-                    className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold py-3 text-xs shadow-md hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <UtensilsCrossed className="h-4 w-4" />
-                    <span>Choose Biryani Protein →</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Contact strip */}
-              <div className="rounded-xl border border-white/[0.06] bg-[#121216] p-3 text-center space-y-1">
-                <p className="text-[10px] font-medium text-zinc-400">
-                  Direct Kitchen Hotline & WhatsApp Support
-                </p>
-                <div className="flex items-center justify-center gap-3 text-xs text-zinc-300">
-                  <a href={`tel:${BUSINESS.phone}`} className="text-amber-400 hover:underline font-medium">
-                    {BUSINESS.phone}
-                  </a>
-                  <span className="text-zinc-600">•</span>
-                  <a href={`mailto:${BUSINESS.email}`} className="hover:text-zinc-100 font-normal">
-                    {BUSINESS.email}
-                  </a>
-                </div>
-              </div>
+        <main className="w-full max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 sm:px-6 pt-2 space-y-3 animate-in fade-in duration-200 overflow-x-hidden">
+          {/* Section Title with Limited Badge */}
+          <div className="pt-1">
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm sm:text-base font-semibold text-white font-display">
+                Select Biryani Handi Tray
+              </h1>
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[10px] font-semibold text-amber-300 shrink-0">
+                <Sparkles className="h-2.5 w-2.5 text-amber-400" />
+                <span>Limited</span>
+              </span>
             </div>
-          )}
+            <p className="text-[11px] text-zinc-400 mt-0.5">
+              Slow-cooked royal Dum Pukht in sealed handis
+            </p>
+          </div>
 
-          {/* STEP 2: PROTEIN OPTIONS MENU */}
-          {homeStep === "protein_menu" && (
-            <div className="space-y-3 animate-in fade-in duration-200 w-full">
-              {/* Back Bar */}
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => setHomeStep("biryani_card")}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
+          {/* 4. Direct Biryani Trays List */}
+          <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3.5">
+            {displayMenu.map((dish) => {
+              const flyerPreset = PROTEIN_FLYER_DATA[dish.id] || {
+                emoji: "🥘",
+                flyerName: dish.name,
+                meatDesc: dish.description,
+                halal: (dish as any).halal ?? true,
+                badge: "Handi Dum",
+              };
+              const flyer = {
+                emoji: flyerPreset.emoji,
+                flyerName: flyerPreset.flyerName,
+                meatDesc: (dish as any).meatWeight || dish.description || flyerPreset.meatDesc,
+                halal: (dish as any).halal !== undefined ? (dish as any).halal : flyerPreset.halal,
+                badge: (dish as any).badge || flyerPreset.badge,
+              };
+
+              const totalCartCount = getProteinCartCount(dish.id);
+              const dishImg = (dish as any).image || DISH_IMAGES[dish.id] || chickenImg;
+              const isAvailable = (dish as any).available !== false;
+
+              return (
+                <div
+                  key={dish.id}
+                  className={`rounded-2xl bg-[#121216] border p-3.5 shadow-sm transition-all space-y-3 ${
+                    !isAvailable
+                      ? "opacity-60 border-white/[0.05]"
+                      : "border-white/[0.08] hover:border-amber-500/35"
+                  }`}
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  <span>Back to Overview</span>
-                </button>
-                <span className="text-xs text-zinc-400 font-normal">
-                  {displayMenu.length} Protein Trays Available
-                </span>
-              </div>
-
-              {/* Header Box */}
-              <div className="rounded-xl bg-[#121216] border border-white/[0.08] p-3 flex items-center justify-between gap-2">
-                <div>
-                  <h2 className="text-xs sm:text-sm font-semibold text-zinc-100">
-                    Select Your Protein Tray
-                  </h2>
-                  <p className="text-[11px] text-zinc-400 font-normal">
-                    Each Handi Tray serves 4–5 adults
-                  </p>
-                </div>
-                <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-[10px] font-medium text-amber-300">
-                  {displayMenu.length} Options
-                </span>
-              </div>
-
-              {/* The Protein Option Cards */}
-              <div className="space-y-2.5">
-                {displayMenu.map((dish) => {
-                  const flyerPreset = PROTEIN_FLYER_DATA[dish.id] || {
-                    emoji: "🥘",
-                    flyerName: dish.name,
-                    meatDesc: dish.description,
-                    halal: dish.halal ?? true,
-                    badge: "Handi Dum",
-                  };
-                  const flyer = {
-                    emoji: flyerPreset.emoji,
-                    flyerName: flyerPreset.flyerName,
-                    meatDesc: dish.meatWeight || dish.description || flyerPreset.meatDesc,
-                    halal: dish.halal !== undefined ? dish.halal : flyerPreset.halal,
-                    badge: dish.badge || flyerPreset.badge,
-                  };
-
-                  const totalCartCount = getProteinCartCount(dish.id);
-                  const dishImg = dish.image || DISH_IMAGES[dish.id] || chickenImg;
-
-                  return (
+                  {/* Top: Image + Info */}
+                  <div className="flex gap-3">
+                    {/* Thumbnail */}
                     <div
-                      key={dish.id}
-                      className={`rounded-2xl bg-[#121216] border p-3 shadow-sm transition-all space-y-2.5 ${
-                        !dish.available
-                          ? "opacity-60 border-white/[0.05]"
-                          : "border-white/[0.08] hover:border-amber-500/30"
+                      onClick={() => isAvailable && handleOpenCustomizer(dish)}
+                      className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-black border border-white/[0.08] ${
+                        isAvailable ? "cursor-pointer group" : "cursor-not-allowed"
                       }`}
                     >
-                      {/* Top: Image + Info */}
-                      <div className="flex gap-3">
-                        {/* Thumbnail */}
-                        <div
-                          onClick={() => dish.available && handleOpenCustomizer(dish)}
-                          className={`relative h-18 w-18 shrink-0 overflow-hidden rounded-xl bg-black border border-white/[0.05] ${
-                            dish.available ? "cursor-pointer group" : "cursor-not-allowed"
-                          }`}
-                        >
-                          <img
-                            src={dishImg}
-                            alt={dish.name}
-                            className={`h-full w-full object-cover transition-transform duration-300 ${
-                              dish.available ? "group-hover:scale-105" : "grayscale"
-                            }`}
-                            loading="lazy"
-                          />
-                        </div>
+                      <img
+                        src={dishImg}
+                        alt={dish.name}
+                        className={`h-full w-full object-cover transition-transform duration-300 ${
+                          isAvailable ? "group-hover:scale-105" : "grayscale"
+                        }`}
+                        loading="lazy"
+                      />
+                      {flyer.halal ? (
+                        <span className="absolute bottom-1 left-1 rounded bg-black/70 backdrop-blur-sm border border-emerald-500/40 text-emerald-300 text-[8.5px] font-semibold px-1 py-0.2">
+                          Halal
+                        </span>
+                      ) : (
+                        <span className="absolute bottom-1 left-1 rounded bg-black/70 backdrop-blur-sm border border-amber-500/40 text-amber-300 text-[8.5px] font-semibold px-1 py-0.2">
+                          {flyer.badge}
+                        </span>
+                      )}
+                    </div>
 
-                        {/* Details */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-1">
-                            <span className="text-[11px] font-semibold text-amber-400">
-                              {flyer.flyerName}
-                            </span>
-                            {flyer.halal ? (
-                              <span className="rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-medium px-1.5 py-0.5">
-                                100% Halal
-                              </span>
-                            ) : (
-                              <span className="rounded bg-zinc-800 border border-white/10 text-zinc-300 text-[9px] font-medium px-1.5 py-0.5">
-                                {flyer.badge}
-                              </span>
-                            )}
-                          </div>
-
-                          <h3
-                            onClick={() => dish.available && handleOpenCustomizer(dish)}
-                            className={`text-xs sm:text-sm font-medium text-zinc-100 truncate transition-colors mt-0.5 ${
-                              dish.available ? "hover:text-amber-300 cursor-pointer" : "cursor-not-allowed"
-                            }`}
-                          >
-                            {dish.name}
-                          </h3>
-
-                          <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5 font-normal">
-                            {flyer.meatDesc}
-                          </p>
-
-                          {/* Price */}
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs sm:text-sm font-semibold text-amber-400 font-mono">
-                              {formatMoney(dish.price)}
-                            </span>
-                            <span className="text-[10px] text-zinc-500 font-normal">
-                              • Serves 4–5
-                            </span>
-                            {!dish.available && (
-                              <span className="text-[9px] font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded px-1.5 py-0.5">
-                                Sold Out
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Bottom Row: Quantity Controls */}
-                      <div className="flex items-center justify-between gap-2 border-t border-white/[0.05] pt-2">
-                        <div className="flex items-center gap-1.5 text-xs">
-                          <span className="text-zinc-400 text-[11px] font-normal">In Cart:</span>
-                          <span className="font-mono font-medium text-amber-400 text-xs">
-                            {totalCartCount > 0 ? `${totalCartCount} Tray${totalCartCount > 1 ? "s" : ""}` : "0"}
+                    {/* Details */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400">
+                            {flyer.flyerName}
+                          </span>
+                          <span className="text-xs font-mono font-bold text-amber-300">
+                            {formatMoney(dish.price)}
                           </span>
                         </div>
 
-                        {/* Quantity Stepper / Open Customizer */}
-                        {!dish.available ? (
-                          <div className="rounded-lg bg-zinc-800/80 border border-white/5 text-zinc-500 px-3 py-1.5 text-xs font-medium ml-auto">
-                            Sold Out
-                          </div>
-                        ) : totalCartCount === 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => handleOpenCustomizer(dish)}
-                            className="flex items-center gap-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 px-3 py-1.5 text-xs font-medium hover:bg-amber-500/30 active:scale-95 transition-all ml-auto cursor-pointer"
-                          >
-                            <Plus className="h-3.5 w-3.5" />
-                            <span>Add Tray</span>
-                          </button>
-                        ) : (
-                          <div className="flex items-center rounded-lg border border-white/10 bg-zinc-900/80 p-0.5 ml-auto">
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateProteinQty(dish, -1)}
-                              className="h-6 w-6 flex items-center justify-center text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors active:scale-95 cursor-pointer"
-                              title="Decrease quantity"
-                            >
-                              <Minus className="h-3 w-3" />
-                            </button>
-                            <span className="w-7 text-center text-xs font-medium text-zinc-100 font-mono">
-                              {totalCartCount}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleOpenCustomizer(dish)}
-                              className="h-6 w-6 flex items-center justify-center text-amber-400 hover:text-amber-300 hover:bg-zinc-800 rounded transition-colors active:scale-95 cursor-pointer"
-                              title="Add customized tray (Choose Aloo & Spice)"
-                            >
-                              <Plus className="h-3 w-3" />
-                            </button>
-                          </div>
-                        )}
+                        <h3
+                          onClick={() => isAvailable && handleOpenCustomizer(dish)}
+                          className={`text-xs sm:text-sm font-semibold text-zinc-100 truncate mt-0.5 ${
+                            isAvailable ? "hover:text-amber-300 cursor-pointer" : "cursor-not-allowed"
+                          }`}
+                        >
+                          {dish.name}
+                        </h3>
+
+                        <p className="text-[10.5px] text-zinc-400 line-clamp-1 mt-0.5 font-normal">
+                          {(dish as any).meatWeight || dish.description || flyer.meatDesc}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-1 mt-1.5 pt-1 border-t border-white/[0.04]">
+                        <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                          <span>🥔 Free Dum Aloo</span>
+                        </span>
+                        <span className="text-[10px] text-zinc-400 font-normal">
+                          {(dish as any).serves || (dish as any).traySize || "Serves 4–5"}
+                        </span>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
 
-              {/* Static Review Order / View Cart Button at the end of the list */}
-              {count > 0 && (
-                <div className="pt-2 pb-6">
-                  <button
-                    onClick={() => {
-                      setActiveTab("cart");
-                      setCheckoutStep("cart");
-                    }}
-                    className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold py-3 px-4 text-xs shadow-lg flex items-center justify-between hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <ShoppingBag className="h-4 w-4" />
-                      <span>Review Cart ({count} {count === 1 ? "Tray" : "Trays"})</span>
-                    </div>
-                    <div className="flex items-center gap-1 font-mono text-xs font-semibold">
-                      <span>{formatMoney(subtotal)}</span>
-                      <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
-                    </div>
-                  </button>
+                  {/* Bottom Row: Actions */}
+                  <div className="flex items-center justify-between gap-2 border-t border-white/[0.06] pt-2.5">
+                    {/* Customize Trigger */}
+                    {isAvailable ? (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenCustomizer(dish)}
+                        className="text-[11px] font-medium text-amber-400/90 hover:text-amber-300 flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <span>Customize</span>
+                        <span className="text-zinc-500 text-[9px]">(Aloo & Spice)</span>
+                      </button>
+                    ) : (
+                      <span className="text-[11px] font-semibold text-rose-400">Sold Out Today</span>
+                    )}
+
+                    {/* Quantity Stepper or Add Button */}
+                    {!isAvailable ? (
+                      <div className="rounded-lg bg-zinc-800/80 border border-white/5 text-zinc-500 px-3 py-1.5 text-xs font-medium ml-auto">
+                        Sold Out
+                      </div>
+                    ) : totalCartCount === 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => handleAddProteinToCart(dish)}
+                        className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold px-3.5 py-1.5 text-xs shadow-md hover:brightness-105 active:scale-95 transition-all ml-auto cursor-pointer"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>Add Tray</span>
+                      </button>
+                    ) : (
+                      <div className="flex items-center rounded-xl border border-amber-500/40 bg-zinc-900 p-0.5 ml-auto shadow-sm">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateProteinQty(dish, -1)}
+                          className="h-7 w-7 flex items-center justify-center text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors active:scale-95 cursor-pointer"
+                          title="Decrease quantity"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-7 text-center text-xs font-bold text-amber-300 font-mono">
+                          {totalCartCount}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateProteinQty(dish, 1)}
+                          className="h-7 w-7 flex items-center justify-center text-amber-400 hover:text-amber-300 hover:bg-zinc-800 rounded-lg transition-colors active:scale-95 cursor-pointer"
+                          title="Add another tray"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              );
+            })}
+          </div>
+
+          {/* 5. Sticky Bottom Cart Bar for Quick Order Placement */}
+          {count > 0 && (
+            <div className="pt-3 pb-24 sm:pb-28">
+              <button
+                onClick={() => {
+                  setActiveTab("cart");
+                  setCheckoutStep("cart");
+                }}
+                className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold py-3 px-4 text-xs shadow-xl flex items-center justify-between hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="h-4 w-4" />
+                  <span>Review Order ({count} {count === 1 ? "Tray" : "Trays"})</span>
+                </div>
+                <div className="flex items-center gap-1 font-mono text-xs font-bold">
+                  <span>{formatMoney(subtotal)}</span>
+                  <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
+                </div>
+              </button>
             </div>
           )}
         </main>
@@ -938,7 +777,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       {/* TAB CONTENT: FULL MENU TAB                                                */}
       {/* ========================================================================= */}
       {activeTab === "menu" && (
-        <main className="px-4 pt-3.5 space-y-3.5 max-w-md mx-auto">
+        <main className="w-full max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 sm:px-6 pt-3.5 space-y-3.5 pb-24 sm:pb-28">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm sm:text-base font-semibold text-zinc-100">Full Handi Menu</h2>
@@ -949,15 +788,17 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
             </span>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2.5 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3.5">
             {displayMenu.map((dish) => {
-              const dishImg = dish.image || DISH_IMAGES[dish.id] || chickenImg;
+              const dishObj = dish as any;
+              const dishImg = dishObj.image || DISH_IMAGES[dish.id] || chickenImg;
+              const isAvailable = dishObj.available !== false;
 
               return (
                 <div
                   key={dish.id}
                   className={`rounded-2xl bg-[#121216] border p-3 space-y-2.5 shadow-sm transition-all ${
-                    !dish.available ? "opacity-60 border-white/[0.05]" : "border-white/[0.08]"
+                    !isAvailable ? "opacity-60 border-white/[0.05]" : "border-white/[0.08]"
                   }`}
                 >
                   <div className="flex gap-3">
@@ -965,7 +806,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                       src={dishImg}
                       alt={dish.name}
                       className={`h-16 w-16 rounded-xl object-cover shrink-0 border border-white/[0.05] ${
-                        !dish.available ? "grayscale" : ""
+                        !isAvailable ? "grayscale" : ""
                       }`}
                     />
                     <div className="flex-1 min-w-0">
@@ -978,9 +819,9 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                       <p className="text-[10px] text-zinc-400 line-clamp-2 mt-0.5 font-normal">{dish.description}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-[10px] text-zinc-500 font-normal">
-                          Serves 4–5 · {dish.kcal} kcal
+                          {(dish as any).serves || (dish as any).traySize || "Serves 4–5"} · {dish.kcal} kcal
                         </p>
-                        {!dish.available && (
+                        {!isAvailable && (
                           <span className="text-[9px] font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded px-1 py-0.2">
                             Sold Out
                           </span>
@@ -994,12 +835,12 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                       <span>🥔 Royal Dum Aloo:</span>
                       <span className="text-emerald-400 font-semibold">100% Free ($0)</span>
                     </span>
-                    {!dish.available ? (
+                    {!isAvailable ? (
                       <span className="text-xs text-zinc-500 font-medium px-2.5 py-1">Unavailable</span>
                     ) : (
                       <button
                         type="button"
-                        onClick={() => handleOpenCustomizer(dish as any)}
+                        onClick={() => handleOpenCustomizer(dishObj)}
                         className="rounded-lg bg-amber-500/20 border border-amber-500/40 px-2.5 py-1 text-xs font-medium text-amber-300 hover:bg-amber-500/30 transition-all cursor-pointer"
                       >
                         Customize & Add
@@ -1017,7 +858,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       {/* TAB CONTENT: CART & CHECKOUT (REVAMPED TO REAL-TIME PRODUCTION LOOK)      */}
       {/* ========================================================================= */}
       {activeTab === "cart" && (
-        <main className="px-4 pt-3.5 space-y-3.5 max-w-md mx-auto">
+        <main className="w-full max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 sm:px-6 pt-3.5 space-y-3.5 pb-24 sm:pb-28">
           {/* STEP 1: CART ITEMS & SUMMARY */}
           {checkoutStep === "cart" && (
             <div className="space-y-3.5">
@@ -1057,7 +898,6 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                   <button
                     onClick={() => {
                       setActiveTab("home");
-                      setHomeStep("protein_menu");
                     }}
                     className="rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 font-medium text-xs px-4 py-2 hover:bg-amber-500/30 transition-all cursor-pointer"
                   >
@@ -1067,415 +907,260 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
               ) : (
                 <>
                   {/* Cart Items List */}
-                  <div className="space-y-3">
+                  {/* Cart Items List */}
+                  <div className="space-y-2.5">
                     {lines.map((line) => {
                       const dishImg = DISH_IMAGES[line.proteinId] || chickenImg;
-                      const dish = displayMenu.find((m) => m.id === line.proteinId || m.dishId === line.proteinId) || MENU.find((m) => m.id === line.proteinId);
-                      const basePrice = dish?.price ?? (line.aloo ? line.unitPrice - currentAlooFee : line.unitPrice);
 
                       return (
                         <div
                           key={line.key}
-                          className="rounded-2xl bg-[#121216] border border-white/[0.08] p-3.5 shadow-sm space-y-3"
+                          className="rounded-2xl bg-[#121216] border border-white/[0.08] p-3 shadow-sm hover:border-white/[0.12] transition-all"
                         >
-                          {/* Item Row */}
-                          <div className="flex gap-3">
+                          <div className="flex items-start gap-3">
+                            {/* Dish Thumbnail */}
                             <img
                               src={dishImg}
                               alt={line.name}
-                              className="h-16 w-16 rounded-xl object-cover shrink-0 border border-white/[0.05]"
+                              className="h-16 w-16 rounded-xl object-cover shrink-0 border border-white/[0.08]"
                             />
-                            <div className="min-w-0 flex-1">
-                              <h4 className="text-xs sm:text-sm font-semibold text-zinc-100 truncate">
-                                {line.name}
-                              </h4>
-                              <p className="text-xs text-zinc-400 font-normal mt-0.5">
-                                Base: {formatMoney(basePrice)} {line.aloo ? "• Royal Dum Aloo (Free)" : "• No Aloo"} • {line.extraSpicy ? "🌶️ Spicy" : "🌿 No Spicy"}
-                              </p>
-                              <p className="text-xs font-mono font-semibold text-amber-400 mt-1">
-                                {formatMoney(line.unitPrice * line.qty)}
-                              </p>
+
+                            {/* Dish Info & Options */}
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <div className="flex items-start justify-between gap-1">
+                                <h4 className="text-xs sm:text-sm font-semibold text-zinc-100 truncate">
+                                  {line.name}
+                                </h4>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    removeLine(line.key);
+                                    toast.info(`Removed ${line.name} from cart`);
+                                  }}
+                                  className="text-zinc-500 hover:text-rose-400 p-0.5 transition-colors cursor-pointer"
+                                  title="Remove item"
+                                  aria-label="Remove item"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+
+                              {/* Minimal Interactive Option Chips */}
+                              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => updateLine(line.key, { aloo: !line.aloo })}
+                                  className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors cursor-pointer ${
+                                    line.aloo
+                                      ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-300"
+                                      : "bg-zinc-800/80 border border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                                  }`}
+                                  title="Tap to toggle Dum Aloo"
+                                >
+                                  <span>🥔 {line.aloo ? "Dum Aloo (Free)" : "No Aloo"}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => updateLine(line.key, { extraSpicy: !line.extraSpicy })}
+                                  className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors cursor-pointer ${
+                                    line.extraSpicy
+                                      ? "bg-rose-500/15 border border-rose-500/30 text-rose-300"
+                                      : "bg-zinc-800/80 border border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                                  }`}
+                                  title="Tap to toggle spice level"
+                                >
+                                  <span>{line.extraSpicy ? "🌶️ Extra Spicy" : "🌿 Mild"}</span>
+                                </button>
+                              </div>
+
+                              {/* Price + Compact Stepper */}
+                              <div className="flex items-center justify-between pt-1">
+                                <span className="text-xs font-mono font-bold text-amber-300">
+                                  {formatMoney(line.unitPrice * line.qty)}
+                                </span>
+
+                                <div className="flex items-center rounded-lg border border-white/10 bg-zinc-900/90 p-0.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => setQty(line.key, line.qty - 1)}
+                                    className="h-5 w-5 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors cursor-pointer"
+                                  >
+                                    <Minus className="h-2.5 w-2.5" />
+                                  </button>
+                                  <span className="w-5 text-center text-xs font-medium text-zinc-100 font-mono">
+                                    {line.qty}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setQty(line.key, line.qty + 1)}
+                                    className="h-5 w-5 flex items-center justify-center text-amber-400 hover:text-amber-300 hover:bg-zinc-800 rounded transition-colors cursor-pointer"
+                                  >
+                                    <Plus className="h-2.5 w-2.5" />
+                                  </button>
+                                </div>
+                              </div>
                             </div>
-
-                            {/* Quantity Controls */}
-                            <div className="flex items-center rounded-lg border border-white/10 bg-zinc-900/80 p-0.5 self-start shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => setQty(line.key, line.qty - 1)}
-                                className="h-6 w-6 flex items-center justify-center text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors cursor-pointer"
-                              >
-                                <Minus className="h-3 w-3" />
-                              </button>
-                              <span className="w-6 text-center text-xs font-medium text-zinc-100 font-mono">
-                                {line.qty}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => setQty(line.key, line.qty + 1)}
-                                className="h-6 w-6 flex items-center justify-center text-amber-400 hover:text-amber-300 hover:bg-zinc-800 rounded transition-colors cursor-pointer"
-                              >
-                                <Plus className="h-3 w-3" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* REFINED MODERN ALOO SELECTOR PILL (FREE) */}
-                          <div className="rounded-xl bg-zinc-900/50 border border-white/[0.05] p-2.5 space-y-1.5">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
-                                <span>🥔 Royal Spiced Dum Aloo</span>
-                              </span>
-                              <span className="text-[10px] text-emerald-400 font-semibold">
-                                Free Included
-                              </span>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2">
-                              <button
-                                type="button"
-                                onClick={() => updateLine(line.key, { aloo: false })}
-                                className={`py-1.5 px-3 rounded-lg border text-center transition-all cursor-pointer text-xs ${
-                                  !line.aloo
-                                    ? "bg-amber-500/20 text-amber-300 border-amber-500/50 font-medium"
-                                    : "bg-zinc-900/40 border-white/[0.05] text-zinc-500 hover:text-zinc-300 font-normal"
-                                }`}
-                              >
-                                <span>No Aloo</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => updateLine(line.key, { aloo: true })}
-                                className={`py-1.5 px-3 rounded-lg border text-center transition-all cursor-pointer text-xs ${
-                                  line.aloo
-                                    ? "bg-amber-500/20 text-amber-300 border-amber-500/50 font-medium shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-                                    : "bg-zinc-900/40 border-white/[0.05] text-zinc-500 hover:text-zinc-300 font-normal"
-                                } flex items-center justify-center gap-1`}
-                              >
-                                <span>🥔 Add Aloo (Free)</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Spicy vs No Spicy & delete bar */}
-                          <div className="flex items-center justify-between border-t border-white/[0.05] pt-2 text-[11px]">
-                            <button
-                              type="button"
-                              onClick={() => updateLine(line.key, { extraSpicy: !line.extraSpicy })}
-                              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
-                                line.extraSpicy
-                                  ? "border-rose-500/40 bg-rose-500/15 text-rose-300 font-medium"
-                                  : "border-emerald-500/40 bg-emerald-500/15 text-emerald-300 font-medium"
-                              }`}
-                            >
-                              {line.extraSpicy ? (
-                                <>
-                                  <Flame className="h-3 w-3 text-rose-400" />
-                                  <span>🌶️ Spicy</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Sparkles className="h-3 w-3 text-emerald-400" />
-                                  <span>🌿 No Spicy (Mild)</span>
-                                </>
-                              )}
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                removeLine(line.key);
-                                toast.info(`Removed ${line.name} from cart`);
-                              }}
-                              className="text-xs text-zinc-400 hover:text-rose-400 transition-colors flex items-center gap-1 ml-auto px-2 py-1 rounded-lg hover:bg-rose-500/10 cursor-pointer font-normal"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              <span>Remove</span>
-                            </button>
                           </div>
                         </div>
                       );
                     })}
                   </div>
 
-                  {/* Fulfilment Selector (Pickup vs Delivery) */}
-                  <div className="rounded-2xl bg-[#121216] border border-white/[0.08] p-3.5 space-y-2.5">
-                    <span className="block text-xs font-semibold text-zinc-200">
-                      Fulfilment Method
-                    </span>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFulfilmentMode("pickup");
-                          if (validationErrors.address) {
-                            setValidationErrors((prev) => ({ ...prev, address: false }));
-                          }
-                        }}
-                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                          fulfilmentMode === "pickup"
-                            ? "bg-amber-500/15 border-amber-500/50 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
-                            : "bg-zinc-900/40 border-white/[0.06] text-zinc-400 hover:text-zinc-200"
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <Store className="h-4 w-4 text-amber-400 shrink-0" />
-                          <span className="text-xs font-medium text-zinc-100">Pickup (Free)</span>
-                        </div>
-                        <span className="block text-[10px] text-zinc-400 mt-1 truncate font-normal">
-                          3625 S Bedford Ave
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setFulfilmentMode("delivery")}
-                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                          fulfilmentMode === "delivery"
-                            ? "bg-amber-500/15 border-amber-500/50 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
-                            : "bg-zinc-900/40 border-white/[0.06] text-zinc-400 hover:text-zinc-200"
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <Truck className="h-4 w-4 text-amber-400 shrink-0" />
-                          <span className="text-xs font-medium text-zinc-100">Delivery (+${DELIVERY_FEE})</span>
-                        </div>
-                        <span className="block text-[10px] text-zinc-400 mt-1 truncate font-normal">
-                          Springfield Metro
-                        </span>
-                      </button>
-                    </div>
+                  {/* Modern Fulfilment Segmented Pill */}
+                  <div className="flex rounded-xl bg-zinc-900/90 p-1 border border-white/[0.08]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFulfilmentMode("pickup");
+                        if (validationErrors.address) {
+                          setValidationErrors((prev) => ({ ...prev, address: false }));
+                        }
+                      }}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                        fulfilmentMode === "pickup"
+                          ? "bg-amber-500 text-zinc-950 font-semibold shadow-sm"
+                          : "text-zinc-400 hover:text-zinc-200"
+                      }`}
+                    >
+                      <Store className="h-3.5 w-3.5" />
+                      <span>Pickup (Free)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFulfilmentMode("delivery")}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                        fulfilmentMode === "delivery"
+                          ? "bg-amber-500 text-zinc-950 font-semibold shadow-sm"
+                          : "text-zinc-400 hover:text-zinc-200"
+                      }`}
+                    >
+                      <Truck className="h-3.5 w-3.5" />
+                      <span>Delivery (+${DELIVERY_FEE})</span>
+                    </button>
                   </div>
 
-                  {/* CUSTOMER & DELIVERY DETAILS FORM */}
-                  <div className="rounded-2xl bg-[#121216] border border-white/[0.08] p-4 space-y-3.5 shadow-sm">
-                    <div className="flex items-center justify-between border-b border-white/[0.06] pb-2.5">
-                      <div className="flex items-center gap-2">
-                        {fulfilmentMode === "delivery" ? (
-                          <Truck className="h-4 w-4 text-amber-400" />
-                        ) : (
-                          <Store className="h-4 w-4 text-amber-400" />
-                        )}
-                        <h3 className="text-xs sm:text-sm font-semibold text-zinc-100">
-                          {fulfilmentMode === "delivery"
-                            ? "Springfield Doorstep Delivery Info"
-                            : "Kitchen Counter Pickup Details"}
-                        </h3>
+                  {/* Contact & Scheduling Details */}
+                  <div className="rounded-2xl bg-[#121216] border border-white/[0.08] p-3.5 space-y-3 shadow-sm">
+                    {/* Location banner */}
+                    {fulfilmentMode === "pickup" ? (
+                      <div className="flex items-center gap-2 text-xs text-zinc-300 pb-1 border-b border-white/[0.05]">
+                        <MapPin className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                        <span className="truncate">Pickup: <strong className="text-zinc-100 font-medium">3625 S Bedford Ave</strong>, Springfield</span>
                       </div>
-                      <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full font-medium">
-                        {fulfilmentMode === "delivery" ? "Doorstep Drop" : "Free Pickup"}
-                      </span>
-                    </div>
-
-                    {/* Pickup Address Banner */}
-                    {fulfilmentMode === "pickup" && (
-                      <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 flex items-start gap-2.5">
-                        <MapPin className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-                        <div className="min-w-0 text-xs">
-                          <p className="font-semibold text-amber-300">JAKLOUD Kitchen Counter</p>
-                          <p className="text-zinc-300 text-[11px] mt-0.5">{BUSINESS.address}</p>
-                          <p className="text-[10px] text-zinc-400 mt-1 font-normal">
-                            Prepared fresh on dum for your selected pickup slot.
-                          </p>
-                        </div>
+                    ) : (
+                      <div className="flex items-center justify-between text-xs text-zinc-300 pb-1 border-b border-white/[0.05]">
+                        <span className="flex items-center gap-1.5">
+                          <Truck className="h-3.5 w-3.5 text-amber-400" />
+                          <span>Delivery to Springfield Metro</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleUseCurrentLocation}
+                          disabled={isLocating}
+                          className="text-[10px] text-amber-400 hover:text-amber-300 font-medium inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          {isLocating ? <RotateCw className="h-2.5 w-2.5 animate-spin" /> : <Navigation className="h-2.5 w-2.5" />}
+                          <span>Use GPS</span>
+                        </button>
                       </div>
                     )}
 
-                    {/* Customer Full Name */}
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <label className="block text-[11px] font-medium text-zinc-300">
+                    {/* Customer Info Inputs */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-[10.5px] font-medium text-zinc-400 mb-1">
                           Full Name *
                         </label>
-                        {validationErrors.name && (
-                          <span className="text-[10px] text-rose-400 flex items-center gap-1 font-normal">
-                            <AlertCircle className="h-2.5 w-2.5" /> Letters only (min 2 chars)
-                          </span>
-                        )}
-                        {!validationErrors.name && isValidName(customerName) && (
-                          <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-normal">
-                            <Check className="h-2.5 w-2.5" /> Valid Name
-                          </span>
-                        )}
-                      </div>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
-                        <input
-                          type="text"
-                          value={customerName}
-                          onChange={(e) => {
-                            // Text only: strip numbers and non-name symbols immediately
-                            const sanitized = sanitizeName(e.target.value);
-                            setCustomerName(sanitized);
-                            if (validationErrors.name) {
-                              setValidationErrors((prev) => ({ ...prev, name: false }));
-                            }
-                          }}
-                          placeholder="e.g. Kartheek Reddy (Letters only)"
-                          className={`w-full rounded-xl bg-zinc-900/80 border ${
-                            validationErrors.name
-                              ? "border-rose-500/80 ring-1 ring-rose-500/40"
-                              : isValidName(customerName)
-                              ? "border-emerald-500/50 focus:border-emerald-400"
-                              : "border-white/10 focus:border-amber-400"
-                          } pl-9 pr-3 py-2.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none`}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Contact Phone Number (US ONLY) */}
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <label className="block text-[11px] font-medium text-zinc-300">
-                          Contact Phone Number (US Only) *
-                        </label>
-                        {validationErrors.phone && (
-                          <span className="text-[10px] text-rose-400 flex items-center gap-1 font-normal">
-                            <AlertCircle className="h-2.5 w-2.5" /> Valid 10-digit US number required
-                          </span>
-                        )}
-                        {!validationErrors.phone && isValidUsPhone(customerPhone) && (
-                          <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-normal">
-                            <Check className="h-2.5 w-2.5" /> Valid US Number
-                          </span>
-                        )}
-                      </div>
-                      <div className="relative flex items-center">
-                        <div className="absolute left-3 flex items-center gap-1 text-zinc-400 pointer-events-none text-xs font-medium select-none z-10">
-                          <span>🇺🇸</span>
-                          <span className="text-zinc-500 text-[11px] font-mono">+1</span>
-                        </div>
-                        <input
-                          type="tel"
-                          inputMode="numeric"
-                          value={customerPhone}
-                          onChange={(e) => {
-                            // Numbers only: strictly format as (XXX) XXX-XXXX and block all letters/symbols
-                            const formatted = formatUsPhone(e.target.value);
-                            setCustomerPhone(formatted);
-                            if (validationErrors.phone) {
-                              setValidationErrors((prev) => ({ ...prev, phone: false }));
-                            }
-                          }}
-                          placeholder="(417) 897-9754"
-                          maxLength={14}
-                          className={`w-full rounded-xl bg-zinc-900/80 border ${
-                            validationErrors.phone
-                              ? "border-rose-500/80 ring-1 ring-rose-500/40"
-                              : isValidUsPhone(customerPhone)
-                              ? "border-emerald-500/50 focus:border-emerald-400"
-                              : "border-white/10 focus:border-amber-400"
-                          } pl-14 pr-8 py-2.5 text-xs text-zinc-100 font-mono placeholder:text-zinc-600 focus:outline-none`}
-                        />
-                        {isValidUsPhone(customerPhone) && (
-                          <CheckCircle2 className="absolute right-2.5 h-4 w-4 text-emerald-400" />
-                        )}
-                      </div>
-                      <span className="text-[10px] text-zinc-400 mt-1 block font-normal">
-                        Only 10-digit US mobile numbers accepted for kitchen SMS & WhatsApp dispatch.
-                      </span>
-                    </div>
-
-                    {/* DELIVERY ONLY: Current Location / Address & 1-Tap GPS */}
-                    {fulfilmentMode === "delivery" && (
-                      <div className="space-y-2 pt-1 border-t border-white/[0.05]">
-                        <div className="flex items-center justify-between">
-                          <label className="block text-[11px] font-medium text-zinc-300">
-                            Current Location / Delivery Address *
-                          </label>
-                          <button
-                            type="button"
-                            onClick={handleUseCurrentLocation}
-                            disabled={isLocating}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[10px] font-medium hover:bg-amber-500/25 active:scale-95 transition-all cursor-pointer shadow-sm"
-                          >
-                            {isLocating ? (
-                              <>
-                                <RotateCw className="h-3 w-3 animate-spin text-amber-400" />
-                                <span>Locating...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Navigation className="h-3 w-3 text-amber-400" />
-                                <span>📍 Use Current Location</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-
                         <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-amber-400" />
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
                           <input
                             type="text"
-                            value={deliveryAddress}
+                            value={customerName}
                             onChange={(e) => {
-                              setDeliveryAddress(e.target.value);
-                              if (validationErrors.address) {
-                                setValidationErrors((prev) => ({ ...prev, address: false }));
-                              }
+                              const sanitized = sanitizeName(e.target.value);
+                              setCustomerName(sanitized);
+                              if (validationErrors.name) setValidationErrors((prev) => ({ ...prev, name: false }));
                             }}
-                            placeholder="House/Building #, Street Address, Springfield, MO"
+                            placeholder="Your Name"
                             className={`w-full rounded-xl bg-zinc-900/80 border ${
-                              validationErrors.address
-                                ? "border-rose-500/80 ring-1 ring-rose-500/40"
-                                : "border-white/10 focus:border-amber-400"
-                            } pl-9 pr-3 py-2.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none`}
+                              validationErrors.name ? "border-rose-500/80" : "border-white/10 focus:border-amber-400"
+                            } pl-8 pr-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none`}
                           />
                         </div>
+                      </div>
 
-                        {validationErrors.address && (
-                          <span className="text-[10px] text-rose-400 flex items-center gap-1 font-normal">
-                            <AlertCircle className="h-2.5 w-2.5" /> Please enter delivery address or tap Use Current Location
+                      <div>
+                        <label className="block text-[10.5px] font-medium text-zinc-400 mb-1">
+                          Phone Number (US) *
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[11px] font-mono pointer-events-none">
+                            +1
                           </span>
-                        )}
+                          <input
+                            type="tel"
+                            inputMode="numeric"
+                            value={customerPhone}
+                            onChange={(e) => {
+                              const formatted = formatUsPhone(e.target.value);
+                              setCustomerPhone(formatted);
+                              if (validationErrors.phone) setValidationErrors((prev) => ({ ...prev, phone: false }));
+                            }}
+                            placeholder="(417) 897-9754"
+                            maxLength={14}
+                            className={`w-full rounded-xl bg-zinc-900/80 border ${
+                              validationErrors.phone ? "border-rose-500/80" : "border-white/10 focus:border-amber-400"
+                            } pl-8 pr-3 py-2 text-xs text-zinc-100 font-mono placeholder:text-zinc-500 focus:outline-none`}
+                          />
+                        </div>
+                      </div>
+                    </div>
 
-                        {/* Optional Apt / Suite & Landmark */}
-                        <div className="grid grid-cols-2 gap-2 pt-1">
+                    {/* Delivery Address (When Delivery selected) */}
+                    {fulfilmentMode === "delivery" && (
+                      <div className="space-y-2 pt-1 border-t border-white/[0.05]">
+                        <div>
+                          <label className="block text-[10.5px] font-medium text-zinc-400 mb-1">
+                            Street Address *
+                          </label>
+                          <div className="relative">
+                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+                            <input
+                              type="text"
+                              value={deliveryAddress}
+                              onChange={(e) => {
+                                setDeliveryAddress(e.target.value);
+                                if (validationErrors.address) setValidationErrors((prev) => ({ ...prev, address: false }));
+                              }}
+                              placeholder="House/Street, Springfield, MO"
+                              className={`w-full rounded-xl bg-zinc-900/80 border ${
+                                validationErrors.address ? "border-rose-500/80" : "border-white/10 focus:border-amber-400"
+                              } pl-8 pr-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none`}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
                           <input
                             type="text"
                             value={deliveryApt}
                             onChange={(e) => setDeliveryApt(e.target.value)}
-                            placeholder="Apt / Suite / Gate #"
-                            className="w-full rounded-xl bg-zinc-900/60 border border-white/10 px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-amber-400 font-normal"
+                            placeholder="Apt / Suite #"
+                            className="w-full rounded-xl bg-zinc-900/60 border border-white/10 px-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-amber-400"
                           />
                           <input
                             type="text"
                             value={deliveryLandmark}
                             onChange={(e) => setDeliveryLandmark(e.target.value)}
-                            placeholder="Landmark / Instructions"
-                            className="w-full rounded-xl bg-zinc-900/60 border border-white/10 px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-amber-400 font-normal"
+                            placeholder="Delivery notes"
+                            className="w-full rounded-xl bg-zinc-900/60 border border-white/10 px-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-amber-400"
                           />
-                        </div>
-
-                        {/* Quick Springfield Presets */}
-                        <div className="pt-1">
-                          <span className="block text-[10px] text-zinc-400 font-normal mb-1.5">
-                            Quick Springfield Hotspots:
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {SPRINGFIELD_PRESETS.map((preset) => (
-                              <button
-                                key={preset.name}
-                                type="button"
-                                onClick={() => {
-                                  setDeliveryAddress(preset.address);
-                                  setDeliveryLandmark(preset.landmark);
-                                  if (validationErrors.address) {
-                                    setValidationErrors((prev) => ({ ...prev, address: false }));
-                                  }
-                                  toast.success(`Selected ${preset.name}`);
-                                }}
-                                className="px-2 py-1 rounded-lg bg-zinc-900/70 border border-white/10 text-zinc-300 text-[10px] font-normal hover:border-amber-500/40 hover:text-amber-300 transition-all cursor-pointer"
-                              >
-                                📍 {preset.name}
-                              </button>
-                            ))}
-                          </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Booking Date & Time Selection via Interactive Calendar & Clock */}
+                    {/* Date & Time Selection */}
                     <div className="pt-2 border-t border-white/[0.05]">
                       <DumDateTimePicker
                         selectedDate={selectedDate}
@@ -1501,11 +1186,6 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                       </span>
                     </div>
 
-                    <div className="flex justify-between text-zinc-400 font-normal">
-                      <span>Sales Tax (8.6%)</span>
-                      <span className="font-mono text-zinc-200 font-medium">{formatMoney(calculatedTax)}</span>
-                    </div>
-
                     <div className="border-t border-white/[0.08] pt-2.5 flex justify-between items-center text-sm font-medium text-zinc-100">
                       <span>Total Amount</span>
                       <span className="text-base font-mono font-semibold text-amber-400">{formatMoney(grandTotal)}</span>
@@ -1513,13 +1193,15 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                   </div>
 
                   {/* Proceed to Payment Button */}
-                  <button
-                    onClick={handleProceedToPayment}
-                    className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold py-3.5 text-xs sm:text-sm shadow-md hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span>Proceed to Payment Options ({formatMoney(grandTotal)})</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
+                  <div className="pt-2 pb-24 sm:pb-28">
+                    <button
+                      onClick={handleProceedToPayment}
+                      className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold py-3.5 text-xs sm:text-sm shadow-md hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <span>Proceed to Payment Options ({formatMoney(grandTotal)})</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
                 </>
               )}
             </div>
@@ -1664,28 +1346,30 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                 </div>
               </div>
 
-              <button
-                onClick={handlePlaceOrder}
-                disabled={isProcessingPayment}
-                className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold py-3.5 text-xs sm:text-sm shadow-md hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isProcessingPayment ? (
-                  <>
-                    <RotateCw className="h-4 w-4 animate-spin" />
-                    <span>Opening Razorpay Secure Checkout...</span>
-                  </>
-                ) : paymentMethod === "Razorpay Online" ? (
-                  <>
-                    <Lock className="h-4 w-4" />
-                    <span>Pay {formatMoney(grandTotal)} via Razorpay</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span>Confirm & Place Order ({formatMoney(grandTotal)})</span>
-                  </>
-                )}
-              </button>
+              <div className="pt-2 pb-16 sm:pb-20">
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={isProcessingPayment}
+                  className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold py-3.5 text-xs sm:text-sm shadow-md hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isProcessingPayment ? (
+                    <>
+                      <RotateCw className="h-4 w-4 animate-spin" />
+                      <span>Opening Razorpay Secure Checkout...</span>
+                    </>
+                  ) : paymentMethod === "Razorpay Online" ? (
+                    <>
+                      <Lock className="h-4 w-4" />
+                      <span>Pay {formatMoney(grandTotal)} via Razorpay</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>Confirm & Place Order ({formatMoney(grandTotal)})</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           )}
 
@@ -1700,12 +1384,62 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                 <span className="text-[10px] font-medium text-emerald-400 uppercase tracking-wider">
                   Booking Confirmed
                 </span>
-                <h2 className="text-lg font-semibold text-white mt-0.5">
+                <h2 className="text-xl font-bold text-white mt-0.5 tracking-wide">
                   Order #{createdOrder.orderNumber}
                 </h2>
-                <p className="text-xs text-zinc-400 mt-1 font-normal">
-                  Thank you, <strong className="text-zinc-200">{createdOrder.customer.name}</strong>! Your handcrafted dum biryani order is placed.
+                {createdOrder.orderNumber.match(/-(\d+)$/) && (
+                  <div className="inline-flex items-center gap-1.5 mt-1 rounded-full bg-amber-500/20 border border-amber-400/40 px-3 py-0.5 text-[11px] font-bold text-amber-300">
+                    <Sparkles className="h-3 w-3 text-amber-400" />
+                    <span>Today's Handi Order #{parseInt(createdOrder.orderNumber.match(/-(\d+)$/)![1], 10)}</span>
+                  </div>
+                )}
+                <p className="text-xs text-zinc-300 mt-1.5 font-normal">
+                  Thank you, <strong className="text-white font-semibold">{createdOrder.customer.name}</strong>! Your handcrafted dum biryani order is confirmed.
                 </p>
+              </div>
+
+              {/* PROMINENT TAKE SCREENSHOT CALLOUT CARD */}
+              <div className="rounded-2xl bg-gradient-to-b from-amber-500/25 via-amber-600/15 to-amber-950/40 border-2 border-amber-400/80 p-4 text-center space-y-2.5 shadow-[0_0_30px_rgba(245,158,11,0.25)]">
+                <div className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 text-black px-3.5 py-1 text-xs font-black uppercase tracking-wider shadow">
+                  <Camera className="h-4 w-4 stroke-[2.5]" />
+                  <span>PLEASE TAKE A SCREENSHOT</span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-amber-200">
+                    📸 దయచేసి ఈ స్క్రీన్‌షాట్ తీసుకోండి!
+                  </p>
+                  <p className="text-xs text-zinc-200 leading-relaxed font-medium">
+                    Take a screenshot of this receipt now to show at kitchen pickup or to your delivery driver.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.print();
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 px-3 py-2 text-xs font-semibold text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                  >
+                    <Printer className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Save / Print</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (navigator?.clipboard) {
+                        navigator.clipboard.writeText(createdOrder.orderNumber);
+                        toast.success("Order ID copied to clipboard!");
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 px-3 py-2 text-xs font-semibold text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                  >
+                    <Copy className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Copy Order ID</span>
+                  </button>
+                </div>
               </div>
 
               {/* Order Quick Details */}
@@ -1730,7 +1464,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                   <span className="text-zinc-400">Payment Mode:</span>
                   <span className="font-medium text-zinc-300">{createdOrder.paymentMethod}</span>
                 </div>
-                {createdOrder.paymentStatus === "PAID" && (
+                {createdOrder.paymentStatus === "Paid Online" && (
                   <div className="flex justify-between items-center pt-1 border-t border-white/[0.05]">
                     <span className="text-zinc-400">Payment Status:</span>
                     <span className="font-medium text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
@@ -1767,7 +1501,6 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                 <button
                   onClick={() => {
                     setActiveTab("home");
-                    setHomeStep("biryani_card");
                     setCheckoutStep("cart");
                   }}
                   className="text-xs text-amber-400 hover:underline font-medium cursor-pointer"
@@ -1784,7 +1517,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       {/* TAB CONTENT: PROFILE / ADMIN                                              */}
       {/* ========================================================================= */}
       {activeTab === "profile" && (
-        <main className="px-4 pt-3.5 space-y-3.5 max-w-md mx-auto">
+        <main className="w-full max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 sm:px-6 pt-3.5 space-y-3.5 pb-24 sm:pb-28">
           <div className="rounded-2xl bg-[#121216] border border-white/[0.08] p-5 text-center space-y-2.5 shadow-sm">
             <div className="mx-auto h-12 w-12 rounded-full bg-amber-500/10 border border-amber-500/30 p-1 flex items-center justify-center text-amber-400">
               <User className="h-6 w-6" />
@@ -1853,77 +1586,78 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       {/* ========================================================================= */}
       {/* 2. REFINED FLOATING BOTTOM NAVIGATION BAR                                 */}
       {/* ========================================================================= */}
-      <nav className="fixed bottom-3 inset-x-0 z-50 px-4 flex justify-center pointer-events-none">
-        <div className="w-full max-w-md pointer-events-auto rounded-full bg-[#121216]/90 border border-white/10 px-3 py-1.5 backdrop-blur-xl shadow-xl flex items-center justify-between">
-          {/* 1. Home / Biryani */}
-          <button
-            onClick={() => {
-              setActiveTab("home");
-              setHomeStep("biryani_card");
-              setCheckoutStep("cart");
-            }}
-            className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-all cursor-pointer ${
-              activeTab === "home" ? "text-amber-400" : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            <Home className="h-4 w-4 mb-0.5" />
-            <span>Biryani</span>
-          </button>
-
-          {/* 2. Menu */}
-          <button
-            onClick={() => {
-              setActiveTab("menu");
-              setCheckoutStep("cart");
-            }}
-            className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-all cursor-pointer ${
-              activeTab === "menu" ? "text-amber-400" : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            <MenuIcon className="h-4 w-4 mb-0.5" />
-            <span>Menu</span>
-          </button>
-
-          {/* 3. Cart / Checkout */}
-          <button
-            onClick={() => {
-              setActiveTab("cart");
-              setCheckoutStep("cart");
-            }}
-            className={`relative flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-all cursor-pointer ${
-              activeTab === "cart" ? "text-amber-400" : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            <div className="relative">
-              <ShoppingBag className="h-4 w-4 mb-0.5" />
-              {count > 0 && (
-                <span className="absolute -top-1.5 -right-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-amber-400 text-zinc-950 text-[9px] font-semibold px-1">
-                  {count}
-                </span>
-              )}
-            </div>
-            <span>Cart</span>
-          </button>
-
-          {/* 4. WhatsApp Direct Order */}
-          <a
-            href="https://wa.me/14178979754?text=Hello%20Master%20Chef%20Kartheek!%20I%20would%20like%20to%20order%20a%20fresh%20handcrafted%20Dum%20Biryani%20Handi%20tray%20from%20JAKLOUD."
-            target="_blank"
-            rel="noreferrer"
-            className="flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-all cursor-pointer text-emerald-400 hover:text-emerald-300"
-            title="Chat on WhatsApp"
-          >
-            <svg
-              className="h-4 w-4 mb-0.5 fill-current text-emerald-400"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+      {checkoutStep !== "payment" && checkoutStep !== "success" && (
+        <nav className="fixed bottom-3 inset-x-0 z-50 px-4 flex justify-center pointer-events-none">
+          <div className="w-full max-w-md sm:max-w-lg pointer-events-auto rounded-full bg-[#121216]/95 border border-amber-500/25 px-3 py-1.5 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.7)] flex items-center justify-between">
+            {/* 1. Home / Biryani */}
+            <button
+              onClick={() => {
+                setActiveTab("home");
+                setCheckoutStep("cart");
+              }}
+              className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-all cursor-pointer ${
+                activeTab === "home" ? "text-amber-400" : "text-zinc-400 hover:text-zinc-200"
+              }`}
             >
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-            </svg>
-            <span className="text-emerald-400 font-medium">WhatsApp</span>
-          </a>
-        </div>
-      </nav>
+              <Home className="h-4 w-4 mb-0.5" />
+              <span>Biryani</span>
+            </button>
+
+            {/* 2. Menu */}
+            <button
+              onClick={() => {
+                setActiveTab("menu");
+                setCheckoutStep("cart");
+              }}
+              className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-all cursor-pointer ${
+                activeTab === "menu" ? "text-amber-400" : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <MenuIcon className="h-4 w-4 mb-0.5" />
+              <span>Menu</span>
+            </button>
+
+            {/* 3. Cart / Checkout */}
+            <button
+              onClick={() => {
+                setActiveTab("cart");
+                setCheckoutStep("cart");
+              }}
+              className={`relative flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-all cursor-pointer ${
+                activeTab === "cart" ? "text-amber-400" : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <div className="relative">
+                <ShoppingBag className="h-4 w-4 mb-0.5" />
+                {count > 0 && (
+                  <span className="absolute -top-1.5 -right-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-amber-400 text-zinc-950 text-[9px] font-semibold px-1">
+                    {count}
+                  </span>
+                )}
+              </div>
+              <span>Cart</span>
+            </button>
+
+            {/* 4. WhatsApp Direct Order */}
+            <a
+              href="https://wa.me/14178979754?text=Hello%20Master%20Chef%20Kartheek!%20I%20would%20like%20to%20order%20a%20fresh%20handcrafted%20Dum%20Biryani%20Handi%20tray%20from%20JAKLOUD."
+              target="_blank"
+              rel="noreferrer"
+              className="flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-all cursor-pointer text-emerald-400 hover:text-emerald-300"
+              title="Chat on WhatsApp"
+            >
+              <svg
+                className="h-4 w-4 mb-0.5 fill-current text-emerald-400"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+              </svg>
+              <span className="text-emerald-400 font-medium">WhatsApp</span>
+            </a>
+          </div>
+        </nav>
+      )}
 
       {/* ========================================================================= */}
       {/* 3. DISH CUSTOMIZATION MODAL                                               */}
@@ -1932,7 +1666,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
         open={Boolean(selectedDishModal)}
         onOpenChange={(open) => !open && setSelectedDishModal(null)}
       >
-        <DialogContent className="max-w-sm rounded-2xl bg-[#121216] border border-white/10 text-zinc-100 p-5 shadow-2xl">
+        <DialogContent className="max-w-sm sm:max-w-md md:max-w-lg rounded-2xl bg-[#121216] border border-white/10 text-zinc-100 p-4 sm:p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
           {selectedDishModal && (
             <div className="space-y-3.5">
               <DialogHeader>
@@ -1947,7 +1681,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                       {selectedDishModal.name}
                     </DialogTitle>
                     <DialogDescription className="text-xs text-zinc-400 mt-0.5 font-normal">
-                      Handi Party Tray · Serves 4–5 adults
+                      Handi Party Tray · {(selectedDishModal as any).serves || (selectedDishModal as any).traySize || "Serves 4–5"}
                     </DialogDescription>
                   </div>
                 </div>
@@ -2094,7 +1828,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       {/* 4. LOCATION MODAL                                                         */}
       {/* ========================================================================= */}
       <Dialog open={locationModalOpen} onOpenChange={setLocationModalOpen}>
-        <DialogContent className="max-w-sm rounded-2xl bg-[#121216] border border-white/10 text-zinc-100 p-5 shadow-2xl">
+        <DialogContent className="max-w-sm sm:max-w-md rounded-2xl bg-[#121216] border border-white/10 text-zinc-100 p-4 sm:p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold text-zinc-100">
               JAKLOUD Kitchen Outlet

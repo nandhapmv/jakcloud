@@ -24,6 +24,7 @@ export interface DynamicMenuItem {
   image: string;
   available: boolean;
   traySize: string;
+  serves?: string;
   meatWeight: string;
   riceWeight: string;
   kcal: number;
@@ -49,7 +50,7 @@ export interface OrderItemDetail {
   name: string;
   aloo: boolean;
   extraSpicy: boolean;
-  notes?: string;
+  notes?: string | undefined;
   qty: number;
   unitPrice: number;
   lineTotal: number;
@@ -59,10 +60,10 @@ export interface CustomerInfo {
   name: string;
   email: string;
   phone: string;
-  address?: string;
-  city?: string;
-  zipCode?: string;
-  deliveryInstructions?: string;
+  address?: string | undefined;
+  city?: string | undefined;
+  zipCode?: string | undefined;
+  deliveryInstructions?: string | undefined;
 }
 
 export interface DynamicOrder {
@@ -101,6 +102,7 @@ export interface KitchenSettings {
   heroAnnouncement: string;
   announcementActive: boolean;
   salesTaxRate: number;
+  dateLimits?: Record<string, number> | undefined;
 }
 
 export interface ProteinMatrixItem {
@@ -124,8 +126,8 @@ export interface CustomerRecord {
   totalSpend: number;
   vipTier: "Standard" | "Royal Patron" | "Spice King VIP" | "Black Card";
   lastOrderDate: string;
-  address?: string;
-  staffNotes?: string;
+  address?: string | undefined;
+  staffNotes?: string | undefined;
 }
 
 // ==========================================
@@ -282,7 +284,7 @@ export const INITIAL_KITCHEN_SETTINGS: KitchenSettings = {
   deliveryRadiusMiles: 10,
   heroAnnouncement: "🔥 Made-to-Order Authentic Hyderabadi Dum Biryani · 10 Handi Trays Daily Limit · Order by 3:00 PM",
   announcementActive: true,
-  salesTaxRate: 0.086,
+  salesTaxRate: 0,
 };
 
 export const INITIAL_PROTEINS: ProteinMatrixItem[] = [
@@ -521,16 +523,84 @@ function syncBackendSettings(updates: any) {
   }).catch((e) => console.warn("Backend sync settings failed:", e));
 }
 
+export function normalizeDateKey(input: string | Date | undefined | null): string {
+  if (!input) return "";
+  if (input instanceof Date && !isNaN(input.getTime())) {
+    const y = input.getFullYear();
+    const m = String(input.getMonth() + 1).padStart(2, "0");
+    const d = String(input.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  const str = String(input).trim();
+  if (!str) return "";
+
+  // 1. Direct match for standard YYYY-MM-DD
+  const isoMatch = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (isoMatch && isoMatch[1] && isoMatch[2] && isoMatch[3]) {
+    return `${isoMatch[1]}-${isoMatch[2].padStart(2, "0")}-${isoMatch[3].padStart(2, "0")}`;
+  }
+
+  // 2. Relative keywords: "today" / "tomorrow"
+  const lower = str.toLowerCase();
+  const now = new Date();
+  if (lower === "today" || lower.startsWith("today")) {
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  if (lower === "tomorrow" || lower.startsWith("tomorrow")) {
+    const tmrw = new Date(now);
+    tmrw.setDate(tmrw.getDate() + 1);
+    const y = tmrw.getFullYear();
+    const m = String(tmrw.getMonth() + 1).padStart(2, "0");
+    const d = String(tmrw.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  // 3. Match month name and day, e.g. "Thursday, October 15", "October 15", "Oct 15, 2026"
+  const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  const textMatch = str.match(/(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2})(?:[,\s]+(\d{4}))?/i);
+  if (textMatch && textMatch[1] && textMatch[2]) {
+    const mPrefix = textMatch[1].slice(0, 3).toLowerCase();
+    const mIdx = monthNames.indexOf(mPrefix);
+    if (mIdx !== -1) {
+      let year = textMatch[3] ? parseInt(textMatch[3], 10) : now.getFullYear();
+      if (!textMatch[3] && mIdx < now.getMonth() - 6) {
+        year += 1;
+      }
+      const month = String(mIdx + 1).padStart(2, "0");
+      const day = String(parseInt(textMatch[2], 10)).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+  }
+
+  // 4. Fallback try Date.parse
+  const parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) {
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth() + 1).padStart(2, "0");
+    const d = String(parsed.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  return lower;
+}
+
 export const jakloudStore = {
   async syncWithBackend(): Promise<void> {
     if (typeof window === "undefined") return;
     try {
-      const [ordersRes, settingsRes, customersRes] = await Promise.all([
+      const [ordersRes, settingsRes, customersRes, menuRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/orders`).then((r) => (r.ok ? r.json() : null)),
         fetch(`${API_BASE_URL}/api/settings`).then((r) => (r.ok ? r.json() : null)),
         fetch(`${API_BASE_URL}/api/customers`).then((r) => (r.ok ? r.json() : null)),
+        fetch(`${API_BASE_URL}/api/menu`).then((r) => (r.ok ? r.json() : null)),
       ]);
 
+      if (menuRes && Array.isArray(menuRes.items) && menuRes.items.length > 0) {
+        this.saveMenu(menuRes.items);
+      }
       if (ordersRes && Array.isArray(ordersRes.orders)) {
         this.saveOrders(ordersRes.orders);
       }
@@ -615,7 +685,15 @@ export const jakloudStore = {
   },
 
   saveOrders(orders: DynamicOrder[]) {
-    setStored(KEYS.ORDERS, orders);
+    // Deduplicate orders by id and orderNumber to eliminate any duplicate entries
+    const seen = new Set<string>();
+    const uniqueOrders = orders.filter((o) => {
+      const key = `${o.id || ""}_${o.orderNumber || ""}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    setStored(KEYS.ORDERS, uniqueOrders);
   },
 
   createOrder(payload: {
@@ -624,21 +702,68 @@ export const jakloudStore = {
     fulfilmentDate: string;
     fulfilmentTime: string;
     customer: CustomerInfo;
-    paymentMethod?: DynamicOrder["paymentMethod"];
-    specialInstructions?: string;
+    paymentMethod?: DynamicOrder["paymentMethod"] | undefined;
+    paymentStatus?: DynamicOrder["paymentStatus"] | undefined;
+    specialInstructions?: string | undefined;
   }): DynamicOrder {
     const settings = this.getSettings();
+    if (!settings.isKitchenOpen) {
+      throw new Error("Kitchen ordering is currently closed by the Master Chef.");
+    }
+
+    const totalTrays = payload.items.reduce((sum, i) => sum + (Number(i.qty) || 1), 0);
+    const cap = this.getCapacityForDate(payload.fulfilmentDate);
+    if (cap.isSoldOut || cap.remainingSlots <= 0) {
+      throw new Error(`The kitchen is completely sold out for ${payload.fulfilmentDate}. Please select another date.`);
+    }
+    if (totalTrays > cap.remainingSlots) {
+      throw new Error(
+        `Only ${cap.remainingSlots} slot${cap.remainingSlots > 1 ? "s" : ""} left for ${payload.fulfilmentDate}. Cannot book ${totalTrays} trays.`
+      );
+    }
+
     const subtotal = payload.items.reduce((sum, i) => sum + i.lineTotal, 0);
-    const totalTrays = payload.items.reduce((sum, i) => sum + i.qty, 0);
     const deliveryFee = payload.fulfilmentType === "delivery"
       ? (totalTrays >= settings.freeDeliveryTrayThreshold ? 0 : settings.deliveryFee)
       : 0;
-    const tax = Math.round(subtotal * settings.salesTaxRate * 100) / 100;
-    const total = Math.round((subtotal + tax + deliveryFee) * 100) / 100;
+    const tax = 0;
+    const total = Math.round((subtotal + deliveryFee) * 100) / 100;
+
+    const current = this.getOrders();
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const dateStr = `${y}${m}${d}`;
+    const prefix = `JK-${dateStr}-`;
+
+    let maxSeq = 0;
+    for (const ord of current) {
+      if (ord.orderNumber && ord.orderNumber.startsWith(prefix)) {
+        const seqNum = parseInt(ord.orderNumber.slice(prefix.length), 10);
+        if (!isNaN(seqNum) && seqNum > maxSeq) {
+          maxSeq = seqNum;
+        }
+      }
+    }
+
+    if (maxSeq === 0) {
+      const todayYMD = `${y}-${m}-${d}`;
+      const sameDayOrders = current.filter((o) => {
+        const orderDateStr = o.createdAt ? o.createdAt.slice(0, 10) : "";
+        return orderDateStr === todayYMD;
+      });
+      if (sameDayOrders.length > 0) {
+        maxSeq = sameDayOrders.length;
+      }
+    }
+
+    const nextSeq = maxSeq + 1;
+    const orderNumber = `${prefix}${String(nextSeq).padStart(2, "0")}`;
 
     const newOrder: DynamicOrder = {
       id: `ord_${Date.now()}`,
-      orderNumber: `JK-${Math.floor(10000 + Math.random() * 90000)}`,
+      orderNumber,
       status: "confirmed",
       fulfilmentType: payload.fulfilmentType,
       fulfilmentDate: payload.fulfilmentDate,
@@ -657,7 +782,6 @@ export const jakloudStore = {
       updatedAt: new Date().toISOString(),
     };
 
-    const current = this.getOrders();
     this.saveOrders([newOrder, ...current]);
 
     // Update customer CRM
@@ -669,8 +793,13 @@ export const jakloudStore = {
 
   addExistingOrder(order: DynamicOrder): void {
     const current = this.getOrders();
-    const exists = current.some((o) => o.id === order.id || o.orderNumber === order.orderNumber);
-    if (!exists) {
+    const existingIndex = current.findIndex(
+      (o) => (o.id && o.id === order.id) || (o.orderNumber && o.orderNumber === order.orderNumber),
+    );
+    if (existingIndex >= 0) {
+      current[existingIndex] = order;
+      this.saveOrders(current);
+    } else {
       this.saveOrders([order, ...current]);
       this.recordCustomerOrder(order);
     }
@@ -729,7 +858,7 @@ export const jakloudStore = {
   // KITCHEN & CAPACITY SETTINGS
   getSettings(): KitchenSettings {
     const s = getStored<KitchenSettings>(KEYS.SETTINGS, INITIAL_KITCHEN_SETTINGS);
-    const merged = { ...INITIAL_KITCHEN_SETTINGS, ...s };
+    const merged = { ...INITIAL_KITCHEN_SETTINGS, ...s, salesTaxRate: 0 };
     if (!merged.dailyTrayLimit) {
       merged.dailyTrayLimit = 25;
       merged.orderCutoffHour = 15;
@@ -886,63 +1015,55 @@ export const jakloudStore = {
   // CAPACITY & TRAFFIC LIGHT COMPUTATION FOR DUM DATES
   getCapacityForDate(target: string | Date) {
     const settings = this.getSettings();
-    const limit = settings.dailyTrayLimit || 10;
+    const targetKey = normalizeDateKey(target);
 
-    let targetNormalized = "";
-    if (target instanceof Date) {
-      targetNormalized = target
-        .toLocaleDateString("en-US", { month: "short", day: "numeric" })
-        .toLowerCase();
-    } else {
-      targetNormalized = (target || "").toLowerCase();
-    }
+    // Limit set by admin for this specific date, or global dailyTrayLimit, fallback 10
+    const dateLimit = targetKey && settings.dateLimits ? settings.dateLimits[targetKey] : undefined;
+    const limit = dateLimit !== undefined ? Number(dateLimit) : Number(settings.dailyTrayLimit) || 10;
 
     const orders = this.getOrders();
     const matchingOrders = orders.filter((o) => {
       if (o.status === "cancelled") return false;
-      const fDate = (o.fulfilmentDate || "").toLowerCase();
-      const createdDate = new Date(o.createdAt);
-      const createdShort = createdDate
-        .toLocaleDateString("en-US", { month: "short", day: "numeric" })
-        .toLowerCase();
-
-      return (
-        fDate.includes(targetNormalized) ||
-        targetNormalized.includes(fDate) ||
-        createdShort.includes(targetNormalized) ||
-        targetNormalized.includes(createdShort)
-      );
+      const orderDateKey = normalizeDateKey(o.fulfilmentDate);
+      return orderDateKey !== "" && orderDateKey === targetKey;
     });
 
-    const bookedCount = matchingOrders.length;
-    const remainingSlots = Math.max(0, limit - bookedCount);
-    const percent = Math.min(100, Math.round((bookedCount / limit) * 100));
+    const bookedCount = matchingOrders.reduce((sum, o) => {
+      const trays = Array.isArray(o.items) && o.items.length > 0
+        ? o.items.reduce((acc, item) => acc + (Number(item.qty) || 1), 0)
+        : 1;
+      return sum + trays;
+    }, 0);
 
-    // Traffic light logic: 7-10 Green, 4-6 Yellow, 1-3 Red, 0 Sold Out
+    const remainingSlots = Math.max(0, limit - bookedCount);
+    const percent = limit > 0 ? Math.min(100, Math.round((bookedCount / limit) * 100)) : 100;
+
+    // Traffic light logic proportional to the configured limit:
     let status: "green" | "yellow" | "red" | "sold_out" = "green";
-    let statusLabel = `Slots Available (${remainingSlots} left)`;
+    let statusLabel = "Slots Available";
     let statusColor = "#10b981"; // Emerald green
 
     if (remainingSlots <= 0) {
       status = "sold_out";
-      statusLabel = `Batch Sold Out (${limit}/${limit} Orders)`;
+      statusLabel = "Sold Out Today";
       statusColor = "#ef4444";
-    } else if (remainingSlots <= 3) {
+    } else if (remainingSlots <= Math.max(1, Math.round(limit * 0.25))) {
       status = "red";
-      statusLabel = `Limited Handis (${remainingSlots} left)`;
+      statusLabel = "Limited Slots";
       statusColor = "#f43f5e";
-    } else if (remainingSlots <= 6) {
+    } else if (remainingSlots <= Math.max(2, Math.round(limit * 0.5))) {
       status = "yellow";
-      statusLabel = `Filling Fast (${remainingSlots} left)`;
+      statusLabel = "Filling Fast";
       statusColor = "#eab308";
     } else {
       status = "green";
-      statusLabel = `Slots Available (${remainingSlots} left)`;
+      statusLabel = "Slots Available";
       statusColor = "#10b981";
     }
 
     return {
       dateStr: typeof target === "string" ? target : target.toISOString(),
+      targetKey,
       limit,
       bookedCount,
       remainingSlots,
@@ -965,6 +1086,18 @@ export function useDynamicMenu() {
   const reload = useCallback(() => {
     setItems(jakloudStore.getMenu());
   }, []);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/menu`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.items) && data.items.length > 0) {
+          jakloudStore.saveMenu(data.items);
+          reload();
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch fresh menu:", err));
+  }, [reload]);
 
   useEffect(() => {
     const handleSync = (e: Event) => {

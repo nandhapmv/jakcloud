@@ -89,10 +89,41 @@ function persistOrdersToFile(): void {
 // Initial load from real persistent file storage
 loadOrdersFromFile();
 
-export function generateOrderNumber(): string {
-  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-  return `JK-${dateStr}-${randomSuffix}`;
+export function generateOrderNumber(dateInput?: Date | string): string {
+  const d = dateInput ? new Date(dateInput) : new Date();
+  const validDate = isNaN(d.getTime()) ? new Date() : d;
+  const y = validDate.getFullYear();
+  const m = String(validDate.getMonth() + 1).padStart(2, "0");
+  const day = String(validDate.getDate()).padStart(2, "0");
+  const dateStr = `${y}${m}${day}`;
+  const prefix = `JK-${dateStr}-`;
+
+  // Scan all existing orders to find the highest sequence number for this date prefix
+  let maxSeq = 0;
+  for (const order of orders.values()) {
+    if (order.orderNumber && order.orderNumber.startsWith(prefix)) {
+      const seqStr = order.orderNumber.slice(prefix.length);
+      const seqNum = parseInt(seqStr, 10);
+      if (!isNaN(seqNum) && seqNum > maxSeq) {
+        maxSeq = seqNum;
+      }
+    }
+  }
+
+  // Also check orders created today in case they used another format
+  if (maxSeq === 0) {
+    const todayYMD = `${y}-${m}-${day}`;
+    const sameDayOrders = Array.from(orders.values()).filter((o) => {
+      const orderDateStr = o.createdAt ? o.createdAt.slice(0, 10) : "";
+      return orderDateStr === todayYMD;
+    });
+    if (sameDayOrders.length > 0) {
+      maxSeq = sameDayOrders.length;
+    }
+  }
+
+  const nextSeq = maxSeq + 1;
+  return `${prefix}${String(nextSeq).padStart(2, "0")}`;
 }
 
 export function calculateOrderTotals(
@@ -126,7 +157,7 @@ export function calculateOrderTotals(
   });
 
   const subtotal = Math.round(orderItems.reduce((sum, item) => sum + item.lineTotal, 0) * 100) / 100;
-  const tax = Math.round(subtotal * config.business.taxRate * 100) / 100;
+  const tax = 0;
   const deliveryFee = fulfilmentType === "delivery" ? config.business.deliveryFee : 0;
   const total = Math.round((subtotal + deliveryFee) * 100) / 100;
 

@@ -353,7 +353,7 @@ export function BiryaniSelectionPage() {
   }, [allBiryaniCards, selectedCategory, spiceFilter, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-32 sm:pb-36">
       {/* 1. HERO HEADER BANNER */}
       <section className="relative border-b border-white/[0.08] bg-[#121216] py-8 sm:py-10 px-4 sm:px-6 lg:px-8 text-left overflow-hidden">
         <div className="relative z-10 mx-auto max-w-7xl space-y-2.5">
@@ -751,7 +751,7 @@ export function BiryaniSelectionPage() {
 
       {/* 6. FLOATING CART CHECKOUT PILL */}
       {count > 0 && (
-        <div className="fixed bottom-6 inset-x-4 max-w-md mx-auto z-50 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-6 inset-x-4 max-w-md sm:max-w-lg mx-auto z-50 animate-in slide-in-from-bottom-5 duration-300">
           <Button
             asChild
             className="w-full rounded-2xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs py-3.5 shadow-xl flex items-center justify-between px-4 transition-transform"

@@ -31,7 +31,7 @@ import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 import { useAuth } from "@/lib/auth";
 import { formatMoney, BUSINESS, ORDER_CUTOFF_HOUR, formatDate } from "@/lib/menu";
-import { useKitchenSettings, useDynamicOrders } from "@/lib/store";
+import { useKitchenSettings, useDynamicOrders, normalizeDateKey } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -67,25 +67,33 @@ function DailyOrderControlPage() {
   const { settings, updateSettings } = useKitchenSettings();
   const { orders, stats } = useDynamicOrders();
 
+  const todayKey = useMemo(() => normalizeDateKey(new Date()), []);
+  const tomorrowKey = useMemo(() => {
+    const tmrw = new Date();
+    tmrw.setDate(tmrw.getDate() + 1);
+    return normalizeDateKey(tmrw);
+  }, []);
+
   // Core Capacity & Ordering State initialized from store
   const [onlineOrderingActive, setOnlineOrderingActive] = useState(settings.isKitchenOpen);
   const [todayOrdersClosed, setTodayOrdersClosed] = useState(!settings.isKitchenOpen);
   const [dailyLimit, setDailyLimit] = useState<number>(settings.dailyTrayLimit);
   const [cutoffHour, setCutoffHour] = useState<number>(settings.orderCutoffHour);
   const [horizonDays, setHorizonDays] = useState<number>(settings.bookingHorizonDays || 7);
-  const [tomorrowLimit, setTomorrowLimit] = useState<number>(settings.dailyTrayLimit);
+  const [tomorrowLimit, setTomorrowLimit] = useState<number>(() => {
+    return settings.dateLimits?.[tomorrowKey] ?? settings.dailyTrayLimit;
+  });
   const [autoRollTomorrow, setAutoRollTomorrow] = useState(true);
   const [tomorrowOrdersOpen, setTomorrowOrdersOpen] = useState(true);
 
-  // Live tray calculations from actual orders
+  // Live tray calculations strictly matching today's fulfilment date
   const bookedTraysToday = useMemo(() => {
     const todayOrders = orders.filter((o) => {
-      const isToday = o.fulfilmentDate.toLowerCase().includes("today") ||
-        (new Date(o.createdAt).toDateString() === new Date().toDateString());
-      return isToday && o.status !== "cancelled";
+      if (o.status === "cancelled") return false;
+      return normalizeDateKey(o.fulfilmentDate) === todayKey;
     });
-    return todayOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
-  }, [orders]);
+    return todayOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + (Number(i.qty) || 1), 0), 0);
+  }, [orders, todayKey]);
 
   const pickupTrays = useMemo(() => {
     return orders.filter((o) => o.fulfilmentType === "pickup" && o.status !== "cancelled")
@@ -161,15 +169,44 @@ function DailyOrderControlPage() {
     toast.success("Today's ordering reopened! Diners can book remaining trays.");
   };
 
+  // Live sync when settings change from store or backend
+  useEffect(() => {
+    if (settings.dailyTrayLimit) {
+      setDailyLimit(settings.dailyTrayLimit);
+      setTomorrowLimit(settings.dailyTrayLimit);
+    }
+    if (settings.orderCutoffHour !== undefined) {
+      setCutoffHour(settings.orderCutoffHour);
+    }
+    if (settings.bookingHorizonDays !== undefined) {
+      setHorizonDays(settings.bookingHorizonDays);
+    }
+    setOnlineOrderingActive(settings.isKitchenOpen);
+    setTodayOrdersClosed(!settings.isKitchenOpen);
+  }, [settings]);
+
+  // Instantly apply limit and persist to backend database
+  const handleApplyLimit = (newLimit?: number) => {
+    const targetLimit = newLimit !== undefined ? newLimit : dailyLimit;
+    setDailyLimit(targetLimit);
+    updateSettings({ dailyTrayLimit: targetLimit });
+    toast.success(`✅ Saved to Database: Daily order limit set to ${targetLimit} trays!`);
+  };
+
   // Save Settings
   const handleSaveAll = () => {
+    const updatedDateLimits = {
+      ...(settings.dateLimits || {}),
+      [tomorrowKey]: tomorrowLimit,
+    };
     updateSettings({
       dailyTrayLimit: dailyLimit,
+      dateLimits: updatedDateLimits,
       orderCutoffHour: cutoffHour,
       bookingHorizonDays: horizonDays,
       isKitchenOpen: onlineOrderingActive && !todayOrdersClosed,
     });
-    toast.success("Kitchen capacity, 3:00 PM cutoff & slot booking horizon successfully saved!");
+    toast.success(`✅ All settings saved to database! Daily limit: ${dailyLimit} trays.`);
   };
 
   return (
@@ -418,51 +455,74 @@ function DailyOrderControlPage() {
                   <span className="font-mono text-xs text-cream/60">Currently: {dailyLimit}</span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setDailyLimit((prev) => Math.max(10, prev - 1))}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-black/50 text-gold hover:bg-gold/15 text-lg font-bold"
-                  >
-                    -
-                  </button>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <div className="flex items-center gap-2 flex-1">
+                    <button
+                      type="button"
+                      onClick={() => setDailyLimit((prev) => Math.max(1, prev - 1))}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gold/30 bg-black/50 text-gold hover:bg-gold/15 text-lg font-bold cursor-pointer"
+                      title="Decrease 1 tray"
+                    >
+                      -
+                    </button>
 
-                  <Input
-                    id="limit-input"
-                    type="number"
-                    value={dailyLimit}
-                    onChange={(e) => setDailyLimit(Math.max(1, parseInt(e.target.value, 10) || 25))}
-                    className="h-10 text-center font-display text-lg font-bold text-cream rounded-xl border-gold/30 bg-black/60"
-                  />
+                    <Input
+                      id="limit-input"
+                      type="number"
+                      value={dailyLimit}
+                      onChange={(e) => setDailyLimit(Math.max(1, parseInt(e.target.value, 10) || 10))}
+                      className="h-10 text-center font-display text-lg font-bold text-cream rounded-xl border-gold/30 bg-black/60 flex-1"
+                    />
 
-                  <button
-                    onClick={() => setDailyLimit((prev) => Math.min(50, prev + 1))}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-black/50 text-gold hover:bg-gold/15 text-lg font-bold"
+                    <button
+                      type="button"
+                      onClick={() => setDailyLimit((prev) => Math.min(100, prev + 1))}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gold/30 bg-black/50 text-gold hover:bg-gold/15 text-lg font-bold cursor-pointer"
+                      title="Increase 1 tray"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => handleApplyLimit(dailyLimit)}
+                    className="h-10 bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold text-xs px-4 shadow-md shrink-0 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
                   >
-                    +
-                  </button>
+                    <Save className="h-3.5 w-3.5" />
+                    Save Limit
+                  </Button>
                 </div>
 
                 {/* Preset Pills */}
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {[
-                    { label: "10 Trays (10 Limit - Default)", val: 10 },
-                    { label: "15 Trays", val: 15 },
-                    { label: "20 Trays", val: 20 },
-                    { label: "25 Trays", val: 25 },
-                    { label: "35 Trays (Weekend Feast)", val: 35 },
-                  ].map((preset) => (
-                    <button
-                      key={preset.val}
-                      onClick={() => setDailyLimit(preset.val)}
-                      className={`rounded-lg px-2.5 py-1 text-[0.65rem] font-medium transition-all ${
-                        dailyLimit === preset.val
-                          ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
-                          : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/40"
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[0.65rem] text-cream/50 uppercase tracking-wider font-semibold block">
+                    Instant Presets (Click to Auto-Save to DB):
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { label: "10 Trays (Default)", val: 10 },
+                      { label: "15 Trays", val: 15 },
+                      { label: "20 Trays", val: 20 },
+                      { label: "25 Trays", val: 25 },
+                      { label: "35 Trays (Weekend)", val: 35 },
+                      { label: "50 Trays (Festival)", val: 50 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.val}
+                        type="button"
+                        onClick={() => handleApplyLimit(preset.val)}
+                        className={`rounded-lg px-2.5 py-1 text-[0.65rem] font-medium transition-all cursor-pointer ${
+                          dailyLimit === preset.val
+                            ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
+                            : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/40 hover:text-cream"
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 

@@ -146,9 +146,20 @@ function AdminOverviewPage() {
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<OrderResponse | null>(null);
 
   // Kitchen settings state directly bound to reactive store
-  const dailyLimit = settings.dailyTrayLimit;
+  const dailyLimit = settings.dailyTrayLimit || 10;
   const kitchenOpen = settings.isKitchenOpen;
   const orderCutoffHour = settings.orderCutoffHour;
+
+  // Editable settings inputs
+  const [dailyLimitInput, setDailyLimitInput] = useState<number>(settings.dailyTrayLimit || 10);
+  const [kitchenOpenInput, setKitchenOpenInput] = useState<boolean>(settings.isKitchenOpen);
+  const [cutoffHourInput, setCutoffHourInput] = useState<number>(settings.orderCutoffHour || 15);
+
+  useEffect(() => {
+    if (settings.dailyTrayLimit) setDailyLimitInput(settings.dailyTrayLimit);
+    setKitchenOpenInput(settings.isKitchenOpen);
+    if (settings.orderCutoffHour) setCutoffHourInput(settings.orderCutoffHour);
+  }, [settings]);
 
   // Orders tab filter
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>("all");
@@ -964,9 +975,9 @@ function AdminOverviewPage() {
                     <p className="mt-2 text-xs sm:text-sm text-cream/75 max-w-2xl leading-relaxed">
                       Springfield's slow-cooked Dum biryani operation is running on schedule.{" "}
                       <span className="text-gold font-medium">
-                        {dailyLimit - totalTraysBooked} trays remain
+                        {Math.max(0, dailyLimit - totalTraysBooked)} trays remain
                       </span>{" "}
-                      before reaching today's 25-tray capacity limit.
+                      before reaching today's {dailyLimit}-tray capacity limit.
                     </p>
                   </div>
 
@@ -1952,49 +1963,135 @@ function AdminOverviewPage() {
 
               <div className="max-w-2xl space-y-6">
                 <div className="rounded-3xl border border-gold/25 bg-[#120c08]/85 p-6 space-y-5">
-                  <h3 className="font-display text-lg text-cream font-bold">Dum Kitchen Capacity Quota</h3>
+                  <div className="flex items-center justify-between border-b border-gold/15 pb-3">
+                    <h3 className="font-display text-lg text-cream font-bold">Dum Kitchen Capacity Quota</h3>
+                    <span className="font-mono text-xs text-gold font-bold">Active Limit: {dailyLimit} Trays</span>
+                  </div>
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <Label htmlFor="limit-slider">Maximum Daily Trays Limit</Label>
-                      <span className="font-bold text-gold font-mono">{dailyLimit} Trays</span>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center text-xs">
+                      <Label htmlFor="limit-input" className="text-gold font-semibold">Maximum Daily Trays Limit:</Label>
+                      <span className="font-bold text-cream font-mono">{dailyLimitInput} Trays</span>
                     </div>
-                    <input
-                      id="limit-slider"
-                      type="range"
-                      min={10}
-                      max={50}
-                      value={dailyLimit}
-                      onChange={(e) => setDailyLimit(parseInt(e.target.value, 10))}
-                      className="w-full accent-gold cursor-pointer"
-                    />
-                    <p className="text-[0.7rem] text-cream/60">
-                      When this limit is reached, website ordering rolls to the next available date automatically.
-                    </p>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDailyLimitInput((prev) => Math.max(1, prev - 1))}
+                        className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-black/50 text-gold hover:bg-gold/15 text-lg font-bold cursor-pointer"
+                        title="Decrease 1 tray"
+                      >
+                        -
+                      </button>
+
+                      <Input
+                        id="limit-input"
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={dailyLimitInput}
+                        onChange={(e) => setDailyLimitInput(Math.max(1, parseInt(e.target.value, 10) || 10))}
+                        className="h-10 text-center font-display text-lg font-bold text-cream rounded-xl border-gold/30 bg-black/60"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => setDailyLimitInput((prev) => Math.min(100, prev + 1))}
+                        className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-black/50 text-gold hover:bg-gold/15 text-lg font-bold cursor-pointer"
+                        title="Increase 1 tray"
+                      >
+                        +
+                      </button>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          updateSettings({ dailyTrayLimit: dailyLimitInput });
+                          toast.success(`✅ Saved to Database: Capacity limit set to ${dailyLimitInput} trays!`);
+                        }}
+                        className="h-10 bg-gold text-black hover:bg-amber-400 font-bold text-xs px-3 shadow-md shrink-0 cursor-pointer"
+                      >
+                        Apply Limit
+                      </Button>
+                    </div>
+
+                    {/* Quick Preset Buttons */}
+                    <div className="space-y-1.5 pt-1">
+                      <span className="text-[0.65rem] text-cream/50 uppercase tracking-wider font-semibold block">
+                        Quick Capacity Presets (Click to Save to DB):
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { label: "10 Trays (Default)", val: 10 },
+                          { label: "15 Trays", val: 15 },
+                          { label: "20 Trays", val: 20 },
+                          { label: "25 Trays", val: 25 },
+                          { label: "35 Trays (Weekend)", val: 35 },
+                          { label: "50 Trays (Feast)", val: 50 },
+                        ].map((preset) => (
+                          <button
+                            key={preset.val}
+                            type="button"
+                            onClick={() => {
+                              setDailyLimitInput(preset.val);
+                              updateSettings({ dailyTrayLimit: preset.val });
+                              toast.success(`✅ Saved to Database: Capacity set to ${preset.val} trays!`);
+                            }}
+                            className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all cursor-pointer ${
+                              dailyLimitInput === preset.val
+                                ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
+                                : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/40 hover:text-cream"
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="space-y-2 border-t border-gold/15 pt-4">
-                    <Label htmlFor="cutoff-time">Next-Day Order Cutoff Time</Label>
-                    <Input
+                    <Label htmlFor="cutoff-time" className="text-xs text-gold font-semibold">Next-Day Order Cutoff Time</Label>
+                    <select
                       id="cutoff-time"
-                      defaultValue="2:00 PM (14:00)"
-                      className="border-gold/25 bg-black/40 text-cream"
-                    />
+                      value={cutoffHourInput}
+                      onChange={(e) => setCutoffHourInput(parseInt(e.target.value, 10))}
+                      className="w-full h-10 rounded-xl border border-gold/25 bg-black/50 px-3 text-xs text-cream font-mono cursor-pointer focus:outline-none focus:border-gold"
+                    >
+                      <option value={12}>12:00 PM (Noon Cutoff)</option>
+                      <option value={13}>1:00 PM</option>
+                      <option value={14}>2:00 PM</option>
+                      <option value={15}>3:00 PM (Standard 3 PM Cutoff)</option>
+                      <option value={16}>4:00 PM</option>
+                      <option value={17}>5:00 PM</option>
+                    </select>
                   </div>
 
                   <div className="flex items-center justify-between border-t border-gold/15 pt-4">
                     <div>
-                      <p className="text-sm font-medium text-cream">Kitchen Open / Accepting Trays</p>
-                      <p className="text-[0.7rem] text-cream/60">Turn off to temporarily pause new website orders</p>
+                      <p className="text-xs font-medium text-cream">Kitchen Open / Accepting Trays</p>
+                      <p className="text-[0.65rem] text-cream/60">Turn off to temporarily pause new customer orders</p>
                     </div>
-                    <Switch checked={kitchenOpen} onCheckedChange={setKitchenOpen} />
+                    <Switch
+                      checked={kitchenOpenInput}
+                      onCheckedChange={setKitchenOpenInput}
+                      className="data-[state=checked]:bg-emerald-500"
+                    />
                   </div>
 
                   <Button
-                    onClick={() => toast.success("Kitchen settings saved successfully.")}
-                    className="w-full bg-saffron text-saffron-foreground hover:bg-saffron/90 font-semibold"
+                    onClick={() => {
+                      updateSettings({
+                        dailyTrayLimit: dailyLimitInput,
+                        isKitchenOpen: kitchenOpenInput,
+                        orderCutoffHour: cutoffHourInput,
+                      });
+                      toast.success(`✅ Kitchen settings saved to database! Daily limit: ${dailyLimitInput} trays.`);
+                    }}
+                    className="w-full bg-gradient-to-r from-chili via-saffron to-gold text-white hover:brightness-110 font-bold text-xs h-10 shadow-lg shadow-chili/30 cursor-pointer"
                   >
-                    Save Operational Settings
+                    Save Operational Settings to Database
                   </Button>
                 </div>
               </div>
@@ -2059,7 +2156,7 @@ function AdminOverviewPage() {
 
               {/* Total Summary */}
               <div className="flex justify-between items-center rounded-xl bg-gold/10 p-3 text-sm font-semibold text-cream border border-gold/25">
-                <span>Grand Total (Tax Included)</span>
+                <span>Total Amount</span>
                 <span className="font-display text-lg text-gold">{formatMoney(selectedOrderDetails.total)}</span>
               </div>
 

@@ -209,6 +209,21 @@ export function SiteHeader() {
 
           {/* Mobile Right Action Bar (Mobile Screens Only) */}
           <div className="flex items-center gap-2 lg:hidden">
+            {/* Quick Mobile Cart Trigger */}
+            <Button
+              size="sm"
+              onClick={() => setCartOpen(true)}
+              className="relative rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold p-1.5 h-8 w-8 flex items-center justify-center border border-amber-300/40 shadow-sm hover:brightness-105 active:scale-95 transition-all cursor-pointer"
+              aria-label={`Open Handi Tray cart, ${count} tray${count === 1 ? "" : "s"}`}
+            >
+              <ShoppingBag className="h-4 w-4 text-zinc-950 stroke-[2.5]" />
+              {count > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-950 text-amber-300 text-[9px] font-black px-1 border border-amber-400">
+                  {count}
+                </span>
+              )}
+            </Button>
+
             {/* Hamburger Menu Toggle Button */}
             <button
               type="button"

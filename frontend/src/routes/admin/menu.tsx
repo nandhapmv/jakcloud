@@ -278,8 +278,8 @@ function MenuManagementPage() {
     setFormPriceWithAloo("116.99");
     setFormImage(chickenImg);
     setFormAvailable(true);
-    setFormTraySize("Serves 4–5 Diners (Family Handi)");
-    setFormMeatWeight("1.6 kg Marinated Meat");
+    setFormTraySize("Serves 4–5");
+    setFormMeatWeight("1.6 kg Halal Marinated Chicken");
     setFormRiceWeight("1.0 kg Raw Aged Basmati");
     setFormKcal("1800");
     setFormBadge("Chef's Special");
@@ -298,8 +298,8 @@ function MenuManagementPage() {
     setFormPriceWithAloo(item.priceWithAloo.toString());
     setFormImage(item.image);
     setFormAvailable(item.available);
-    setFormTraySize(item.traySize);
-    setFormMeatWeight(item.meatWeight);
+    setFormTraySize((item as any).serves || item.traySize || "Serves 4–5");
+    setFormMeatWeight(item.meatWeight || "");
     setFormRiceWeight(item.riceWeight);
     setFormKcal(item.kcal.toString());
     setFormBadge(item.badge || "");
@@ -332,6 +332,7 @@ function MenuManagementPage() {
         image: formImage,
         available: formAvailable,
         traySize: formTraySize,
+        serves: formTraySize,
         meatWeight: formMeatWeight,
         riceWeight: formRiceWeight,
         kcal: kcalNum,
@@ -353,6 +354,7 @@ function MenuManagementPage() {
         image: formImage,
         available: formAvailable,
         traySize: formTraySize,
+        serves: formTraySize,
         meatWeight: formMeatWeight,
         riceWeight: formRiceWeight,
         kcal: kcalNum,
@@ -978,24 +980,26 @@ function MenuManagementPage() {
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1">
                 <Label htmlFor="tray-size" className="text-xs text-cream/80">
-                  Tray Size Label
+                  Serving Size (e.g. Serves 4–5) *
                 </Label>
                 <Input
                   id="tray-size"
                   value={formTraySize}
                   onChange={(e) => setFormTraySize(e.target.value)}
+                  placeholder="e.g. Serves 4–5"
                   className="rounded-xl border-gold/25 bg-black/40 text-xs text-cream"
                 />
               </div>
 
               <div className="space-y-1">
                 <Label htmlFor="meat-weight" className="text-xs text-cream/80">
-                  Meat / Protein Cut Weight
+                  Short Description / Meat Weight *
                 </Label>
                 <Input
                   id="meat-weight"
                   value={formMeatWeight}
                   onChange={(e) => setFormMeatWeight(e.target.value)}
+                  placeholder="e.g. 1.6 kg Halal Marinated Chicken"
                   className="rounded-xl border-gold/25 bg-black/40 text-xs text-cream"
                 />
               </div>

@@ -142,7 +142,7 @@ function RootComponent() {
                 isAdminDashboard
                   ? "h-screen h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col"
                   : !isAdminRoute
-                  ? "pt-14 lg:pt-[84px]"
+                  ? "pt-16 lg:pt-[84px]"
                   : ""
               }`}
             >

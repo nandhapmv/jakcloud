@@ -913,10 +913,12 @@ export function OrderManagementPage() {
                   <span>Subtotal</span>
                   <span>{formatMoney(selectedOrder.subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-cream/70">
-                  <span>Tax (8.6%)</span>
-                  <span>{formatMoney(selectedOrder.tax)}</span>
-                </div>
+                {selectedOrder.tax > 0 && (
+                  <div className="flex justify-between text-cream/70">
+                    <span>Tax</span>
+                    <span>{formatMoney(selectedOrder.tax)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-cream/70">
                   <span>Fulfilment ({selectedOrder.fulfilmentType})</span>
                   <span>{selectedOrder.deliveryFee > 0 ? formatMoney(selectedOrder.deliveryFee) : "Free"}</span>
@@ -979,6 +981,22 @@ export function OrderManagementPage() {
                     className="border-red-500/40 text-red-400 hover:bg-red-950/40 text-xs"
                   >
                     Cancel / Reject
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (window.confirm(`Permanently delete order ${selectedOrder.orderNumber}?`)) {
+                        deleteOrder(selectedOrder.id);
+                        toast.success(`Order ${selectedOrder.orderNumber} deleted.`);
+                        setSelectedOrder(null);
+                      }
+                    }}
+                    className="border-red-600/60 text-red-400 hover:bg-red-950/60 text-xs gap-1"
+                    title="Delete permanently"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Delete</span>
                   </Button>
                 </div>
               </div>

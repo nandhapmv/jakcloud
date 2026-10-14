@@ -193,8 +193,8 @@ export function TraySelectionPage() {
 
     const subtotal =
       base + proteinUpgrade + alooCost + addonCashews + addonSalan + addonRaita + addonDessert;
-    const tax = subtotal * 0.086;
-    const total = subtotal + tax + deliveryCost;
+    const tax = 0;
+    const total = subtotal + deliveryCost;
 
     return {
       base,
@@ -252,7 +252,7 @@ export function TraySelectionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-32 sm:pb-36">
       {/* Top Banner Ambience */}
       <div className="relative border-b border-white/[0.08] bg-[#121216] py-10 px-4 sm:px-8 text-center">
         <div className="mx-auto max-w-4xl space-y-3">
@@ -688,10 +688,6 @@ export function TraySelectionPage() {
                   </div>
                 )}
 
-                <div className="flex justify-between text-zinc-500">
-                  <span>Food Tax (8.6%):</span>
-                  <span>{formatMoney(calculatedPricing.tax)}</span>
-                </div>
 
                 <div className="flex justify-between text-zinc-500">
                   <span>Fulfilment ({orderType === "pickup" ? "Pickup" : "Delivery"}):</span>
