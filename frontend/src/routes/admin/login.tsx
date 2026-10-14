@@ -9,7 +9,6 @@ import {
   Sparkles,
   ArrowRight,
   Flame,
-  KeyRound,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,13 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
@@ -50,7 +42,6 @@ function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [forgotOpen, setForgotOpen] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -82,71 +73,84 @@ function AdminLoginPage() {
   const handleQuickFill = () => {
     setEmail("admin@jakloud.com");
     setPassword("spiceking2026");
-    toast.info("Demo credentials loaded.");
+    toast.info("Master Chef credentials autofilled.");
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      {/* Background Backdrop */}
+    <div className="relative min-h-[100dvh] w-full overflow-hidden bg-[#070402] font-sans text-cream selection:bg-gold/30 selection:text-gold flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      {/* Ambient Radial Glows */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[500px] w-[600px] rounded-full bg-gradient-to-b from-amber-500/20 via-saffron/10 to-transparent blur-3xl z-0" />
+      <div className="pointer-events-none absolute -bottom-32 right-0 h-[400px] w-[400px] rounded-full bg-chili/10 blur-3xl z-0" />
+
+      {/* Background Backdrop with Biryani Texture */}
       <div className="absolute inset-0 z-0">
         <img
           src={heroBg}
           alt="Royal Hyderabadi Dum Biryani"
-          className="h-full w-full object-cover object-center filter brightness-25 opacity-30"
+          className="h-full w-full object-cover object-center filter brightness-[0.18] contrast-125 opacity-40 scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/90 to-[#09090b]/95" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070402]/95 via-[#070402]/90 to-[#070402]" />
+        {/* Subtle royal pattern overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(#d4a017_0.75px,transparent_0.75px)] [background-size:24px_24px] opacity-[0.06]" />
       </div>
 
-      {/* Main Container */}
-      <div className="relative z-10 w-full max-w-md">
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#121216]/90 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+      {/* Main Login Card */}
+      <div className="relative z-10 w-full max-w-[430px] my-auto">
+        <div className="relative overflow-hidden rounded-3xl border border-gold/30 bg-gradient-to-b from-[#180e07]/95 via-[#110904]/98 to-[#090502]/98 p-6 sm:p-9 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.95),0_0_50px_rgba(212,160,23,0.12)] backdrop-blur-2xl">
+          {/* Top Golden Accent Line */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
+
           {/* Logo & Brand Title */}
           <div className="text-center">
-            <img
-              src={logoImg}
-              alt="JAKLOUD Spice King Heritage Seal"
-              className="h-16 w-16 rounded-full border border-amber-500/30 bg-black p-0.5 object-cover mx-auto"
-              width={64}
-              height={64}
-            />
-
-            <div className="mt-3 flex items-center justify-center gap-1.5 text-[0.65rem] font-medium uppercase tracking-widest text-amber-400">
-              <Flame className="h-3 w-3 text-amber-400" />
-              <span>JAKLOUD · SPICE KING</span>
+            <div className="relative inline-block">
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-gold via-saffron to-amber-600 opacity-40 blur-md animate-pulse" />
+              <img
+                src={logoImg}
+                alt="JAKLOUD Spice King Heritage Seal"
+                className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-full border-2 border-gold/60 bg-black p-0.5 object-cover mx-auto shadow-xl"
+                width={80}
+                height={80}
+              />
             </div>
 
-            <h1 className="mt-1 font-display text-xl sm:text-2xl font-semibold text-zinc-100">
+            <div className="mt-4 flex items-center justify-center gap-1.5 text-[0.68rem] font-bold uppercase tracking-widest text-gold">
+              <Flame className="h-3.5 w-3.5 text-saffron fill-saffron/20" />
+              <span>JAKLOUD · ROYAL SPICE KING</span>
+            </div>
+
+            <h1 className="mt-1.5 font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-cream">
               Kitchen Admin Portal
             </h1>
-            <p className="mt-0.5 text-xs text-zinc-400 font-normal">
-              Authorized personnel & restaurant administration
+            <p className="mt-1 text-xs text-cream/60 font-normal">
+              Authorized Personnel & Restaurant Command
             </p>
           </div>
 
           {/* Quick Demo Fill Badge */}
-          <div className="mt-4 flex justify-center">
+          <div className="mt-5 flex justify-center">
             <button
               type="button"
               onClick={handleQuickFill}
-              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-[#18181f] px-3 py-1 text-[0.68rem] font-medium text-zinc-300 transition-colors hover:text-amber-300 hover:border-amber-500/30"
+              className="group flex items-center gap-2 rounded-full border border-gold/35 bg-gold/10 hover:bg-gold/20 active:scale-95 px-4 py-1.5 text-xs font-semibold text-gold transition-all duration-200 shadow-sm shadow-gold/10 hover:border-gold/60 hover:text-amber-300"
             >
-              <Sparkles className="h-3 w-3 text-amber-400" />
-              <span>Autofill Demo Credentials</span>
+              <Sparkles className="h-3.5 w-3.5 text-saffron group-hover:rotate-12 transition-transform" />
+              <span>Autofill Master Chef Credentials</span>
             </button>
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleLogin} className="mt-5 space-y-4 text-xs font-normal">
-            <div className="space-y-1">
+          <form onSubmit={handleLogin} className="mt-6 space-y-4 text-xs font-normal">
+            {/* Email Field */}
+            <div className="space-y-1.5">
               <Label
                 htmlFor="admin-email"
-                className="text-xs font-medium text-zinc-300"
+                className="text-xs font-semibold text-cream/90 flex items-center gap-1.5"
               >
-                Admin Email
+                <span>Admin Email</span>
               </Label>
               <div className="relative group">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500 group-focus-within:text-amber-400 transition-colors">
-                  <Mail className="h-3.5 w-3.5" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold/60 group-focus-within:text-gold transition-colors">
+                  <Mail className="h-4 w-4" />
                 </div>
                 <Input
                   id="admin-email"
@@ -156,30 +160,22 @@ function AdminLoginPage() {
                   placeholder="admin@jakloud.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-10 rounded-xl border-white/[0.08] bg-[#18181f] pl-9 pr-3 text-xs text-zinc-200 placeholder:text-zinc-500 focus:border-amber-500/50"
+                  className="h-11 sm:h-12 rounded-xl border-gold/25 bg-[#0b0603]/80 pl-10 pr-3 text-base sm:text-xs text-cream placeholder:text-cream/35 focus:border-gold focus:ring-1 focus:ring-gold/30 shadow-inner transition-colors"
                 />
               </div>
             </div>
 
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor="admin-password"
-                  className="text-xs font-medium text-zinc-300"
-                >
-                  Password
-                </Label>
-                <button
-                  type="button"
-                  onClick={() => setForgotOpen(true)}
-                  className="text-[0.68rem] text-zinc-400 hover:text-amber-300 transition-colors"
-                >
-                  Forgot password?
-                </button>
-              </div>
+            {/* Password Field - NOTE: 'Forgot password?' completely removed as requested */}
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="admin-password"
+                className="text-xs font-semibold text-cream/90"
+              >
+                Password
+              </Label>
               <div className="relative group">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500 group-focus-within:text-amber-400 transition-colors">
-                  <Lock className="h-3.5 w-3.5" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gold/60 group-focus-within:text-gold transition-colors">
+                  <Lock className="h-4 w-4" />
                 </div>
                 <Input
                   id="admin-password"
@@ -189,118 +185,78 @@ function AdminLoginPage() {
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-10 rounded-xl border-white/[0.08] bg-[#18181f] pl-9 pr-9 text-xs text-zinc-200 placeholder:text-zinc-500 focus:border-amber-500/50"
+                  className="h-11 sm:h-12 rounded-xl border-gold/25 bg-[#0b0603]/80 pl-10 pr-10 text-base sm:text-xs text-cream placeholder:text-cream/35 focus:border-gold focus:ring-1 focus:ring-gold/30 shadow-inner transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gold/60 hover:text-gold transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-3.5 w-3.5" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-3.5 w-3.5" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 pt-0.5">
+            {/* Remember Me Checkbox */}
+            <div className="flex items-center space-x-2.5 pt-1">
               <Checkbox
                 id="remember-me"
                 checked={rememberMe}
                 onCheckedChange={(c) => setRememberMe(c === true)}
-                className="border-white/20 data-[state=checked]:bg-amber-500 data-[state=checked]:text-zinc-950"
+                className="h-4 w-4 rounded border-gold/40 data-[state=checked]:bg-gold data-[state=checked]:text-[#070402]"
               />
               <label
                 htmlFor="remember-me"
-                className="text-xs text-zinc-400 select-none cursor-pointer"
+                className="text-xs text-cream/70 select-none cursor-pointer font-medium hover:text-cream transition-colors"
               >
                 Remember this session for 30 days
               </label>
             </div>
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs py-5 shadow-md transition-colors gap-1.5"
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-950 border-t-transparent" />
-                  <span>Verifying Credentials...</span>
-                </div>
-              ) : (
-                <>
-                  <span>Enter Kitchen Portal</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </>
-              )}
-            </Button>
+            {/* Submit Button */}
+            <div className="pt-2">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-12 rounded-xl bg-gradient-to-r from-amber-500 via-saffron to-gold hover:from-amber-400 hover:via-amber-500 hover:to-gold/90 active:scale-[0.99] text-[#070402] font-bold text-sm tracking-wide shadow-[0_10px_25px_rgba(217,119,6,0.35)] hover:shadow-[0_14px_35px_rgba(217,119,6,0.5)] transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#070402] border-t-transparent" />
+                    <span>Verifying Credentials...</span>
+                  </div>
+                ) : (
+                  <>
+                    <span>Enter Kitchen Portal</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
 
-          <div className="mt-6 flex items-center justify-center gap-1.5 border-t border-white/[0.06] pt-4 text-center text-[0.68rem] text-zinc-500 font-normal">
-            <ShieldCheck className="h-3 w-3 text-amber-400" />
+          {/* Security Badge */}
+          <div className="mt-7 flex items-center justify-center gap-2 border-t border-gold/15 pt-5 text-center text-[0.72rem] text-gold/80 font-medium">
+            <ShieldCheck className="h-4 w-4 text-gold shrink-0" />
             <span>256-Bit Encrypted Kitchen Management</span>
           </div>
 
-          <div className="mt-2 text-center">
+          {/* Return Link */}
+          <div className="mt-3 text-center">
             <Link
               to="/"
-              className="text-[0.7rem] text-zinc-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1 font-normal"
+              className="text-xs text-cream/50 hover:text-gold transition-colors inline-flex items-center gap-1 font-medium"
             >
               ← Return to Public Website
             </Link>
           </div>
         </div>
       </div>
-
-      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
-        <DialogContent className="border-white/10 bg-[#121216] text-zinc-200 sm:max-w-md rounded-2xl">
-          <DialogHeader>
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 mb-1">
-              <KeyRound className="h-5 w-5" />
-            </div>
-            <DialogTitle className="text-center font-display text-lg font-semibold text-zinc-100">
-              Administrator Password Reset
-            </DialogTitle>
-            <DialogDescription className="text-center text-xs text-zinc-400 pt-0.5 font-normal">
-              Admin credentials for the live Dum biryani kitchen portal are managed by the Head Chef & Founders.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="rounded-xl border border-white/[0.06] bg-[#18181f] p-3 text-xs text-zinc-300 space-y-1.5 font-normal">
-            <p className="font-medium text-amber-400">Master Recovery Contact:</p>
-            <p>• Email: <span className="font-mono text-zinc-200">sales@jakloud.com</span></p>
-            <p>• Phone: <span className="font-mono text-zinc-200">417-897-9754</span></p>
-            <p className="text-[0.68rem] text-zinc-500 pt-1">
-              Default demo credentials: <span className="font-mono text-amber-300">admin@jakloud.com</span> / <span className="font-mono text-amber-300">spiceking2026</span>
-            </p>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                handleQuickFill();
-                setForgotOpen(false);
-              }}
-              className="border-white/10 text-zinc-300 hover:bg-white/[0.06] text-xs"
-            >
-              Fill Demo Login
-            </Button>
-            <Button
-              size="sm"
-              className="bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-medium"
-              onClick={() => setForgotOpen(false)}
-            >
-              Got it
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
