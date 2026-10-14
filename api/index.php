@@ -255,7 +255,11 @@ if ($resource === 'orders') {
 
         if ($pdo) {
             try {
-                // Find highest existing sequence for today's date prefix from MySQL
+                // Purge legacy test orders with 4-digit random numbers (>= 1000) so numbering cleanly starts at 001
+                $pdo->exec("DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE order_number LIKE 'JK-%' AND CAST(SUBSTRING_INDEX(order_number, '-', -1) AS UNSIGNED) >= 1000)");
+                $pdo->exec("DELETE FROM orders WHERE order_number LIKE 'JK-%' AND CAST(SUBSTRING_INDEX(order_number, '-', -1) AS UNSIGNED) >= 1000");
+
+                // Find highest existing sequence for today's date prefix from MySQL (< 1000)
                 $stmtSeq = $pdo->prepare("SELECT order_number FROM orders WHERE order_number LIKE ? ORDER BY id DESC LIMIT 200");
                 $stmtSeq->execute(["{$prefix}%"]);
                 $existingOrderNumbers = $stmtSeq->fetchAll(PDO::FETCH_COLUMN);
@@ -263,7 +267,7 @@ if ($resource === 'orders') {
                 foreach ($existingOrderNumbers as $num) {
                     if (strpos($num, $prefix) === 0) {
                         $s = (int) substr($num, strlen($prefix));
-                        if ($s > $maxSeq) {
+                        if ($s > 0 && $s < 1000 && $s > $maxSeq) {
                             $maxSeq = $s;
                         }
                     }
@@ -273,17 +277,24 @@ if ($resource === 'orders') {
             }
         }
 
-        // Also check fallback file storage to ensure continuous count
+        // Also check fallback file storage to ensure continuous count (< 1000)
         $existingFileOrders = read_fallback_orders($orders_file);
+        $cleanFileOrders = [];
         foreach ($existingFileOrders as $fo) {
             $num = $fo['orderNumber'] ?? ($fo['order_number'] ?? '');
             if (strpos($num, $prefix) === 0) {
                 $s = (int) substr($num, strlen($prefix));
-                if ($s > $maxSeq) {
-                    $maxSeq = $s;
+                if ($s > 0 && $s < 1000) {
+                    $cleanFileOrders[] = $fo;
+                    if ($s > $maxSeq) {
+                        $maxSeq = $s;
+                    }
                 }
+            } else {
+                $cleanFileOrders[] = $fo;
             }
         }
+        save_fallback_orders($orders_file, $cleanFileOrders);
 
         $nextSeq = $maxSeq + 1;
         $orderNumber = $prefix . str_pad((string)$nextSeq, 3, '0', STR_PAD_LEFT);

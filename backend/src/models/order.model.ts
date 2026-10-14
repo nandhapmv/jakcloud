@@ -104,7 +104,7 @@ export function generateOrderNumber(dateInput?: Date | string): string {
     if (order.orderNumber && order.orderNumber.startsWith(prefix)) {
       const seqStr = order.orderNumber.slice(prefix.length);
       const seqNum = parseInt(seqStr, 10);
-      if (!isNaN(seqNum) && seqNum > maxSeq) {
+      if (!isNaN(seqNum) && seqNum > 0 && seqNum < 1000 && seqNum > maxSeq) {
         maxSeq = seqNum;
       }
     }

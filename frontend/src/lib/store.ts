@@ -741,7 +741,7 @@ export const jakloudStore = {
     for (const ord of current) {
       if (ord.orderNumber && ord.orderNumber.startsWith(prefix)) {
         const seqNum = parseInt(ord.orderNumber.slice(prefix.length), 10);
-        if (!isNaN(seqNum) && seqNum > maxSeq) {
+        if (!isNaN(seqNum) && seqNum > 0 && seqNum < 1000 && seqNum > maxSeq) {
           maxSeq = seqNum;
         }
       }
