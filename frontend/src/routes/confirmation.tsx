@@ -283,7 +283,7 @@ export function OrderConfirmationPage() {
             </div>
             <div className="space-y-1">
               <p className="text-base sm:text-lg font-bold text-amber-200">
-                📸 దయచేసి ఈ స్క్రీన్‌షాట్ తీసుకోండి!
+                📸 Important: Save Your Order Receipt
               </p>
               <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed max-w-md mx-auto">
                 Take a screenshot of this receipt now to show at kitchen pickup or to your delivery driver.
