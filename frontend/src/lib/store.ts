@@ -759,7 +759,7 @@ export const jakloudStore = {
     }
 
     const nextSeq = maxSeq + 1;
-    const orderNumber = `${prefix}${String(nextSeq).padStart(2, "0")}`;
+    const orderNumber = `${prefix}${String(nextSeq).padStart(3, "0")}`;
 
     const newOrder: DynamicOrder = {
       id: `ord_${Date.now()}`,

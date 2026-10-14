@@ -123,7 +123,7 @@ export function generateOrderNumber(dateInput?: Date | string): string {
   }
 
   const nextSeq = maxSeq + 1;
-  return `${prefix}${String(nextSeq).padStart(2, "0")}`;
+  return `${prefix}${String(nextSeq).padStart(3, "0")}`;
 }
 
 export function calculateOrderTotals(

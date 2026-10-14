@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `total` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   `payment_method` VARCHAR(128) DEFAULT 'Instant UPI QR',
   `payment_status` VARCHAR(64) DEFAULT 'pending',
+  `payment_id` VARCHAR(128) DEFAULT NULL,
   `special_instructions` TEXT,
   `staff_notes` TEXT,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
