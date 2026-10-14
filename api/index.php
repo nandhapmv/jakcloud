@@ -30,12 +30,28 @@ try {
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
 
-    // Ensure payment_id column exists in orders table
+    // 1. Ensure payment_id & order_id columns exist in orders table
     try {
         $pdo->exec("ALTER TABLE `orders` ADD COLUMN `payment_id` VARCHAR(128) DEFAULT NULL AFTER `payment_status`");
-    } catch (Exception $e) {
-        // Column might already exist, ignore
-    }
+    } catch (Exception $e) {}
+    try {
+        $pdo->exec("ALTER TABLE `orders` ADD COLUMN `order_id` VARCHAR(64) DEFAULT NULL AFTER `id`");
+    } catch (Exception $e) {}
+    try {
+        $pdo->exec("UPDATE `orders` SET `order_id` = `order_number` WHERE `order_id` IS NULL OR `order_id` = ''");
+    } catch (Exception $e) {}
+
+    // 2. Clean dummy default email from database
+    try {
+        $pdo->exec("UPDATE `customers` SET `email` = '' WHERE `email` = 'customer@jakloud.com'");
+        $pdo->exec("UPDATE `orders` SET `customer_email` = '' WHERE `customer_email` = 'customer@jakloud.com'");
+    } catch (Exception $e) {}
+
+    // 3. Purge legacy test orders with 4-digit random numbers (>= 1000) so numbering strictly starts at 001
+    try {
+        $pdo->exec("DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE order_number LIKE 'JK-%' AND CAST(SUBSTRING_INDEX(order_number, '-', -1) AS UNSIGNED) >= 1000)");
+        $pdo->exec("DELETE FROM orders WHERE order_number LIKE 'JK-%' AND CAST(SUBSTRING_INDEX(order_number, '-', -1) AS UNSIGNED) >= 1000");
+    } catch (Exception $e) {}
 } catch (Exception $e) {
     // If PDO fails, record warning
     $db_conn_error = $e->getMessage();
@@ -298,11 +314,12 @@ if ($resource === 'orders') {
 
         $nextSeq = $maxSeq + 1;
         $orderNumber = $prefix . str_pad((string)$nextSeq, 3, '0', STR_PAD_LEFT);
-        $orderId = "ord_" . round(microtime(true) * 1000) . "_" . substr(md5(uniqid()), 0, 6);
+        $orderId = $orderNumber; // Pure sequential Order ID: JK-YYYYMMDD-001
 
         $orderObj = [
             'id' => $orderId,
             'orderNumber' => $orderNumber,
+            'orderId' => $orderNumber,
             'status' => 'confirmed',
             'fulfilmentType' => $fulfilmentType,
             'fulfilmentDate' => $fulfilmentDate,
@@ -359,83 +376,56 @@ if ($resource === 'orders') {
                     $orderObj['customer']['deliveryInstructions'],
                 ]);
 
-                // Check dynamically if payment_id column exists in orders table
-                $hasPaymentId = false;
-                try {
-                    $checkCol = $pdo->query("SHOW COLUMNS FROM `orders` LIKE 'payment_id'")->fetchAll();
-                    $hasPaymentId = !empty($checkCol);
-                    if (!$hasPaymentId) {
-                        try {
-                            $pdo->exec("ALTER TABLE `orders` ADD COLUMN `payment_id` VARCHAR(128) DEFAULT NULL AFTER `payment_status`");
-                            $hasPaymentId = true;
-                        } catch (Exception $eAlter) {}
-                    }
-                } catch (Exception $eCheck) {
-                    $hasPaymentId = false;
+                // Inspect columns in orders table dynamically
+                $columns = $pdo->query("SHOW COLUMNS FROM `orders`")->fetchAll(PDO::FETCH_COLUMN);
+
+                $fields = [
+                    'id', 'order_number', 'status', 'fulfilment_type', 'fulfilment_date', 'fulfilment_time',
+                    'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_zip',
+                    'delivery_instructions', 'subtotal', 'tax', 'delivery_fee', 'total', 'payment_method', 'payment_status',
+                    'special_instructions'
+                ];
+                $vals = [
+                    $orderObj['id'],
+                    $orderObj['orderNumber'],
+                    $orderObj['status'],
+                    $orderObj['fulfilmentType'],
+                    $orderObj['fulfilmentDate'],
+                    $orderObj['fulfilmentTime'],
+                    $orderObj['customer']['name'],
+                    $orderObj['customer']['email'],
+                    $orderObj['customer']['phone'],
+                    $orderObj['customer']['address'],
+                    $orderObj['customer']['city'],
+                    $orderObj['customer']['zipCode'],
+                    $orderObj['customer']['deliveryInstructions'],
+                    $orderObj['subtotal'],
+                    $orderObj['tax'],
+                    $orderObj['deliveryFee'],
+                    $orderObj['total'],
+                    $orderObj['paymentMethod'],
+                    $orderObj['paymentStatus'],
+                    $orderObj['specialInstructions'],
+                ];
+
+                if (in_array('order_id', $columns)) {
+                    $fields[] = 'order_id';
+                    $vals[] = $orderObj['orderNumber'];
                 }
 
-                if ($hasPaymentId) {
-                    $stmtOrder = $pdo->prepare("
-                        INSERT INTO orders 
-                          (id, order_number, status, fulfilment_type, fulfilment_date, fulfilment_time, 
-                           customer_name, customer_email, customer_phone, customer_address, customer_city, customer_zip, 
-                           delivery_instructions, subtotal, tax, delivery_fee, total, payment_method, payment_status, payment_id, special_instructions, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-                    ");
-                    $stmtOrder->execute([
-                        $orderObj['id'],
-                        $orderObj['orderNumber'],
-                        $orderObj['status'],
-                        $orderObj['fulfilmentType'],
-                        $orderObj['fulfilmentDate'],
-                        $orderObj['fulfilmentTime'],
-                        $orderObj['customer']['name'],
-                        $orderObj['customer']['email'],
-                        $orderObj['customer']['phone'],
-                        $orderObj['customer']['address'],
-                        $orderObj['customer']['city'],
-                        $orderObj['customer']['zipCode'],
-                        $orderObj['customer']['deliveryInstructions'],
-                        $orderObj['subtotal'],
-                        $orderObj['tax'],
-                        $orderObj['deliveryFee'],
-                        $orderObj['total'],
-                        $orderObj['paymentMethod'],
-                        $orderObj['paymentStatus'],
-                        $orderObj['paymentId'] ?: null,
-                        $orderObj['specialInstructions'],
-                    ]);
-                } else {
-                    $stmtOrder = $pdo->prepare("
-                        INSERT INTO orders 
-                          (id, order_number, status, fulfilment_type, fulfilment_date, fulfilment_time, 
-                           customer_name, customer_email, customer_phone, customer_address, customer_city, customer_zip, 
-                           delivery_instructions, subtotal, tax, delivery_fee, total, payment_method, payment_status, special_instructions, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-                    ");
-                    $stmtOrder->execute([
-                        $orderObj['id'],
-                        $orderObj['orderNumber'],
-                        $orderObj['status'],
-                        $orderObj['fulfilmentType'],
-                        $orderObj['fulfilmentDate'],
-                        $orderObj['fulfilmentTime'],
-                        $orderObj['customer']['name'],
-                        $orderObj['customer']['email'],
-                        $orderObj['customer']['phone'],
-                        $orderObj['customer']['address'],
-                        $orderObj['customer']['city'],
-                        $orderObj['customer']['zipCode'],
-                        $orderObj['customer']['deliveryInstructions'],
-                        $orderObj['subtotal'],
-                        $orderObj['tax'],
-                        $orderObj['deliveryFee'],
-                        $orderObj['total'],
-                        $orderObj['paymentMethod'],
-                        $orderObj['paymentStatus'],
-                        $orderObj['specialInstructions'],
-                    ]);
+                if (in_array('payment_id', $columns)) {
+                    $fields[] = 'payment_id';
+                    $vals[] = $orderObj['paymentId'] ?: null;
                 }
+
+                $fieldsStr = implode(', ', array_map(fn($f) => "`$f`", $fields));
+                $placeholders = implode(', ', array_fill(0, count($fields), '?'));
+
+                $stmtOrder = $pdo->prepare("
+                    INSERT INTO orders ($fieldsStr, created_at, updated_at)
+                    VALUES ($placeholders, NOW(), NOW())
+                ");
+                $stmtOrder->execute($vals);
 
                 // Insert items into order_items table
                 $stmtItem = $pdo->prepare("

@@ -107,7 +107,7 @@ export async function openRazorpayCheckout({
       order_id: orderData.orderId,
       prefill: {
         name: customerName,
-        email: customerEmail || "customer@jakloud.com",
+        email: customerEmail || "",
         contact: customerPhone.replace(/\D/g, ""),
       },
       notes: {

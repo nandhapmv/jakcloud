@@ -82,6 +82,7 @@ try {
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS orders (
             id VARCHAR(64) PRIMARY KEY,
+            order_id VARCHAR(64) DEFAULT NULL,
             order_number VARCHAR(64) NOT NULL UNIQUE,
             status ENUM('pending', 'confirmed', 'dum_cooking', 'preparing', 'ready', 'completed', 'cancelled') DEFAULT 'confirmed',
             fulfilment_type ENUM('pickup', 'delivery') NOT NULL DEFAULT 'pickup',

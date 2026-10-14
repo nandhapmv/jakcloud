@@ -115,8 +115,8 @@ export async function createOrder(req: Request, res: Response) {
     );
 
     const now = new Date().toISOString();
-    const orderId = `ord_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const orderNumber = generateOrderNumber();
+    const orderId = orderNumber;
 
     const order: Order = {
       id: orderId,

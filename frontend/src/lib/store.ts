@@ -762,7 +762,7 @@ export const jakloudStore = {
     const orderNumber = `${prefix}${String(nextSeq).padStart(3, "0")}`;
 
     const newOrder: DynamicOrder = {
-      id: `ord_${Date.now()}`,
+      id: orderNumber,
       orderNumber,
       status: "confirmed",
       fulfilmentType: payload.fulfilmentType,
