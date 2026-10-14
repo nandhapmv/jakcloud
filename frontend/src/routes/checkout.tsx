@@ -353,6 +353,11 @@ function CheckoutPage() {
       });
 
       setConfirmedOrder(response.order);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }
       clear();
       toast.success("Dum Biryani Handi booking confirmed successfully!");
     } catch (error) {
@@ -755,7 +760,7 @@ function CheckoutPage() {
                         placeholder="John Doe"
                         value={name}
                         onChange={(e) => setName(sanitizeName(e.target.value))}
-                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                       />
                     </div>
                   </div>
@@ -786,7 +791,7 @@ function CheckoutPage() {
                         maxLength={14}
                         value={phone}
                         onChange={(e) => setPhone(formatUsPhone(e.target.value))}
-                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-16 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-16 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                       />
                     </div>
                   </div>
@@ -805,7 +810,7 @@ function CheckoutPage() {
                         placeholder="john@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                       />
                     </div>
                   </div>
@@ -841,7 +846,7 @@ function CheckoutPage() {
                           placeholder="e.g. 1234 S National Ave"
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
-                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                         />
                       </div>
                     </div>
@@ -858,7 +863,7 @@ function CheckoutPage() {
                           placeholder="Apt 4B"
                           value={suite}
                           onChange={(e) => setSuite(e.target.value)}
-                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                         />
                       </div>
                     </div>
@@ -875,7 +880,7 @@ function CheckoutPage() {
                           placeholder="e.g. Gate code #1234 / Leave on porch"
                           value={landmark}
                           onChange={(e) => setLandmark(e.target.value)}
-                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                         />
                       </div>
                     </div>

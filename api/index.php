@@ -243,14 +243,38 @@ if ($resource === 'orders') {
             ];
         }
 
-        $tax = round($subtotal * 0.086, 2); // 8.6% Springfield tax
+        $tax = 0.00;
         $deliveryFee = ($fulfilmentType === 'delivery') ? ($totalQty >= 5 ? 0.00 : 10.00) : 0.00;
-        $grandTotal = round($subtotal + $tax + $deliveryFee, 2);
+        $grandTotal = round($subtotal + $deliveryFee, 2);
 
         $now = date('Y-m-d H:i:s');
         $dateCode = date('Ymd');
-        $randomSuffix = rand(1000, 9999);
-        $orderNumber = "JK-{$dateCode}-{$randomSuffix}";
+        $prefix = "JK-{$dateCode}-";
+        $nextSeq = 1;
+
+        if ($pdo) {
+            try {
+                // Find highest existing sequence for today's date prefix
+                $stmtSeq = $pdo->prepare("SELECT order_number FROM orders WHERE order_number LIKE ? ORDER BY id DESC LIMIT 100");
+                $stmtSeq->execute(["{$prefix}%"]);
+                $existingOrderNumbers = $stmtSeq->fetchAll(PDO::FETCH_COLUMN);
+
+                $maxSeq = 0;
+                foreach ($existingOrderNumbers as $num) {
+                    if (strpos($num, $prefix) === 0) {
+                        $s = (int) substr($num, strlen($prefix));
+                        if ($s > $maxSeq) {
+                            $maxSeq = $s;
+                        }
+                    }
+                }
+                $nextSeq = $maxSeq + 1;
+            } catch (Exception $e) {
+                // Fallback to 1
+            }
+        }
+
+        $orderNumber = $prefix . str_pad((string)$nextSeq, 2, '0', STR_PAD_LEFT);
         $orderId = "ord_" . round(microtime(true) * 1000) . "_" . substr(md5(uniqid()), 0, 6);
 
         $orderObj = [

@@ -200,6 +200,15 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<"home" | "menu" | "cart" | "profile">(initialTab);
+
+  // Scroll to top automatically when changing tabs or checkout steps
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+  }, [activeTab]);
   
   const [fulfilmentMode, setFulfilmentMode] = useState<"pickup" | "delivery">("pickup");
 
@@ -214,6 +223,16 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
 
   // Checkout Form State
   const [checkoutStep, setCheckoutStep] = useState<"cart" | "details" | "payment" | "success">("cart");
+
+  // Scroll to top when changing checkout step
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+  }, [checkoutStep]);
+
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(nextAvailableDate()));
   const [selectedTime, setSelectedTime] = useState<string>("12:00 PM");
   const [customerName, setCustomerName] = useState("");
@@ -1085,7 +1104,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                             placeholder="Your Name"
                             className={`w-full rounded-xl bg-zinc-900/80 border ${
                               validationErrors.name ? "border-rose-500/80" : "border-white/10 focus:border-amber-400"
-                            } pl-8 pr-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none`}
+                            } pl-8 pr-3 py-2 text-base sm:text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none`}
                           />
                         </div>
                       </div>
@@ -1111,7 +1130,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                             maxLength={14}
                             className={`w-full rounded-xl bg-zinc-900/80 border ${
                               validationErrors.phone ? "border-rose-500/80" : "border-white/10 focus:border-amber-400"
-                            } pl-8 pr-3 py-2 text-xs text-zinc-100 font-mono placeholder:text-zinc-500 focus:outline-none`}
+                            } pl-8 pr-3 py-2 text-base sm:text-xs text-zinc-100 font-mono placeholder:text-zinc-500 focus:outline-none`}
                           />
                         </div>
                       </div>
@@ -1136,7 +1155,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                               placeholder="House/Street, Springfield, MO"
                               className={`w-full rounded-xl bg-zinc-900/80 border ${
                                 validationErrors.address ? "border-rose-500/80" : "border-white/10 focus:border-amber-400"
-                              } pl-8 pr-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none`}
+                              } pl-8 pr-3 py-2 text-base sm:text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none`}
                             />
                           </div>
                         </div>
@@ -1147,14 +1166,14 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                             value={deliveryApt}
                             onChange={(e) => setDeliveryApt(e.target.value)}
                             placeholder="Apt / Suite #"
-                            className="w-full rounded-xl bg-zinc-900/60 border border-white/10 px-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-amber-400"
+                            className="w-full rounded-xl bg-zinc-900/60 border border-white/10 px-3 py-2 text-base sm:text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-amber-400"
                           />
                           <input
                             type="text"
                             value={deliveryLandmark}
                             onChange={(e) => setDeliveryLandmark(e.target.value)}
                             placeholder="Delivery notes"
-                            className="w-full rounded-xl bg-zinc-900/60 border border-white/10 px-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-amber-400"
+                            className="w-full rounded-xl bg-zinc-900/60 border border-white/10 px-3 py-2 text-base sm:text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-amber-400"
                           />
                         </div>
                       </div>
