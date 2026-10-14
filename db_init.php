@@ -95,6 +95,11 @@ try {
     ");
     $response['tables_created'][] = 'menu_items';
 
+    $checkStmt = $pdo->query("SELECT id, protein_id, name, available FROM menu_items");
+    $allMenuItems = $checkStmt->fetchAll();
+    $response['menu_items_count'] = count($allMenuItems);
+    $response['menu_items_sample'] = $allMenuItems;
+
     // 3. Customers Table
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS customers (
