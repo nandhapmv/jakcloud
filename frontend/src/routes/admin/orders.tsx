@@ -61,6 +61,13 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/orders")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      status: typeof search.status === "string" ? search.status : undefined,
+      fulfilment: typeof search.fulfilment === "string" ? search.fulfilment : typeof search.type === "string" ? (search.type as string) : undefined,
+      date: typeof search.date === "string" ? search.date : undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Order Management & Kitchen Queue — JAKLOUD Spice King" },
@@ -76,6 +83,7 @@ export const Route = createFileRoute("/admin/orders")({
 export function OrderManagementPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const searchParams = Route.useSearch();
 
   // Dynamic Reactive Orders & Menu Store Hooks
   const { orders, stats, createOrder, updateStatus, updateNotes, deleteOrder, reload } = useDynamicOrders();
@@ -85,13 +93,33 @@ export function OrderManagementPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
 
-  // Search & Filters
+  // Search & Filters (initialized from URL search parameters if provided)
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [fulfilmentFilter, setFulfilmentFilter] = useState<string>("all");
-  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>(() => searchParams.status || "all");
+  const [fulfilmentFilter, setFulfilmentFilter] = useState<string>(() => searchParams.fulfilment || "all");
+  const [dateFilter, setDateFilter] = useState<string>(() => searchParams.date || "all");
   const [sortBy, setSortBy] = useState<"date" | "total" | "status">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  // Sync state if URL search params change
+  useEffect(() => {
+    if (searchParams.status) setStatusFilter(searchParams.status);
+    if (searchParams.fulfilment) setFulfilmentFilter(searchParams.fulfilment);
+    if (searchParams.date) setDateFilter(searchParams.date);
+  }, [searchParams.status, searchParams.fulfilment, searchParams.date]);
+
+  // Fallback to window.location.search for standard browser links
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const st = sp.get("status");
+      const ful = sp.get("fulfilment") || sp.get("type");
+      const dt = sp.get("date");
+      if (st) setStatusFilter(st);
+      if (ful) setFulfilmentFilter(ful);
+      if (dt) setDateFilter(dt);
+    }
+  }, []);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -239,12 +267,44 @@ export function OrderManagementPage() {
         if (statusFilter !== "all" && order.status !== statusFilter) return false;
         if (fulfilmentFilter !== "all" && order.fulfilmentType !== fulfilmentFilter) return false;
         if (dateFilter === "today") {
-          const isToday = order.fulfilmentDate.toLowerCase().includes("today") ||
-            new Date(order.createdAt).toDateString() === new Date().toDateString();
+          const todayStr = new Date().toDateString();
+          const todayIso = new Date().toISOString().slice(0, 10);
+          const isToday =
+            order.fulfilmentDate.toLowerCase().includes("today") ||
+            order.fulfilmentDate.includes(todayIso) ||
+            new Date(order.createdAt).toDateString() === todayStr ||
+            new Date(order.createdAt).toISOString().slice(0, 10) === todayIso;
           if (!isToday) return false;
         } else if (dateFilter === "tomorrow") {
-          const isTomorrow = order.fulfilmentDate.toLowerCase().includes("tomorrow");
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const tomorrowStr = tomorrow.toDateString();
+          const tomorrowIso = tomorrow.toISOString().slice(0, 10);
+          const isTomorrow =
+            order.fulfilmentDate.toLowerCase().includes("tomorrow") ||
+            order.fulfilmentDate.includes(tomorrowIso) ||
+            new Date(order.createdAt).toDateString() === tomorrowStr;
           if (!isTomorrow) return false;
+        } else if (dateFilter === "yesterday") {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayStr = yesterday.toDateString();
+          const yesterdayIso = yesterday.toISOString().slice(0, 10);
+          const isYesterday =
+            new Date(order.createdAt).toDateString() === yesterdayStr ||
+            new Date(order.createdAt).toISOString().slice(0, 10) === yesterdayIso ||
+            order.fulfilmentDate.includes(yesterdayIso);
+          if (!isYesterday) return false;
+        } else if (dateFilter === "last7") {
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          const orderTime = new Date(order.createdAt).getTime();
+          if (orderTime < sevenDaysAgo.getTime()) return false;
+        } else if (dateFilter !== "all") {
+          const orderIso = new Date(order.createdAt).toISOString().slice(0, 10);
+          const orderFulfil = (order.fulfilmentDate || "").toLowerCase();
+          const matches = orderIso === dateFilter || orderFulfil.includes(dateFilter.toLowerCase());
+          if (!matches) return false;
         }
 
         if (searchQuery.trim()) {
@@ -493,6 +553,11 @@ export function OrderManagementPage() {
               <option value="all">All Fulfilment Dates</option>
               <option value="today">Scheduled for Today</option>
               <option value="tomorrow">Scheduled for Tomorrow</option>
+              <option value="yesterday">Yesterday's Orders</option>
+              <option value="last7">Past 7 Days</option>
+              {dateFilter && !["all", "today", "tomorrow", "yesterday", "last7"].includes(dateFilter) && (
+                <option value={dateFilter}>Filtered Date: {dateFilter}</option>
+              )}
             </select>
           </div>
 

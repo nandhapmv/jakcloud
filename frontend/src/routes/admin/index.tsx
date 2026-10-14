@@ -78,9 +78,6 @@ import {
   type DynamicOrder,
 } from "@/lib/store";
 import {
-  WEEKLY_SALES_DATA,
-  PROTEIN_DISTRIBUTION,
-  BEST_SELLING_DISHES,
   INITIAL_NOTIFICATIONS,
   type NotificationItem,
   type CustomerRecord,
@@ -138,6 +135,7 @@ function AdminOverviewPage() {
   const { orders, stats: dynamicStats, updateStatus, reload } = useDynamicOrders();
   const { settings, updateSettings } = useKitchenSettings();
   const { customers: dynamicCustomers } = useDynamicCustomers();
+  const { items: dynamicMenuItems } = useDynamicMenu();
 
   const [messages, setMessages] = useState<ContactMessageResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -145,13 +143,13 @@ function AdminOverviewPage() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<OrderResponse | null>(null);
 
-  // Kitchen settings state directly bound to reactive store
-  const dailyLimit = settings.dailyTrayLimit || 10;
+  // Kitchen settings state directly bound to reactive store (defaults to 25 trays)
+  const dailyLimit = settings.dailyTrayLimit || 25;
   const kitchenOpen = settings.isKitchenOpen;
   const orderCutoffHour = settings.orderCutoffHour;
 
   // Editable settings inputs
-  const [dailyLimitInput, setDailyLimitInput] = useState<number>(settings.dailyTrayLimit || 10);
+  const [dailyLimitInput, setDailyLimitInput] = useState<number>(settings.dailyTrayLimit || 25);
   const [kitchenOpenInput, setKitchenOpenInput] = useState<boolean>(settings.isKitchenOpen);
   const [cutoffHourInput, setCutoffHourInput] = useState<number>(settings.orderCutoffHour || 15);
 
@@ -160,6 +158,11 @@ function AdminOverviewPage() {
     setKitchenOpenInput(settings.isKitchenOpen);
     if (settings.orderCutoffHour) setCutoffHourInput(settings.orderCutoffHour);
   }, [settings]);
+
+  // Dashboard Overview Date-wise Filter State
+  type DashboardDateFilter = "all" | "today" | "tomorrow" | "yesterday" | "last7" | "this_month" | "custom";
+  const [dashDateFilter, setDashDateFilter] = useState<DashboardDateFilter>("today");
+  const [customDate, setCustomDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
 
   // Orders tab filter
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>("all");
@@ -224,43 +227,178 @@ function AdminOverviewPage() {
   const stats = dynamicStats;
 
   // Calculated metrics from real database orders
+  // Calculated metrics from real database orders
   const totalTraysBooked = useMemo(() => {
     return orders.reduce((sum, o) => sum + (o.status !== "cancelled" ? o.items.reduce((s, i) => s + i.qty, 0) : 0), 0);
   }, [orders]);
 
   const capacityPercentage = dailyLimit > 0 ? Math.min(100, Math.round((totalTraysBooked / dailyLimit) * 100)) : 0;
 
-  const pickupOrdersCount = useMemo(() => {
-    return orders.filter((o) => o.fulfilmentType === "pickup" && o.status !== "cancelled").length;
-  }, [orders]);
+  // Real-time Date-Filtered Orders for Executive Analytics
+  const dateFilteredOrders = useMemo(() => {
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const todayStr = new Date().toDateString();
 
-  const deliveryOrdersCount = useMemo(() => {
-    return orders.filter((o) => o.fulfilmentType === "delivery" && o.status !== "cancelled").length;
-  }, [orders]);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowIso = tomorrow.toISOString().slice(0, 10);
+    const tomorrowStr = tomorrow.toDateString();
 
-  const pendingOrdersCount = useMemo(() => {
-    return orders.filter((o) => o.status === "confirmed" || o.status === "preparing" || o.status === "dum_cooking").length;
-  }, [orders]);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayIso = yesterday.toISOString().slice(0, 10);
+    const yesterdayStr = yesterday.toDateString();
 
-  const uniqueDinersCount = useMemo(() => {
+    return orders.filter((o) => {
+      if (o.status === "cancelled") return false;
+
+      const orderCreatedIso = new Date(o.createdAt).toISOString().slice(0, 10);
+      const orderCreatedStr = new Date(o.createdAt).toDateString();
+      const orderFulfil = (o.fulfilmentDate || "").toLowerCase();
+
+      switch (dashDateFilter) {
+        case "all":
+          return true;
+        case "today":
+          return (
+            orderCreatedIso === todayIso ||
+            orderCreatedStr === todayStr ||
+            orderFulfil.includes("today") ||
+            orderFulfil.includes(todayIso)
+          );
+        case "tomorrow":
+          return (
+            orderCreatedIso === tomorrowIso ||
+            orderCreatedStr === tomorrowStr ||
+            orderFulfil.includes("tomorrow") ||
+            orderFulfil.includes(tomorrowIso)
+          );
+        case "yesterday":
+          return (
+            orderCreatedIso === yesterdayIso ||
+            orderCreatedStr === yesterdayStr ||
+            orderFulfil.includes(yesterdayIso)
+          );
+        case "last7": {
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          return new Date(o.createdAt).getTime() >= sevenDaysAgo.getTime();
+        }
+        case "this_month": {
+          const now = new Date();
+          const oDate = new Date(o.createdAt);
+          return oDate.getFullYear() === now.getFullYear() && oDate.getMonth() === now.getMonth();
+        }
+        case "custom": {
+          if (!customDate) return true;
+          return (
+            orderCreatedIso === customDate ||
+            orderFulfil.includes(customDate)
+          );
+        }
+        default:
+          return true;
+      }
+    });
+  }, [orders, dashDateFilter, customDate]);
+
+  const dateFilterLabel = useMemo(() => {
+    switch (dashDateFilter) {
+      case "today":
+        return "Today";
+      case "tomorrow":
+        return "Tomorrow";
+      case "yesterday":
+        return "Yesterday";
+      case "last7":
+        return "Past 7 Days";
+      case "this_month":
+        return "This Month";
+      case "all":
+        return "All Time";
+      case "custom":
+        return customDate || "Custom Date";
+      default:
+        return "Selected Period";
+    }
+  }, [dashDateFilter, customDate]);
+
+  // Dynamic Metrics for Selected Timeframe
+  const filteredTraysBooked = useMemo(() => {
+    return dateFilteredOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
+  }, [dateFilteredOrders]);
+
+  const filteredPendingCount = useMemo(() => {
+    return dateFilteredOrders.filter((o) => o.status === "confirmed" || o.status === "preparing" || o.status === "dum_cooking").length;
+  }, [dateFilteredOrders]);
+
+  const filteredPickupCount = useMemo(() => {
+    return dateFilteredOrders
+      .filter((o) => o.fulfilmentType === "pickup")
+      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
+  }, [dateFilteredOrders]);
+
+  const filteredDeliveryCount = useMemo(() => {
+    return dateFilteredOrders
+      .filter((o) => o.fulfilmentType === "delivery")
+      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
+  }, [dateFilteredOrders]);
+
+  const filteredRevenue = useMemo(() => {
+    return dateFilteredOrders.reduce((sum, o) => sum + o.total, 0);
+  }, [dateFilteredOrders]);
+
+  const filteredDinersCount = useMemo(() => {
     const set = new Set<string>();
-    orders.forEach((o) => {
+    dateFilteredOrders.forEach((o) => {
       const key = o.customer.phone || o.customer.email || o.customer.name;
       if (key) set.add(key.toLowerCase().trim());
     });
     return set.size;
-  }, [orders]);
+  }, [dateFilteredOrders]);
 
-  const todayRevenue = useMemo(() => {
-    const todayStr = new Date().toDateString();
-    const todayOrders = orders.filter(
-      (o) =>
-        o.status !== "cancelled" &&
-        (o.fulfilmentDate.toLowerCase().includes("today") ||
-         new Date(o.createdAt).toDateString() === todayStr)
-    );
-    return todayOrders.reduce((sum, o) => sum + o.total, 0);
-  }, [orders]);
+  // Dynamic Best Selling Dum Biryanis Aggregated from Live Database Orders
+  const dynamicBestSellingDishes = useMemo(() => {
+    const salesByDish: Record<string, { trays: number; revenue: number; dishName: string; basePrice: number }> = {};
+    
+    // Seed with current menu items so real dishes appear
+    dynamicMenuItems.forEach((item) => {
+      salesByDish[item.id] = {
+        dishName: item.name,
+        basePrice: item.price,
+        trays: 0,
+        revenue: 0,
+      };
+    });
+
+    // Count actual sales from database
+    orders.forEach((o) => {
+      if (o.status === "cancelled") return;
+      o.items.forEach((it) => {
+        const key = it.dishId || it.name;
+        if (!salesByDish[key]) {
+          salesByDish[key] = {
+            dishName: it.name,
+            basePrice: it.unitPrice || 0,
+            trays: 0,
+            revenue: 0,
+          };
+        }
+        salesByDish[key].trays += it.qty;
+        salesByDish[key].revenue += (it.unitPrice || salesByDish[key].basePrice) * it.qty;
+      });
+    });
+
+    const list = Object.values(salesByDish).sort((a, b) => b.trays - a.trays || b.revenue - a.revenue);
+    return list.slice(0, 4).map((d, idx) => ({
+      id: d.dishName,
+      rank: idx + 1,
+      name: d.dishName,
+      basePrice: d.basePrice,
+      traysSold: d.trays,
+      revenue: d.revenue,
+    }));
+  }, [orders, dynamicMenuItems]);
 
   // Real 7-day sales aggregation from database
   const dynamicWeeklySalesData = useMemo(() => {
@@ -510,7 +648,7 @@ function AdminOverviewPage() {
               },
               {
                 link: "/admin/daily-control",
-                label: "Daily 25-Tray Limit",
+                label: `Daily ${dailyLimit}-Tray Limit`,
                 icon: Sliders,
               },
             ].map((item) => {
@@ -999,31 +1137,129 @@ function AdminOverviewPage() {
                 </div>
               </div>
 
-              {/* 6 Luxury Analytics Cards */}
+              {/* Date-Wise Interactive Filter Toolbar */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-gold/30 bg-[#120c08]/95 p-4 sm:p-5 backdrop-blur-xl shadow-xl">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/15 text-gold border border-gold/30 shadow-inner">
+                    <Calendar className="h-5 w-5 text-gold" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xs uppercase tracking-wider font-bold text-cream">
+                        Executive Date Filter
+                      </h3>
+                      <span className="rounded-full bg-gold/15 border border-gold/30 px-2.5 py-0.5 text-[0.68rem] font-semibold text-gold font-mono">
+                        {dateFilterLabel}
+                      </span>
+                    </div>
+                    <p className="text-[0.72rem] text-cream/60">
+                      Filter live capacity, kitchen queue, and receipts by date or timeframe
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Quick Filter Buttons */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                    {[
+                      { id: "today", label: "Today" },
+                      { id: "tomorrow", label: "Tomorrow" },
+                      { id: "yesterday", label: "Yesterday" },
+                      { id: "last7", label: "7 Days" },
+                      { id: "this_month", label: "This Month" },
+                      { id: "all", label: "All Time" },
+                    ].map((btn) => (
+                      <button
+                        key={btn.id}
+                        onClick={() => setDashDateFilter(btn.id as DashboardDateFilter)}
+                        className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                          dashDateFilter === btn.id
+                            ? "bg-gradient-to-r from-chili via-saffron to-gold text-white shadow-md shadow-chili/30"
+                            : "border border-gold/20 bg-black/40 text-cream/75 hover:border-gold/50 hover:text-gold"
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Pick Specific Date */}
+                  <div className="flex items-center gap-1.5 border-l border-gold/20 pl-2">
+                    <label className="text-[0.68rem] text-gold/70 font-medium hidden lg:inline">
+                      Pick Date:
+                    </label>
+                    <input
+                      type="date"
+                      value={customDate}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setCustomDate(e.target.value);
+                          setDashDateFilter("custom");
+                        }
+                      }}
+                      className={`h-8 rounded-xl border px-2.5 text-xs font-mono transition-all cursor-pointer ${
+                        dashDateFilter === "custom"
+                          ? "border-gold bg-gold/20 text-gold font-bold shadow-[0_0_10px_rgba(212,160,23,0.3)]"
+                          : "border-gold/25 bg-black/50 text-cream/80 hover:border-gold/50"
+                      } focus:outline-none focus:border-gold`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 6 Luxury Interactive Analytics Cards (Click to Navigate with Filtered Data) */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                {/* 1. Today's Orders */}
-                <div className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold/50 transition-all group">
+                {/* 1. Filtered Orders */}
+                <div
+                  onClick={() => {
+                    navigate({
+                      to: "/admin/orders",
+                      search: {
+                        date: dashDateFilter === "custom" ? customDate : dashDateFilter,
+                      },
+                    });
+                  }}
+                  className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold hover:scale-[1.02] hover:shadow-xl hover:shadow-gold/10 active:scale-[0.99] transition-all cursor-pointer group"
+                  title="Click to view full orders queue for this timeframe"
+                >
                   <div className="flex items-center justify-between">
-                    <p className="text-[0.7rem] uppercase tracking-wider text-gold font-semibold">
-                      Today's Orders
+                    <p className="text-[0.7rem] uppercase tracking-wider text-gold font-semibold truncate">
+                      {dashDateFilter === "today" ? "Today's Orders" : `Orders (${dateFilterLabel})`}
                     </p>
                     <div className="rounded-xl bg-gold/15 p-2 text-gold group-hover:scale-110 transition-transform">
                       <ShoppingBag className="h-4 w-4" />
                     </div>
                   </div>
                   <h3 className="mt-3 font-display text-2xl font-bold text-cream">
-                    {totalTraysBooked} <span className="text-xs font-sans text-cream/60">Trays</span>
+                    {filteredTraysBooked} <span className="text-xs font-sans text-cream/60">Trays</span>
                   </h3>
-                  <div className="mt-2 flex items-center gap-1 text-[0.65rem] text-emerald-400">
-                    <TrendingUp className="h-3 w-3" />
-                    <span>+18% vs yesterday</span>
+                  <div className="mt-2 flex items-center justify-between text-[0.68rem] text-emerald-400">
+                    <span className="flex items-center gap-1 font-medium">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      {dateFilteredOrders.length} order{dateFilteredOrders.length === 1 ? "" : "s"}
+                    </span>
+                    <span className="text-gold/60 group-hover:text-gold group-hover:translate-x-0.5 transition-all text-[0.65rem] font-bold">
+                      View →
+                    </span>
                   </div>
                 </div>
 
                 {/* 2. Pending / Preparing */}
-                <div className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold/50 transition-all group">
+                <div
+                  onClick={() => {
+                    navigate({
+                      to: "/admin/orders",
+                      search: {
+                        status: "preparing",
+                        date: dashDateFilter === "custom" ? customDate : dashDateFilter,
+                      },
+                    });
+                  }}
+                  className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-saffron hover:scale-[1.02] hover:shadow-xl hover:shadow-saffron/10 active:scale-[0.99] transition-all cursor-pointer group"
+                  title="Click to view all biryani handis actively in dum prep"
+                >
                   <div className="flex items-center justify-between">
-                    <p className="text-[0.7rem] uppercase tracking-wider text-saffron font-semibold">
+                    <p className="text-[0.7rem] uppercase tracking-wider text-saffron font-semibold truncate">
                       In Dum Prep
                     </p>
                     <div className="rounded-xl bg-saffron/15 p-2 text-saffron group-hover:scale-110 transition-transform">
@@ -1031,17 +1267,34 @@ function AdminOverviewPage() {
                     </div>
                   </div>
                   <h3 className="mt-3 font-display text-2xl font-bold text-cream">
-                    {pendingOrdersCount} <span className="text-xs font-sans text-cream/60">Handis</span>
+                    {filteredPendingCount} <span className="text-xs font-sans text-cream/60">Handis</span>
                   </h3>
-                  <div className="mt-2 text-[0.65rem] text-cream/60">
-                    Slow cooking on dum
+                  <div className="mt-2 flex items-center justify-between text-[0.68rem]">
+                    <span className="text-cream/70 truncate">
+                      {filteredPendingCount > 0 ? "Slow cooking on dum" : "No handis on dum"}
+                    </span>
+                    <span className="text-saffron/70 group-hover:text-saffron group-hover:translate-x-0.5 transition-all text-[0.65rem] font-bold">
+                      View →
+                    </span>
                   </div>
                 </div>
 
                 {/* 3. Pickup Orders */}
-                <div className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold/50 transition-all group">
+                <div
+                  onClick={() => {
+                    navigate({
+                      to: "/admin/orders",
+                      search: {
+                        fulfilment: "pickup",
+                        date: dashDateFilter === "custom" ? customDate : dashDateFilter,
+                      },
+                    });
+                  }}
+                  className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold hover:scale-[1.02] hover:shadow-xl hover:shadow-gold/10 active:scale-[0.99] transition-all cursor-pointer group"
+                  title="Click to view scheduled counter collections"
+                >
                   <div className="flex items-center justify-between">
-                    <p className="text-[0.7rem] uppercase tracking-wider text-gold font-semibold">
+                    <p className="text-[0.7rem] uppercase tracking-wider text-gold font-semibold truncate">
                       Pickup Orders
                     </p>
                     <div className="rounded-xl bg-gold/15 p-2 text-gold group-hover:scale-110 transition-transform">
@@ -1049,17 +1302,30 @@ function AdminOverviewPage() {
                     </div>
                   </div>
                   <h3 className="mt-3 font-display text-2xl font-bold text-cream">
-                    {pickupOrdersCount} <span className="text-xs font-sans text-cream/60">Trays</span>
+                    {filteredPickupCount} <span className="text-xs font-sans text-cream/60">Trays</span>
                   </h3>
-                  <div className="mt-2 text-[0.65rem] text-cream/60">
-                    3625 S Bedford Ave
+                  <div className="mt-2 flex items-center justify-between text-[0.68rem]">
+                    <span className="text-cream/70 truncate">
+                      {dateFilteredOrders.filter((o) => o.fulfilmentType === "pickup").length} counter pickup{dateFilteredOrders.filter((o) => o.fulfilmentType === "pickup").length === 1 ? "" : "s"}
+                    </span>
+                    <span className="text-gold/60 group-hover:text-gold group-hover:translate-x-0.5 transition-all text-[0.65rem] font-bold">
+                      View →
+                    </span>
                   </div>
                 </div>
 
                 {/* 4. Delivery Orders */}
-                <div className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold/50 transition-all group">
+                <div
+                  onClick={() => {
+                    navigate({
+                      to: "/admin/delivery",
+                    });
+                  }}
+                  className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-saffron hover:scale-[1.02] hover:shadow-xl hover:shadow-saffron/10 active:scale-[0.99] transition-all cursor-pointer group"
+                  title="Click to manage delivery routes and dispatch"
+                >
                   <div className="flex items-center justify-between">
-                    <p className="text-[0.7rem] uppercase tracking-wider text-saffron font-semibold">
+                    <p className="text-[0.7rem] uppercase tracking-wider text-saffron font-semibold truncate">
                       Delivery Orders
                     </p>
                     <div className="rounded-xl bg-saffron/15 p-2 text-saffron group-hover:scale-110 transition-transform">
@@ -1067,36 +1333,61 @@ function AdminOverviewPage() {
                     </div>
                   </div>
                   <h3 className="mt-3 font-display text-2xl font-bold text-cream">
-                    {deliveryOrdersCount} <span className="text-xs font-sans text-cream/60">Trays</span>
+                    {filteredDeliveryCount} <span className="text-xs font-sans text-cream/60">Trays</span>
                   </h3>
-                  <div className="mt-2 text-[0.65rem] text-cream/60">
-                    Within 10 miles radius
+                  <div className="mt-2 flex items-center justify-between text-[0.68rem]">
+                    <span className="text-cream/70 truncate">
+                      {dateFilteredOrders.filter((o) => o.fulfilmentType === "delivery").length} in {settings.deliveryRadiusMiles || 10}-mi zone
+                    </span>
+                    <span className="text-saffron/70 group-hover:text-saffron group-hover:translate-x-0.5 transition-all text-[0.65rem] font-bold">
+                      Routes →
+                    </span>
                   </div>
                 </div>
 
-                {/* 5. Revenue Today */}
-                <div className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold/50 transition-all group">
+                {/* 5. Revenue Today / Timeframe */}
+                <div
+                  onClick={() => {
+                    navigate({
+                      to: "/admin/reports",
+                    });
+                  }}
+                  className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold hover:scale-[1.02] hover:shadow-xl hover:shadow-gold/10 active:scale-[0.99] transition-all cursor-pointer group"
+                  title="Click to open financial reports and business intelligence"
+                >
                   <div className="flex items-center justify-between">
-                    <p className="text-[0.7rem] uppercase tracking-wider text-gold font-semibold">
-                      Revenue Today
+                    <p className="text-[0.7rem] uppercase tracking-wider text-gold font-semibold truncate">
+                      {dashDateFilter === "today" ? "Revenue Today" : `Revenue (${dateFilterLabel})`}
                     </p>
                     <div className="rounded-xl bg-gold/15 p-2 text-gold group-hover:scale-110 transition-transform">
                       <DollarSign className="h-4 w-4" />
                     </div>
                   </div>
                   <h3 className="mt-3 font-display text-xl font-bold text-cream sm:text-2xl">
-                    {formatMoney(todayRevenue)}
+                    {formatMoney(filteredRevenue)}
                   </h3>
-                  <div className="mt-2 flex items-center gap-1 text-[0.65rem] text-emerald-400">
-                    <TrendingUp className="h-3 w-3" />
-                    <span>Real database receipts</span>
+                  <div className="mt-2 flex items-center justify-between text-[0.68rem] text-emerald-400">
+                    <span className="flex items-center gap-1 font-medium truncate">
+                      <TrendingUp className="h-3 w-3" /> Real database receipts
+                    </span>
+                    <span className="text-gold/60 group-hover:text-gold group-hover:translate-x-0.5 transition-all text-[0.65rem] font-bold">
+                      Reports →
+                    </span>
                   </div>
                 </div>
 
-                {/* 6. Total Diners */}
-                <div className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold/50 transition-all group">
+                {/* 6. Diner Base */}
+                <div
+                  onClick={() => {
+                    navigate({
+                      to: "/admin/customers",
+                    });
+                  }}
+                  className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold hover:scale-[1.02] hover:shadow-xl hover:shadow-gold/10 active:scale-[0.99] transition-all cursor-pointer group"
+                  title="Click to view Customer CRM and active diner profiles"
+                >
                   <div className="flex items-center justify-between">
-                    <p className="text-[0.7rem] uppercase tracking-wider text-gold font-semibold">
+                    <p className="text-[0.7rem] uppercase tracking-wider text-gold font-semibold truncate">
                       Diner Base
                     </p>
                     <div className="rounded-xl bg-gold/15 p-2 text-gold group-hover:scale-110 transition-transform">
@@ -1104,10 +1395,15 @@ function AdminOverviewPage() {
                     </div>
                   </div>
                   <h3 className="mt-3 font-display text-2xl font-bold text-cream">
-                    {uniqueDinersCount} <span className="text-xs font-sans text-cream/60">Diners</span>
+                    {filteredDinersCount} <span className="text-xs font-sans text-cream/60">Diners</span>
                   </h3>
-                  <div className="mt-2 text-[0.65rem] text-emerald-400">
-                    {uniqueDinersCount > 0 ? "Active patrons in database" : "No orders recorded yet"}
+                  <div className="mt-2 flex items-center justify-between text-[0.68rem] text-emerald-400">
+                    <span className="truncate">
+                      {filteredDinersCount > 0 ? `${filteredDinersCount} active in ${dateFilterLabel.toLowerCase()}` : "No diners in period"}
+                    </span>
+                    <span className="text-gold/60 group-hover:text-gold group-hover:translate-x-0.5 transition-all text-[0.65rem] font-bold">
+                      CRM →
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1286,9 +1582,9 @@ function AdminOverviewPage() {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {BEST_SELLING_DISHES.map((dish) => (
+                  {dynamicBestSellingDishes.map((dish) => (
                     <div
-                      key={dish.id}
+                      key={dish.name}
                       className="relative overflow-hidden rounded-2xl border border-gold/25 bg-[#140e09]/90 p-5 shadow-lg backdrop-blur-md transition-all hover:-translate-y-1 hover:border-gold/50"
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -1306,29 +1602,33 @@ function AdminOverviewPage() {
                           #{dish.rank}
                         </span>
                         <span className="rounded bg-gold/15 px-2 py-0.5 text-[0.65rem] font-semibold text-gold">
-                          ⭐ {dish.rating}
+                          {dish.traysSold > 0 ? "🔥 In Demand" : "✨ On Menu"}
                         </span>
                       </div>
 
-                      <h4 className="mt-3 font-display text-lg font-bold text-cream">
+                      <h4 className="mt-3 font-display text-base font-bold text-cream truncate" title={dish.name}>
                         {dish.name}
                       </h4>
                       <p className="text-xs text-gold font-mono font-medium">
-                        {formatMoney(dish.basePrice)} / tray
+                        {formatMoney(dish.basePrice)} / handi
                       </p>
 
                       <div className="mt-4 space-y-1.5 border-t border-gold/15 pt-3 text-xs">
                         <div className="flex justify-between text-cream/70">
-                          <span>Trays Sold:</span>
-                          <span className="font-bold text-cream">{dish.traysSoldWeek} trays</span>
+                          <span>Total Sold:</span>
+                          <span className="font-bold text-cream">
+                            {dish.traysSold} {dish.traysSold === 1 ? "tray" : "trays"}
+                          </span>
                         </div>
                         <div className="flex justify-between text-cream/70">
-                          <span>Week Revenue:</span>
-                          <span className="font-bold text-gold">{formatMoney(dish.revenueWeek)}</span>
+                          <span>Total Revenue:</span>
+                          <span className="font-bold text-gold">{formatMoney(dish.revenue)}</span>
                         </div>
                         <div className="flex justify-between text-cream/70">
-                          <span>Aloo Addon Rate:</span>
-                          <span className="font-medium text-emerald-400">{dish.alooRate}</span>
+                          <span>Live Status:</span>
+                          <span className="font-medium text-emerald-400">
+                            {dish.traysSold > 0 ? "Ordered" : "Available"}
+                          </span>
                         </div>
                       </div>
                     </div>
