@@ -214,7 +214,7 @@ export function OrderManagementPage() {
       customer: {
         name: manualName.trim(),
         phone: manualPhone.trim(),
-        email: manualEmail.trim() || `${manualName.toLowerCase().replace(/\s+/g, ".")}@guest.jakloud.com`,
+        email: manualEmail.trim(),
         ...(manualFulfilment === "delivery" ? { address: manualAddress.trim(), city: "Springfield", zipCode: "65804" } : {}),
       },
       paymentMethod: manualPayment,
