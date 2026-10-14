@@ -60,6 +60,7 @@ try {
 // 3. Fallback Data Paths
 $data_dir = __DIR__ . '/../backend/data';
 $orders_file = $data_dir . '/orders.json';
+$settings_file = $data_dir . '/settings.json';
 
 // Helper: Read input JSON
 function get_json_input() {
@@ -198,6 +199,71 @@ if ($resource === 'orders') {
         if (empty($input['items']) || !is_array($input['items'])) {
             http_response_code(400);
             echo json_encode(['error' => 'Order must contain at least one biryani tray.']);
+            exit;
+        }
+
+        // 1. Fetch current operational settings from MySQL DB or fallback
+        $settings = [];
+        if ($pdo) {
+            try {
+                $stmtSettings = $pdo->query("SELECT setting_key, setting_value FROM settings");
+                while ($sRow = $stmtSettings->fetch()) {
+                    $settings[$sRow['setting_key']] = $sRow['setting_value'];
+                }
+            } catch (Exception $e) {}
+        }
+        if (file_exists($settings_file)) {
+            $fileData = json_decode(file_get_contents($settings_file), true);
+            if (is_array($fileData)) {
+                $settings = array_merge($fileData, $settings);
+            }
+        }
+
+        // 2. Kitchen Open Check
+        if (isset($settings['isKitchenOpen'])) {
+            $isOpen = ($settings['isKitchenOpen'] === '1' || $settings['isKitchenOpen'] === 'true' || $settings['isKitchenOpen'] === true);
+            if (!$isOpen) {
+                http_response_code(403);
+                echo json_encode([
+                    'error' => 'Kitchen ordering is currently closed by the Master Chef. New orders cannot be accepted at this time.'
+                ]);
+                exit;
+            }
+        }
+
+        // 3. Cutoff Time Check
+        $cutoffHour = isset($settings['orderCutoffHour']) ? (int)$settings['orderCutoffHour'] : 15;
+        $cutoffMinute = 0;
+        if (!empty($settings['orderCutoffTime']) && strpos($settings['orderCutoffTime'], ':') !== false) {
+            $tParts = explode(':', $settings['orderCutoffTime']);
+            $cutoffHour = (int)$tParts[0];
+            $cutoffMinute = (int)($tParts[1] ?? 0);
+        }
+
+        $currentHour = (int)date('G');
+        $currentMinute = (int)date('i');
+        $currentMins = ($currentHour * 60) + $currentMinute;
+        $cutoffMins = ($cutoffHour * 60) + $cutoffMinute;
+        $cutoffPassed = ($currentMins >= $cutoffMins);
+
+        $cutoffHour12 = $cutoffHour > 12 ? ($cutoffHour - 12) : ($cutoffHour === 0 ? 12 : $cutoffHour);
+        $cutoffAmPm = $cutoffHour >= 12 ? 'PM' : 'AM';
+        $cutoffFormatted = sprintf('%d:%02d %s', $cutoffHour12, $cutoffMinute, $cutoffAmPm);
+
+        $fulfilmentDate = $input['fulfilmentDate'] ?? date('Y-m-d');
+        $todayYMD = date('Y-m-d');
+        $tomorrowYMD = date('Y-m-d', strtotime('+1 day'));
+
+        $isSameDay = (stripos($fulfilmentDate, 'today') !== false || strpos($fulfilmentDate, $todayYMD) !== false);
+        $isTomorrow = (stripos($fulfilmentDate, 'tomorrow') !== false || strpos($fulfilmentDate, $tomorrowYMD) !== false);
+
+        if ($cutoffPassed && ($isSameDay || $isTomorrow)) {
+            http_response_code(400);
+            echo json_encode([
+                'error' => "Today's order cutoff time ({$cutoffFormatted}) has passed. Orders for this batch can no longer be accepted.",
+                'cutoffPassed' => true,
+                'cutoffTime' => $cutoffFormatted
+            ]);
             exit;
         }
 
@@ -697,16 +763,91 @@ if ($resource === 'customers' && $method === 'GET') {
     }
 }
 
-// SETTINGS
+// SETTINGS (GET, PUT, POST)
 if ($resource === 'settings') {
-    if ($pdo) {
-        $stmt = $pdo->query("SELECT * FROM settings");
-        $settingsRaw = $stmt->fetchAll();
+    if ($method === 'GET') {
         $settings = [];
-        foreach ($settingsRaw as $row) {
-            $settings[$row['setting_key']] = $row['setting_value'];
+        if ($pdo) {
+            try {
+                $stmt = $pdo->query("SELECT setting_key, setting_value FROM settings");
+                $rows = $stmt->fetchAll();
+                foreach ($rows as $r) {
+                    $val = $r['setting_value'];
+                    if ($val === '1' || $val === 'true') {
+                        $settings[$r['setting_key']] = true;
+                    } elseif ($val === '0' || $val === 'false') {
+                        $settings[$r['setting_key']] = false;
+                    } elseif (is_numeric($val) && strpos($val, '.') === false) {
+                        $settings[$r['setting_key']] = (int)$val;
+                    } elseif (is_numeric($val)) {
+                        $settings[$r['setting_key']] = (float)$val;
+                    } elseif (strpos($val, '{') === 0 || strpos($val, '[') === 0) {
+                        $decoded = json_decode($val, true);
+                        $settings[$r['setting_key']] = $decoded !== null ? $decoded : $val;
+                    } else {
+                        $settings[$r['setting_key']] = $val;
+                    }
+                }
+            } catch (Exception $e) {}
         }
+
+        if (file_exists($settings_file)) {
+            $fileData = json_decode(file_get_contents($settings_file), true);
+            if (is_array($fileData)) {
+                $settings = array_merge($fileData, $settings);
+            }
+        }
+
         echo json_encode($settings);
+        exit;
+    }
+
+    if ($method === 'PUT' || $method === 'POST') {
+        $input = get_json_input();
+        if (empty($input) || !is_array($input)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid settings payload']);
+            exit;
+        }
+
+        if ($pdo) {
+            try {
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS settings (
+                        setting_key VARCHAR(64) PRIMARY KEY,
+                        setting_value TEXT NOT NULL,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                ");
+
+                $stmt = $pdo->prepare("
+                    INSERT INTO settings (setting_key, setting_value, updated_at)
+                    VALUES (?, ?, NOW())
+                    ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()
+                ");
+
+                foreach ($input as $k => $v) {
+                    $valStr = is_bool($v) ? ($v ? '1' : '0') : (is_array($v) ? json_encode($v) : (string)$v);
+                    $stmt->execute([$k, $valStr]);
+                }
+            } catch (Exception $e) {
+                error_log("Settings DB Update Error: " . $e->getMessage());
+            }
+        }
+
+        $currentFileSettings = [];
+        if (file_exists($settings_file)) {
+            $currentFileSettings = json_decode(file_get_contents($settings_file), true) ?: [];
+        }
+        foreach ($input as $k => $v) {
+            $currentFileSettings[$k] = $v;
+        }
+        @file_put_contents($settings_file, json_encode($currentFileSettings, JSON_PRETTY_PRINT));
+
+        echo json_encode([
+            'message' => 'Operational settings saved successfully to database!',
+            'settings' => $currentFileSettings
+        ]);
         exit;
     }
 }

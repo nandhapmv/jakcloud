@@ -50,7 +50,7 @@ import {
   type ProteinId,
 } from "@/lib/menu";
 import { api, type OrderResponse } from "@/lib/api";
-import { jakloudStore } from "@/lib/store";
+import { jakloudStore, normalizeDateKey } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -287,6 +287,41 @@ function CheckoutPage() {
       toast.error(`The kitchen is completely sold out for ${selectedDate}. Please select another date.`);
       return;
     }
+    // Validate kitchen open & cutoff
+    const settings = jakloudStore.getSettings();
+    if (!settings.isKitchenOpen) {
+      toast.error("Kitchen ordering is currently closed by the Master Chef.");
+      return;
+    }
+
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    const cutoffHour = settings.orderCutoffHour || 15;
+    let cutoffMinute = 0;
+    if (settings.orderCutoffTime && settings.orderCutoffTime.includes(":")) {
+      const parts = settings.orderCutoffTime.split(":");
+      cutoffMinute = parseInt(parts[1] || "0", 10);
+    }
+    const cutoffMins = cutoffHour * 60 + cutoffMinute;
+    const isPastCutoff = currentMins >= cutoffMins;
+
+    const cutoffHour12 = cutoffHour > 12 ? cutoffHour - 12 : cutoffHour === 0 ? 12 : cutoffHour;
+    const cutoffAmPm = cutoffHour >= 12 ? "PM" : "AM";
+    const cutoffLabel = `${cutoffHour12}:${String(cutoffMinute).padStart(2, "0")} ${cutoffAmPm}`;
+
+    if (isPastCutoff) {
+      const fDate = (selectedDate || "").toLowerCase();
+      const isToday = fDate.includes("today") || normalizeDateKey(selectedDate) === normalizeDateKey(now);
+      const tmrw = new Date();
+      tmrw.setDate(tmrw.getDate() + 1);
+      const isTomorrow = fDate.includes("tomorrow") || normalizeDateKey(selectedDate) === normalizeDateKey(tmrw);
+
+      if (isToday || isTomorrow) {
+        toast.error(`⚠️ Today's order cutoff time (${cutoffLabel}) has passed! Orders for this batch are closed.`);
+        return;
+      }
+    }
+
     if (count > cap.remainingSlots) {
       toast.error(
         `Only ${cap.remainingSlots} slot${cap.remainingSlots > 1 ? "s" : ""} left for ${selectedDate}, but you have ${count} trays in your cart. Please select another date or reduce tray count.`

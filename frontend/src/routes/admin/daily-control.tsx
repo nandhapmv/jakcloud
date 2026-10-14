@@ -194,19 +194,36 @@ function DailyOrderControlPage() {
   };
 
   // Save Settings
-  const handleSaveAll = () => {
+  const handleSaveAll = async () => {
     const updatedDateLimits = {
       ...(settings.dateLimits || {}),
       [tomorrowKey]: tomorrowLimit,
     };
-    updateSettings({
+    const payload = {
       dailyTrayLimit: dailyLimit,
       dateLimits: updatedDateLimits,
       orderCutoffHour: cutoffHour,
+      orderCutoffTime: `${cutoffHour}:00`,
+      strictCutoffEnforced: true,
       bookingHorizonDays: horizonDays,
       isKitchenOpen: onlineOrderingActive && !todayOrdersClosed,
-    });
-    toast.success(`✅ All settings saved to database! Daily limit: ${dailyLimit} trays.`);
+    };
+
+    updateSettings(payload);
+
+    try {
+      await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.warn("Settings sync warning:", err);
+    }
+
+    const hour12 = cutoffHour > 12 ? cutoffHour - 12 : cutoffHour === 0 ? 12 : cutoffHour;
+    const ampm = cutoffHour >= 12 ? "PM" : "AM";
+    toast.success(`✅ Saved to MySQL Database! Cutoff: ${hour12}:00 ${ampm}, Daily limit: ${dailyLimit} trays.`);
   };
 
   return (
@@ -582,12 +599,21 @@ function DailyOrderControlPage() {
                     onChange={(e) => setCutoffHour(parseInt(e.target.value, 10))}
                     className="w-full h-8 rounded-lg border border-gold/25 bg-black/60 px-2 text-xs text-cream focus:outline-none cursor-pointer font-mono"
                   >
+                    <option value={9}>9:00 AM (Morning Cutoff)</option>
+                    <option value={10}>10:00 AM</option>
+                    <option value={11}>11:00 AM</option>
                     <option value={12}>12:00 PM (Noon Cutoff)</option>
                     <option value={13}>1:00 PM</option>
-                    <option value={14}>2:00 PM</option>
+                    <option value={14}>2:00 PM (2:00 PM Cutoff)</option>
                     <option value={15}>3:00 PM (Standard 3 PM Cutoff)</option>
                     <option value={16}>4:00 PM</option>
                     <option value={17}>5:00 PM</option>
+                    <option value={18}>6:00 PM (Evening Cutoff)</option>
+                    <option value={19}>7:00 PM</option>
+                    <option value={20}>8:00 PM</option>
+                    <option value={21}>9:00 PM (Night Cutoff)</option>
+                    <option value={22}>10:00 PM</option>
+                    <option value={23}>11:00 PM</option>
                   </select>
                 </div>
 

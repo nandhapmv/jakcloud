@@ -1,0 +1,1 @@
+import{t as e}from"./qr-CVcoceUG.js";var t=e;export{t as component};

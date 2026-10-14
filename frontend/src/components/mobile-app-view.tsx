@@ -75,7 +75,7 @@ import {
   PICKUP_TIMES,
   DELIVERY_TIMES,
 } from "@/lib/menu";
-import { useKitchenSettings, useDynamicMenu, jakloudStore, type DynamicOrder } from "@/lib/store";
+import { useKitchenSettings, useDynamicMenu, jakloudStore, normalizeDateKey, type DynamicOrder } from "@/lib/store";
 import { api } from "@/lib/api";
 import { DumDateTimePicker } from "@/components/dum-date-time-picker";
 import {
@@ -258,6 +258,29 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   const taxRate = 0;
   const calculatedTax = 0;
   const grandTotal = subtotal + currentDeliveryFee;
+
+  const cutoffHour = settings?.orderCutoffHour ?? 15;
+  const cutoffLabel = useMemo(() => {
+    if (cutoffHour === 12) return "12:00 PM";
+    if (cutoffHour > 12) return `${cutoffHour - 12}:00 PM`;
+    return `${cutoffHour}:00 AM`;
+  }, [cutoffHour]);
+
+  const isCutoffBlocked = useMemo(() => {
+    if (!settings.isKitchenOpen) return true;
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    const cutoffMins = cutoffHour * 60;
+    if (currentMins < cutoffMins) return false;
+
+    const fDate = (selectedDate || "").toLowerCase();
+    const isToday = fDate.includes("today") || normalizeDateKey(selectedDate) === normalizeDateKey(now);
+    const tmrw = new Date();
+    tmrw.setDate(tmrw.getDate() + 1);
+    const isTomorrow = fDate.includes("tomorrow") || normalizeDateKey(selectedDate) === normalizeDateKey(tmrw);
+
+    return isToday || isTomorrow;
+  }, [settings, selectedDate, cutoffHour]);
 
   // 1-Tap Geolocation Location Handler
   const handleUseCurrentLocation = () => {
@@ -493,6 +516,17 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       unitPrice: l.unitPrice,
       lineTotal: l.unitPrice * l.qty,
     }));
+
+    // Validate kitchen open and cutoff time
+    if (!settings.isKitchenOpen) {
+      toast.error("Kitchen ordering is currently closed by the Master Chef.");
+      return;
+    }
+
+    if (isCutoffBlocked) {
+      toast.error(`⚠️ Today's order cutoff time (${cutoffLabel}) has passed! Orders for this batch are closed.`);
+      return;
+    }
 
     // Validate date capacity before initiating payment or submitting order
     const cap = jakloudStore.getCapacityForDate(selectedDate);
@@ -1372,6 +1406,18 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                   </button>
                 </div>
 
+                {/* Cutoff Warning Banner if Cutoff Passed */}
+                {isCutoffBlocked && (
+                  <div className="rounded-xl border border-amber-500/50 bg-amber-950/40 p-3 text-center space-y-1">
+                    <p className="text-xs font-bold text-amber-300">
+                      ⚠️ Order Cutoff ({cutoffLabel}) Has Passed
+                    </p>
+                    <p className="text-[11px] text-zinc-300">
+                      Orders for this batch close at {cutoffLabel}. Please select a subsequent open date to proceed.
+                    </p>
+                  </div>
+                )}
+
                 {/* Final Total Summary */}
                 <div className="rounded-xl bg-zinc-900/60 border border-white/[0.06] p-3 flex items-center justify-between">
                   <span className="text-xs text-zinc-400 font-normal">Total to Pay:</span>
@@ -1384,13 +1430,18 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
               <div className="pt-2 pb-16 sm:pb-20">
                 <button
                   onClick={handlePlaceOrder}
-                  disabled={isProcessingPayment}
-                  className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold py-3.5 text-xs sm:text-sm shadow-md hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  disabled={isProcessingPayment || isCutoffBlocked}
+                  className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold py-3.5 text-xs sm:text-sm shadow-md hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isProcessingPayment ? (
                     <>
                       <RotateCw className="h-4 w-4 animate-spin" />
                       <span>Opening Razorpay Secure Checkout...</span>
+                    </>
+                  ) : isCutoffBlocked ? (
+                    <>
+                      <AlertCircle className="h-4 w-4" />
+                      <span>Orders Closed (Past {cutoffLabel} Cutoff)</span>
                     </>
                   ) : paymentMethod === "Razorpay Online" ? (
                     <>

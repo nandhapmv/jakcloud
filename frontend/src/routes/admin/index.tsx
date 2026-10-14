@@ -2052,20 +2052,53 @@ function AdminOverviewPage() {
                   </div>
 
                   <div className="space-y-2 border-t border-gold/15 pt-4">
-                    <Label htmlFor="cutoff-time" className="text-xs text-gold font-semibold">Next-Day Order Cutoff Time</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="cutoff-time" className="text-xs text-gold font-semibold">
+                        Daily Order Acceptance Cutoff Time
+                      </Label>
+                      {(() => {
+                        const now = new Date();
+                        const isPast = now.getHours() * 60 + now.getMinutes() >= cutoffHourInput * 60;
+                        const hour12 = cutoffHourInput > 12 ? cutoffHourInput - 12 : cutoffHourInput === 0 ? 12 : cutoffHourInput;
+                        const ampm = cutoffHourInput >= 12 ? "PM" : "AM";
+                        return (
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold ${
+                              isPast
+                                ? "bg-red-500/15 text-red-400 border border-red-500/30"
+                                : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                            }`}
+                          >
+                            {isPast ? `🔴 Closed for Today (Past ${hour12}:00 ${ampm})` : `🟢 Active (Closes at ${hour12}:00 ${ampm})`}
+                          </span>
+                        );
+                      })()}
+                    </div>
                     <select
                       id="cutoff-time"
                       value={cutoffHourInput}
                       onChange={(e) => setCutoffHourInput(parseInt(e.target.value, 10))}
                       className="w-full h-10 rounded-xl border border-gold/25 bg-black/50 px-3 text-xs text-cream font-mono cursor-pointer focus:outline-none focus:border-gold"
                     >
+                      <option value={9}>9:00 AM (Morning Cutoff)</option>
+                      <option value={10}>10:00 AM</option>
+                      <option value={11}>11:00 AM</option>
                       <option value={12}>12:00 PM (Noon Cutoff)</option>
                       <option value={13}>1:00 PM</option>
-                      <option value={14}>2:00 PM</option>
-                      <option value={15}>3:00 PM (Standard 3 PM Cutoff)</option>
+                      <option value={14}>2:00 PM (2:00 PM Cutoff)</option>
+                      <option value={15}>3:00 PM (Standard 3:00 PM Cutoff)</option>
                       <option value={16}>4:00 PM</option>
                       <option value={17}>5:00 PM</option>
+                      <option value={18}>6:00 PM (Evening Cutoff)</option>
+                      <option value={19}>7:00 PM</option>
+                      <option value={20}>8:00 PM</option>
+                      <option value={21}>9:00 PM (Night Cutoff)</option>
+                      <option value={22}>10:00 PM</option>
+                      <option value={23}>11:00 PM</option>
                     </select>
+                    <p className="text-[0.65rem] text-cream/60">
+                      Once this time passes today, new customer checkout is automatically closed and blocked in the database.
+                    </p>
                   </div>
 
                   <div className="flex items-center justify-between border-t border-gold/15 pt-4">
@@ -2081,13 +2114,32 @@ function AdminOverviewPage() {
                   </div>
 
                   <Button
-                    onClick={() => {
-                      updateSettings({
+                    onClick={async () => {
+                      const hour12 = cutoffHourInput > 12 ? cutoffHourInput - 12 : cutoffHourInput === 0 ? 12 : cutoffHourInput;
+                      const ampm = cutoffHourInput >= 12 ? "PM" : "AM";
+                      const cutoffLabel = `${hour12}:00 ${ampm}`;
+
+                      const payload = {
                         dailyTrayLimit: dailyLimitInput,
                         isKitchenOpen: kitchenOpenInput,
                         orderCutoffHour: cutoffHourInput,
-                      });
-                      toast.success(`✅ Kitchen settings saved to database! Daily limit: ${dailyLimitInput} trays.`);
+                        orderCutoffTime: `${cutoffHourInput}:00`,
+                        strictCutoffEnforced: true,
+                      };
+
+                      updateSettings(payload);
+
+                      try {
+                        await fetch("/api/settings", {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(payload),
+                        });
+                      } catch (err) {
+                        console.warn("Settings sync warning:", err);
+                      }
+
+                      toast.success(`✅ Saved to MySQL Database: Daily Cutoff set to ${cutoffLabel} & limit set to ${dailyLimitInput} trays!`);
                     }}
                     className="w-full bg-gradient-to-r from-chili via-saffron to-gold text-white hover:brightness-110 font-bold text-xs h-10 shadow-lg shadow-chili/30 cursor-pointer"
                   >

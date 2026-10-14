@@ -91,6 +91,8 @@ export interface DynamicOrder {
 export interface KitchenSettings {
   dailyTrayLimit: number;
   orderCutoffHour: number; // e.g. 15 for 3:00 PM
+  orderCutoffTime?: string; // e.g. "14:00" or "15:00"
+  strictCutoffEnforced?: boolean;
   bookingHorizonDays: number; // 7 (1 week), 10, or 30 (1 month)
   isKitchenOpen: boolean;
   emergencyPauseReason?: string;
@@ -274,6 +276,8 @@ export const INITIAL_ORDERS: DynamicOrder[] = [];
 export const INITIAL_KITCHEN_SETTINGS: KitchenSettings = {
   dailyTrayLimit: 25, // Default 10 orders per day
   orderCutoffHour: 15, // 3:00 PM (15:00) cutoff
+  orderCutoffTime: "15:00",
+  strictCutoffEnforced: true,
   bookingHorizonDays: 7, // 7 days (1 week) default horizon
   isKitchenOpen: true,
   emergencyPauseReason: "",
@@ -711,6 +715,36 @@ export const jakloudStore = {
       throw new Error("Kitchen ordering is currently closed by the Master Chef.");
     }
 
+    // Cutoff validation
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    const cutoffHour = settings.orderCutoffHour || 15;
+    let cutoffMinute = 0;
+    if (settings.orderCutoffTime && settings.orderCutoffTime.includes(":")) {
+      const parts = settings.orderCutoffTime.split(":");
+      cutoffMinute = parseInt(parts[1] || "0", 10);
+    }
+    const cutoffMins = cutoffHour * 60 + cutoffMinute;
+    const isPastCutoff = currentMins >= cutoffMins;
+
+    const cutoffHour12 = cutoffHour > 12 ? cutoffHour - 12 : cutoffHour === 0 ? 12 : cutoffHour;
+    const cutoffAmPm = cutoffHour >= 12 ? "PM" : "AM";
+    const cutoffLabel = `${cutoffHour12}:${String(cutoffMinute).padStart(2, "0")} ${cutoffAmPm}`;
+
+    if (isPastCutoff) {
+      const fDate = (payload.fulfilmentDate || "").toLowerCase();
+      const isToday = fDate.includes("today") || normalizeDateKey(payload.fulfilmentDate) === normalizeDateKey(now);
+      const tmrw = new Date();
+      tmrw.setDate(tmrw.getDate() + 1);
+      const isTomorrow = fDate.includes("tomorrow") || normalizeDateKey(payload.fulfilmentDate) === normalizeDateKey(tmrw);
+
+      if (isToday || isTomorrow) {
+        throw new Error(
+          `Today's order cutoff time (${cutoffLabel}) has passed. Orders for this batch cannot be accepted.`
+        );
+      }
+    }
+
     const totalTrays = payload.items.reduce((sum, i) => sum + (Number(i.qty) || 1), 0);
     const cap = this.getCapacityForDate(payload.fulfilmentDate);
     if (cap.isSoldOut || cap.remainingSlots <= 0) {
@@ -730,7 +764,6 @@ export const jakloudStore = {
     const total = Math.round((subtotal + deliveryFee) * 100) / 100;
 
     const current = this.getOrders();
-    const now = new Date();
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, "0");
     const d = String(now.getDate()).padStart(2, "0");

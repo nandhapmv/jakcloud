@@ -105,10 +105,23 @@ export function formatMoney(value: number) {
 }
 
 /** Next available fulfilment date: next day (or day-after if after cutoff), open 7 days a week. */
-export function nextAvailableDate(now = new Date()) {
+export function nextAvailableDate(now = new Date(), customCutoff?: number) {
+  let cutoff = customCutoff;
+  if (cutoff === undefined && typeof window !== "undefined") {
+    try {
+      const s = localStorage.getItem("jakloud_settings_v2");
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (parsed.orderCutoffHour !== undefined) {
+          cutoff = Number(parsed.orderCutoffHour);
+        }
+      }
+    } catch {}
+  }
+  const effectiveCutoff = cutoff !== undefined ? cutoff : ORDER_CUTOFF_HOUR;
   const date = new Date(now);
   date.setHours(0, 0, 0, 0);
-  date.setDate(date.getDate() + (now.getHours() >= ORDER_CUTOFF_HOUR ? 2 : 1));
+  date.setDate(date.getDate() + (now.getHours() >= effectiveCutoff ? 2 : 1));
   return date;
 }
 

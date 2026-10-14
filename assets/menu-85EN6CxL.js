@@ -1,0 +1,1 @@
+import{t as e}from"./biryani-B4O1QQ8g.js";var t=e;export{t as component};
