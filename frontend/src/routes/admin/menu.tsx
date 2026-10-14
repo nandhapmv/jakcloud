@@ -227,10 +227,12 @@ function MenuManagementPage() {
   // Menu Items State from Dynamic Reactive Store
   const {
     items,
+    isSyncing,
     addMenuItem,
     updateMenuItem,
     deleteMenuItem,
     toggleAvailability,
+    refreshFromBackend,
   } = useDynamicMenu();
 
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
@@ -309,7 +311,7 @@ function MenuManagementPage() {
   };
 
   // Save / Update Biryani Item
-  const handleSaveBiryani = (e: React.FormEvent) => {
+  const handleSaveBiryani = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim()) {
       toast.error("Please enter a Biryani name.");
@@ -321,51 +323,56 @@ function MenuManagementPage() {
     const kcalNum = parseInt(formKcal, 10) || 1700;
     const limitNum = parseInt(formDailyLimit, 10) || 10;
 
-    if (editingItem) {
-      // Update existing item in reactive store
-      updateMenuItem(editingItem.id, {
-        name: formName.trim(),
-        category: formCategory,
-        description: formDescription.trim(),
-        price: priceNum,
-        priceWithAloo: priceAlooNum,
-        image: formImage,
-        available: formAvailable,
-        traySize: formTraySize,
-        serves: formTraySize,
-        meatWeight: formMeatWeight,
-        riceWeight: formRiceWeight,
-        kcal: kcalNum,
-        badge: formBadge.trim() || undefined,
-        spiciness: formSpiciness,
-        dailyLimit: limitNum,
-      });
-      toast.success(`Updated "${formName}" in live menu catalog.`);
-    } else {
-      // Create new item in reactive store
-      const genProteinId = formName.toLowerCase().replace(/[^a-z0-9]/g, "-");
-      addMenuItem({
-        proteinId: genProteinId,
-        name: formName.trim(),
-        category: formCategory,
-        description: formDescription.trim(),
-        price: priceNum,
-        priceWithAloo: priceAlooNum,
-        image: formImage,
-        available: formAvailable,
-        traySize: formTraySize,
-        serves: formTraySize,
-        meatWeight: formMeatWeight,
-        riceWeight: formRiceWeight,
-        kcal: kcalNum,
-        badge: formBadge.trim() || undefined,
-        spiciness: formSpiciness,
-        dailyLimit: limitNum,
-      });
-      toast.success(`Created new Biryani tray "${formName}"! Live in customer catalog.`);
-    }
+    const toastId = toast.loading(editingItem ? "Updating recipe in database..." : "Publishing new Biryani tray...");
 
-    setModalOpen(false);
+    try {
+      if (editingItem) {
+        // Update existing item in reactive store & backend
+        await updateMenuItem(editingItem.id, {
+          name: formName.trim(),
+          category: formCategory,
+          description: formDescription.trim(),
+          price: priceNum,
+          priceWithAloo: priceAlooNum,
+          image: formImage,
+          available: formAvailable,
+          traySize: formTraySize,
+          serves: formTraySize,
+          meatWeight: formMeatWeight,
+          riceWeight: formRiceWeight,
+          kcal: kcalNum,
+          badge: formBadge.trim() || undefined,
+          spiciness: formSpiciness,
+          dailyLimit: limitNum,
+        });
+        toast.success(`Updated "${formName}" in database & live menu!`, { id: toastId });
+      } else {
+        // Create new item in reactive store & backend
+        const genProteinId = formName.toLowerCase().replace(/[^a-z0-9]/g, "-");
+        await addMenuItem({
+          proteinId: genProteinId,
+          name: formName.trim(),
+          category: formCategory,
+          description: formDescription.trim(),
+          price: priceNum,
+          priceWithAloo: priceAlooNum,
+          image: formImage,
+          available: formAvailable,
+          traySize: formTraySize,
+          serves: formTraySize,
+          meatWeight: formMeatWeight,
+          riceWeight: formRiceWeight,
+          kcal: kcalNum,
+          badge: formBadge.trim() || undefined,
+          spiciness: formSpiciness,
+          dailyLimit: limitNum,
+        });
+        toast.success(`Created "${formName}"! Saved to database & live on website.`, { id: toastId });
+      }
+      setModalOpen(false);
+    } catch (err: any) {
+      toast.error(`Error saving menu item: ${err?.message || "Please retry"}`, { id: toastId });
+    }
   };
 
   // Toggle Availability in reactive store
@@ -495,6 +502,18 @@ function MenuManagementPage() {
           </div>
 
           <div className="relative z-10 flex flex-wrap items-center gap-3">
+            <Button
+              onClick={() => {
+                refreshFromBackend().then(() => toast.success("Menu synced with MySQL Database."));
+              }}
+              variant="outline"
+              size="lg"
+              disabled={isSyncing}
+              className="border-gold/30 bg-black/40 text-cream/90 hover:bg-gold/10 text-xs px-4"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 text-gold ${isSyncing ? "animate-spin" : ""}`} />
+              {isSyncing ? "Syncing..." : "Sync DB"}
+            </Button>
             <Button
               onClick={handleOpenCreateModal}
               size="lg"

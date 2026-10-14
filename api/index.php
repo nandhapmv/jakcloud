@@ -52,6 +52,69 @@ try {
         $pdo->exec("DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE order_number LIKE 'JK-%' AND CAST(SUBSTRING_INDEX(order_number, '-', -1) AS UNSIGNED) >= 1000)");
         $pdo->exec("DELETE FROM orders WHERE order_number LIKE 'JK-%' AND CAST(SUBSTRING_INDEX(order_number, '-', -1) AS UNSIGNED) >= 1000");
     } catch (Exception $e) {}
+
+    // 4. Ensure menu_items table exists with all modern columns
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `menu_items` (
+            `id` VARCHAR(64) NOT NULL,
+            `protein_id` VARCHAR(64) NOT NULL,
+            `name` VARCHAR(128) NOT NULL,
+            `category` VARCHAR(64) NOT NULL DEFAULT 'Signature Trays',
+            `description` TEXT,
+            `price` DECIMAL(10,2) NOT NULL,
+            `price_with_aloo` DECIMAL(10,2) NOT NULL,
+            `badge` VARCHAR(128) DEFAULT '',
+            `image_url` LONGTEXT DEFAULT NULL,
+            `available` TINYINT(1) DEFAULT 1,
+            `tray_size` VARCHAR(128) DEFAULT 'Serves 4–5 Diners (Family Handi)',
+            `serves` VARCHAR(128) DEFAULT 'Serves 4–5',
+            `meat_weight` VARCHAR(128) DEFAULT '',
+            `rice_weight` VARCHAR(128) DEFAULT '1.0 kg Raw Aged Basmati',
+            `kcal` INT DEFAULT 1700,
+            `kcal_aloo` INT DEFAULT 1850,
+            `spiciness` VARCHAR(32) DEFAULT 'Medium',
+            `daily_limit` INT DEFAULT 10,
+            `trays_sold_week` INT DEFAULT 0,
+            `is_halal_certified` TINYINT(1) DEFAULT 1,
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `idx_protein_id` (`protein_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } catch (Exception $e) {}
+
+    // Migrate any missing columns if table already existed from older schema
+    $menuCols = [
+        "ALTER TABLE `menu_items` ADD COLUMN `tray_size` VARCHAR(128) DEFAULT 'Serves 4–5 Diners (Family Handi)'",
+        "ALTER TABLE `menu_items` ADD COLUMN `serves` VARCHAR(128) DEFAULT 'Serves 4–5'",
+        "ALTER TABLE `menu_items` ADD COLUMN `meat_weight` VARCHAR(128) DEFAULT ''",
+        "ALTER TABLE `menu_items` ADD COLUMN `rice_weight` VARCHAR(128) DEFAULT '1.0 kg Raw Aged Basmati'",
+        "ALTER TABLE `menu_items` ADD COLUMN `spiciness` VARCHAR(32) DEFAULT 'Medium'",
+        "ALTER TABLE `menu_items` ADD COLUMN `daily_limit` INT DEFAULT 10",
+        "ALTER TABLE `menu_items` ADD COLUMN `trays_sold_week` INT DEFAULT 0",
+        "ALTER TABLE `menu_items` ADD COLUMN `is_halal_certified` TINYINT(1) DEFAULT 1",
+        "ALTER TABLE `menu_items` MODIFY COLUMN `image_url` LONGTEXT DEFAULT NULL",
+    ];
+    foreach ($menuCols as $cSql) {
+        try { $pdo->exec($cSql); } catch (Exception $e) {}
+    }
+
+    // Auto-seed default 6 Dum Biryanis if table is empty
+    try {
+        $countStmt = $pdo->query("SELECT COUNT(*) FROM `menu_items`");
+        if ($countStmt && (int)$countStmt->fetchColumn() === 0) {
+            $pdo->exec("INSERT INTO `menu_items` 
+                (`id`, `protein_id`, `name`, `category`, `description`, `price`, `price_with_aloo`, `badge`, `image_url`, `available`, `tray_size`, `serves`, `meat_weight`, `rice_weight`, `kcal`, `kcal_aloo`, `spiciness`, `daily_limit`, `trays_sold_week`, `is_halal_certified`)
+                VALUES
+                ('dish-chicken', 'chicken', 'Royal Chicken Dum Biryani', 'Signature Trays', 'Our house flagship slow-cooked Dum biryani. 1.6–1.8 kg marinated bone-in chicken thighs layered with saffron aged basmati rice, fried onions, and roasted cashews, sealed with whole wheat dough.', 101.99, 108.99, 'Top Seller', '', 1, 'Serves 4–5 Diners (Family Handi)', 'Serves 4–5', '1.6 kg Halal Marinated Chicken', '1.0 kg Raw Aged Basmati', 1714, 1871, 'Medium', 12, 48, 1),
+                ('dish-mutton', 'mutton', 'Hyderabadi Shahi Mutton Dum Biryani', 'Royal & Occasion', 'The authentic Nizami celebration tray. Succulent bone-in baby goat mutton cuts slow-cooked on dum for 4 hours with heavy saffron, cloves, black cardamom, and pure desi ghee.', 157.99, 164.99, 'Chef Signature', '', 1, 'Serves 4–5 Diners (Feast Tray)', 'Serves 4–5', '1.8 kg Halal Baby Goat Cuts', '1.0 kg Raw Aged Basmati', 2054, 2211, 'Extra Spicy', 8, 34, 1),
+                ('dish-beef', 'beef', 'Slow-Braised Spiced Beef Dum Biryani', 'Signature Trays', 'Prime tender beef cuts slow-cooked long and low until caramelized spiced juices settle deeply through every single fragrant basmati grain.', 122.99, 129.99, 'Bold & Hearty', '', 1, 'Serves 4–5 Diners (Family Handi)', 'Serves 4–5', '1.7 kg Halal Prime Beef Cuts', '1.0 kg Raw Aged Basmati', 1952, 2109, 'Medium', 8, 28, 1),
+                ('dish-paneer', 'paneer', 'Royal Shahi Paneer Dum Biryani (Veg)', 'Shahi Vegetarian', 'Fresh golden paneer cubes slow-simmered with aromatic saffron gravy, baby potatoes, roasted cashews, caramelized crispy onions, and fresh mint leaves.', 98.99, 105.99, 'Vegetarian Royal', '', 1, 'Serves 4–5 Diners (Veg Handi)', 'Serves 4–5', '1.2 kg Fresh Artisanal Paneer', '1.0 kg Raw Aged Basmati', 1540, 1697, 'Medium', 6, 21, 0),
+                ('dish-prawn', 'prawn', 'Jumbo King Tiger Prawn Dum Biryani', 'Seafood Specialties', 'Wild-caught jumbo king tiger prawns seared in coastal roasted spice ghee masala, layered over aromatic yellow basmati, finished with lime zest and star anise.', 139.99, 146.99, 'Coastal Specialty', '', 1, 'Serves 4–5 Diners (Deluxe Handi)', 'Serves 4–5', '1.5 kg Wild Tiger Prawns', '1.0 kg Raw Aged Basmati', 1620, 1777, 'Extra Spicy', 5, 16, 1),
+                ('dish-pork', 'pork', 'Springfield Signature Pork Dum Biryani', 'Signature Trays', 'Slow-cooked succulent pork shoulder prepared in dedicated segregated vessels with a deep roasted masala base, desi ghee, fresh mint, and toasted spices.', 108.99, 115.99, 'Segregated Kitchen Vessel', '', 1, 'Serves 4–5 Diners (Family Handi)', 'Serves 4–5', '1.6 kg Pork Shoulder Cuts', '1.0 kg Raw Aged Basmati', 1952, 2109, 'Medium', 6, 19, 0)
+            ");
+        }
+    } catch (Exception $e) {}
 } catch (Exception $e) {
     // If PDO fails, record warning
     $db_conn_error = $e->getMessage();
@@ -61,6 +124,7 @@ try {
 $data_dir = __DIR__ . '/../backend/data';
 $orders_file = $data_dir . '/orders.json';
 $settings_file = $data_dir . '/settings.json';
+$menu_file = $data_dir . '/menu.json';
 
 // Helper: Read input JSON
 function get_json_input() {
@@ -97,6 +161,25 @@ function save_fallback_orders($file, $orders) {
         @mkdir($dir, 0755, true);
     }
     @file_put_contents($file, json_encode($orders, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+}
+
+// Helper: Read menu from fallback file
+function read_fallback_menu($file) {
+    if (file_exists($file)) {
+        $raw = file_get_contents($file);
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded) && count($decoded) > 0) return $decoded;
+    }
+    return [];
+}
+
+// Helper: Save menu to fallback file
+function save_fallback_menu($file, $items) {
+    $dir = dirname($file);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0755, true);
+    }
+    @file_put_contents($file, json_encode($items, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 }
 
 // -------------------------------------------------------------
@@ -725,26 +808,243 @@ if ($resource === 'orders') {
     }
 }
 
-// MENU ITEMS
+// MENU ITEMS (GET, POST, PUT, DELETE)
 if ($resource === 'menu') {
-    if ($pdo) {
-        $stmt = $pdo->query("SELECT * FROM menu_items WHERE available = 1");
-        $items = $stmt->fetchAll();
+    // 1. GET ALL ITEMS: GET /api/menu
+    if ($method === 'GET' && empty($id)) {
+        $categories = ['Signature Trays', 'Royal & Occasion', 'Shahi Vegetarian', 'Seafood Specialties'];
+        if ($pdo) {
+            try {
+                $stmt = $pdo->query("SELECT * FROM `menu_items` ORDER BY `created_at` ASC");
+                $items = $stmt->fetchAll();
+
+                if (!empty($items)) {
+                    foreach ($items as $m) {
+                        if (!empty($m['category']) && !in_array($m['category'], $categories)) {
+                            $categories[] = $m['category'];
+                        }
+                    }
+
+                    echo json_encode([
+                        'categories' => $categories,
+                        'items' => array_map(function($m) {
+                            return [
+                                'id' => $m['id'] ?: ('dish-' . $m['protein_id']),
+                                'proteinId' => $m['protein_id'],
+                                'name' => $m['name'],
+                                'category' => $m['category'] ?: 'Signature Trays',
+                                'description' => $m['description'] ?? '',
+                                'price' => (float)$m['price'],
+                                'priceWithAloo' => (float)($m['price_with_aloo'] ?: $m['price']),
+                                'badge' => $m['badge'] ?? '',
+                                'image' => $m['image_url'] ?? '',
+                                'available' => (bool)$m['available'],
+                                'traySize' => $m['tray_size'] ?? 'Serves 4–5 Diners (Family Handi)',
+                                'serves' => $m['serves'] ?? 'Serves 4–5',
+                                'meatWeight' => $m['meat_weight'] ?? '',
+                                'riceWeight' => $m['rice_weight'] ?? '1.0 kg Raw Aged Basmati',
+                                'kcal' => (int)($m['kcal'] ?? 1700),
+                                'kcalAloo' => (int)($m['kcal_aloo'] ?? 1850),
+                                'spiciness' => $m['spiciness'] ?? 'Medium',
+                                'dailyLimit' => (int)($m['daily_limit'] ?? 10),
+                                'traysSoldWeek' => (int)($m['trays_sold_week'] ?? 0),
+                                'isHalalCertified' => (bool)($m['is_halal_certified'] ?? 1),
+                            ];
+                        }, $items),
+                    ]);
+                    exit;
+                }
+            } catch (Exception $e) {}
+        }
+
+        // Fallback file
+        $fallback = read_fallback_menu($menu_file);
         echo json_encode([
-            'categories' => ['Signature Trays', 'Royal & Occasion', 'Shahi Vegetarian', 'Seafood Specialties'],
-            'items' => array_map(function($m) {
-                return [
-                    'id' => $m['protein_id'],
-                    'name' => $m['name'],
-                    'category' => $m['category'],
-                    'price' => (float)$m['price'],
-                    'priceWithAloo' => (float)$m['price_with_aloo'],
-                    'badge' => $m['badge'],
-                    'description' => $m['description'],
-                    'kcal' => (int)$m['kcal'],
-                    'available' => (bool)$m['available'],
-                ];
-            }, $items),
+            'categories' => $categories,
+            'items' => $fallback,
+        ]);
+        exit;
+    }
+
+    // 2. CREATE ITEM: POST /api/menu
+    if ($method === 'POST') {
+        $data = get_json_input();
+        $name = trim($data['name'] ?? '');
+        if (!$name) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Biryani dish name is required']);
+            exit;
+        }
+
+        $proteinId = trim($data['proteinId'] ?? '') ?: preg_replace('/[^a-z0-9]/', '-', strtolower($name));
+        $itemId = trim($data['id'] ?? '') ?: ('dish-' . $proteinId);
+        $category = trim($data['category'] ?? 'Signature Trays');
+        $desc = trim($data['description'] ?? '');
+        $price = (float)($data['price'] ?? 99.99);
+        $priceWithAloo = (float)($data['priceWithAloo'] ?? ($price + 7.0));
+        $badge = trim($data['badge'] ?? '');
+        $imageUrl = trim($data['image'] ?? ($data['image_url'] ?? ''));
+        $available = isset($data['available']) ? ((bool)$data['available'] ? 1 : 0) : 1;
+        $traySize = trim($data['traySize'] ?? ($data['serves'] ?? 'Serves 4–5 Diners (Family Handi)'));
+        $serves = trim($data['serves'] ?? ($data['traySize'] ?? 'Serves 4–5'));
+        $meatWeight = trim($data['meatWeight'] ?? '');
+        $riceWeight = trim($data['riceWeight'] ?? '1.0 kg Raw Aged Basmati');
+        $kcal = (int)($data['kcal'] ?? 1700);
+        $kcalAloo = (int)($data['kcalAloo'] ?? ($kcal + 157));
+        $spiciness = trim($data['spiciness'] ?? 'Medium');
+        $dailyLimit = (int)($data['dailyLimit'] ?? 10);
+        $isHalal = isset($data['isHalalCertified']) ? ((bool)$data['isHalalCertified'] ? 1 : 0) : ($proteinId !== 'pork' ? 1 : 0);
+
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare("INSERT INTO `menu_items` 
+                    (`id`, `protein_id`, `name`, `category`, `description`, `price`, `price_with_aloo`, `badge`, `image_url`, `available`, `tray_size`, `serves`, `meat_weight`, `rice_weight`, `kcal`, `kcal_aloo`, `spiciness`, `daily_limit`, `is_halal_certified`)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE
+                    `name` = VALUES(`name`),
+                    `category` = VALUES(`category`),
+                    `description` = VALUES(`description`),
+                    `price` = VALUES(`price`),
+                    `price_with_aloo` = VALUES(`price_with_aloo`),
+                    `badge` = VALUES(`badge`),
+                    `image_url` = VALUES(`image_url`),
+                    `available` = VALUES(`available`),
+                    `tray_size` = VALUES(`tray_size`),
+                    `serves` = VALUES(`serves`),
+                    `meat_weight` = VALUES(`meat_weight`),
+                    `rice_weight` = VALUES(`rice_weight`),
+                    `kcal` = VALUES(`kcal`),
+                    `kcal_aloo` = VALUES(`kcal_aloo`),
+                    `spiciness` = VALUES(`spiciness`),
+                    `daily_limit` = VALUES(`daily_limit`),
+                    `is_halal_certified` = VALUES(`is_halal_certified`)
+                ");
+                $stmt->execute([
+                    $itemId, $proteinId, $name, $category, $desc, $price, $priceWithAloo, $badge, $imageUrl, $available,
+                    $traySize, $serves, $meatWeight, $riceWeight, $kcal, $kcalAloo, $spiciness, $dailyLimit, $isHalal
+                ]);
+            } catch (Exception $e) {}
+        }
+
+        $savedItem = [
+            'id' => $itemId,
+            'proteinId' => $proteinId,
+            'name' => $name,
+            'category' => $category,
+            'description' => $desc,
+            'price' => $price,
+            'priceWithAloo' => $priceWithAloo,
+            'badge' => $badge,
+            'image' => $imageUrl,
+            'available' => (bool)$available,
+            'traySize' => $traySize,
+            'serves' => $serves,
+            'meatWeight' => $meatWeight,
+            'riceWeight' => $riceWeight,
+            'kcal' => $kcal,
+            'kcalAloo' => $kcalAloo,
+            'spiciness' => $spiciness,
+            'dailyLimit' => $dailyLimit,
+            'traysSoldWeek' => 0,
+            'isHalalCertified' => (bool)$isHalal,
+        ];
+
+        // Also save to fallback
+        $all = read_fallback_menu($menu_file);
+        $found = false;
+        foreach ($all as &$it) {
+            if ($it['id'] === $itemId || ($it['proteinId'] ?? '') === $proteinId) {
+                $it = array_merge($it, $savedItem);
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            array_unshift($all, $savedItem);
+        }
+        save_fallback_menu($menu_file, $all);
+
+        http_response_code(201);
+        echo json_encode([
+            'success' => true,
+            'message' => "Menu item '{$name}' created and published to database.",
+            'item' => $savedItem
+        ]);
+        exit;
+    }
+
+    // 3. UPDATE ITEM: PUT /api/menu/{id} or PATCH /api/menu/{id}
+    if (($method === 'PUT' || $method === 'PATCH') && !empty($id)) {
+        $data = get_json_input();
+        if ($pdo) {
+            try {
+                $fields = [];
+                $params = [];
+                if (isset($data['name'])) { $fields[] = "`name` = ?"; $params[] = trim($data['name']); }
+                if (isset($data['category'])) { $fields[] = "`category` = ?"; $params[] = trim($data['category']); }
+                if (isset($data['description'])) { $fields[] = "`description` = ?"; $params[] = trim($data['description']); }
+                if (isset($data['price'])) { $fields[] = "`price` = ?"; $params[] = (float)$data['price']; }
+                if (isset($data['priceWithAloo'])) { $fields[] = "`price_with_aloo` = ?"; $params[] = (float)$data['priceWithAloo']; }
+                if (isset($data['badge'])) { $fields[] = "`badge` = ?"; $params[] = trim($data['badge']); }
+                if (isset($data['image']) || isset($data['image_url'])) { 
+                    $fields[] = "`image_url` = ?"; 
+                    $params[] = trim($data['image'] ?? $data['image_url']); 
+                }
+                if (isset($data['available'])) { $fields[] = "`available` = ?"; $params[] = (bool)$data['available'] ? 1 : 0; }
+                if (isset($data['traySize'])) { $fields[] = "`tray_size` = ?"; $params[] = trim($data['traySize']); }
+                if (isset($data['serves'])) { $fields[] = "`serves` = ?"; $params[] = trim($data['serves']); }
+                if (isset($data['meatWeight'])) { $fields[] = "`meat_weight` = ?"; $params[] = trim($data['meatWeight']); }
+                if (isset($data['riceWeight'])) { $fields[] = "`rice_weight` = ?"; $params[] = trim($data['riceWeight']); }
+                if (isset($data['kcal'])) { $fields[] = "`kcal` = ?"; $params[] = (int)$data['kcal']; }
+                if (isset($data['kcalAloo'])) { $fields[] = "`kcal_aloo` = ?"; $params[] = (int)$data['kcalAloo']; }
+                if (isset($data['spiciness'])) { $fields[] = "`spiciness` = ?"; $params[] = trim($data['spiciness']); }
+                if (isset($data['dailyLimit'])) { $fields[] = "`daily_limit` = ?"; $params[] = (int)$data['dailyLimit']; }
+                if (isset($data['isHalalCertified'])) { $fields[] = "`is_halal_certified` = ?"; $params[] = (bool)$data['isHalalCertified'] ? 1 : 0; }
+
+                if (!empty($fields)) {
+                    $sql = "UPDATE `menu_items` SET " . implode(', ', $fields) . " WHERE `id` = ? OR `protein_id` = ?";
+                    $params[] = $id;
+                    $params[] = $id;
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute($params);
+                }
+            } catch (Exception $e) {}
+        }
+
+        // Update fallback
+        $all = read_fallback_menu($menu_file);
+        foreach ($all as &$it) {
+            if ($it['id'] === $id || ($it['proteinId'] ?? '') === $id) {
+                $it = array_merge($it, $data);
+                break;
+            }
+        }
+        save_fallback_menu($menu_file, $all);
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Menu item updated successfully.",
+        ]);
+        exit;
+    }
+
+    // 4. DELETE ITEM: DELETE /api/menu/{id}
+    if ($method === 'DELETE' && !empty($id)) {
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare("DELETE FROM `menu_items` WHERE `id` = ? OR `protein_id` = ?");
+                $stmt->execute([$id, $id]);
+            } catch (Exception $e) {}
+        }
+
+        // Fallback
+        $all = read_fallback_menu($menu_file);
+        $filtered = array_values(array_filter($all, fn($it) => $it['id'] !== $id && ($it['proteinId'] ?? '') !== $id));
+        save_fallback_menu($menu_file, $filtered);
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Menu item deleted successfully.",
         ]);
         exit;
     }

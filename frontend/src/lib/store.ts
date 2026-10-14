@@ -451,28 +451,43 @@ const API_BASE_URL = typeof window !== "undefined"
   : "http://localhost:5000";
 
 function syncBackendMenuItem(id: string, updates: any) {
-  if (typeof window === "undefined") return;
-  fetch(`${API_BASE_URL}/api/menu/${id}`, {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  return fetch(`${API_BASE_URL}/api/menu/${encodeURIComponent(id)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(updates),
-  }).catch((e) => console.warn("Backend sync failed:", e));
+  })
+    .then((r) => r.json())
+    .catch((e) => {
+      console.warn("Backend menu update sync failed:", e);
+      return null;
+    });
 }
 
 function syncBackendCreateMenuItem(item: any) {
-  if (typeof window === "undefined") return;
-  fetch(`${API_BASE_URL}/api/menu`, {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  return fetch(`${API_BASE_URL}/api/menu`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(item),
-  }).catch((e) => console.warn("Backend sync failed:", e));
+  })
+    .then((r) => r.json())
+    .catch((e) => {
+      console.warn("Backend menu create sync failed:", e);
+      return null;
+    });
 }
 
 function syncBackendDeleteMenuItem(id: string) {
-  if (typeof window === "undefined") return;
-  fetch(`${API_BASE_URL}/api/menu/${id}`, {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  return fetch(`${API_BASE_URL}/api/menu/${encodeURIComponent(id)}`, {
     method: "DELETE",
-  }).catch((e) => console.warn("Backend sync failed:", e));
+  })
+    .then((r) => r.json())
+    .catch((e) => {
+      console.warn("Backend menu delete sync failed:", e);
+      return null;
+    });
 }
 
 function syncBackendCreateOrder(order: any) {
@@ -1113,24 +1128,69 @@ export const jakloudStore = {
 // 5. REACT HOOKS FOR REAL-TIME SYNC
 // ==========================================
 
+const DEFAULT_PRESET_IMAGES: Record<string, string> = {
+  chicken: chickenImg,
+  mutton: muttonImg,
+  beef: dumHandiImg,
+  paneer: paneerImg,
+  prawn: prawnImg,
+  prawns: prawnImg,
+  pork: heroBiryaniImg,
+};
+
 export function useDynamicMenu() {
   const [items, setItems] = useState<DynamicMenuItem[]>(() => jakloudStore.getMenu());
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const reload = useCallback(() => {
     setItems(jakloudStore.getMenu());
   }, []);
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/api/menu`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
+  const refreshFromBackend = useCallback(async () => {
+    setIsSyncing(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/menu`);
+      if (res.ok) {
+        const data = await res.json();
         if (data && Array.isArray(data.items) && data.items.length > 0) {
-          jakloudStore.saveMenu(data.items);
+          const normalized: DynamicMenuItem[] = data.items.map((m: any) => ({
+            id: m.id || `dish-${m.proteinId}`,
+            proteinId: m.proteinId || m.id?.replace(/^dish-/, "") || "chicken",
+            name: m.name,
+            category: m.category || "Signature Trays",
+            description: m.description || "",
+            price: Number(m.price) || 99.99,
+            priceWithAloo: Number(m.priceWithAloo) || Number(m.price) + 7.0,
+            image: m.image || DEFAULT_PRESET_IMAGES[m.proteinId] || chickenImg,
+            available: m.available !== false,
+            traySize: m.traySize || m.serves || "Serves 4–5 Diners (Family Handi)",
+            serves: m.serves || m.traySize || "Serves 4–5",
+            meatWeight: m.meatWeight || "",
+            riceWeight: m.riceWeight || "1.0 kg Raw Aged Basmati",
+            kcal: Number(m.kcal) || 1700,
+            kcalAloo: Number(m.kcalAloo) || 1850,
+            badge: m.badge || "",
+            spiciness: m.spiciness || "Medium",
+            dailyLimit: Number(m.dailyLimit) || 10,
+            traysSoldWeek: Number(m.traysSoldWeek) || 0,
+            isHalalCertified: m.isHalalCertified !== false,
+          }));
+          jakloudStore.saveMenu(normalized);
           reload();
+          return normalized;
         }
-      })
-      .catch((err) => console.warn("Failed to fetch fresh menu:", err));
+      }
+    } catch (err) {
+      console.warn("Failed to fetch fresh menu:", err);
+    } finally {
+      setIsSyncing(false);
+    }
+    return jakloudStore.getMenu();
   }, [reload]);
+
+  useEffect(() => {
+    refreshFromBackend();
+  }, [refreshFromBackend]);
 
   useEffect(() => {
     const handleSync = (e: Event) => {
@@ -1149,27 +1209,44 @@ export function useDynamicMenu() {
 
   return {
     items,
+    isSyncing,
     availableItems: items.filter((i) => i.available),
-    addMenuItem: (item: Omit<DynamicMenuItem, "id" | "traysSoldWeek">) => {
+    addMenuItem: async (item: Omit<DynamicMenuItem, "id" | "traysSoldWeek">) => {
       const created = jakloudStore.addMenuItem(item);
       reload();
+      try {
+        await syncBackendCreateMenuItem(created);
+        await refreshFromBackend();
+      } catch (e) {}
       return created;
     },
-    updateMenuItem: (id: string, updates: Partial<DynamicMenuItem>) => {
+    updateMenuItem: async (id: string, updates: Partial<DynamicMenuItem>) => {
       const updated = jakloudStore.updateMenuItem(id, updates);
       reload();
+      try {
+        await syncBackendMenuItem(id, updates);
+        await refreshFromBackend();
+      } catch (e) {}
       return updated;
     },
-    deleteMenuItem: (id: string) => {
+    deleteMenuItem: async (id: string) => {
       const res = jakloudStore.deleteMenuItem(id);
       reload();
+      try {
+        await syncBackendDeleteMenuItem(id);
+        await refreshFromBackend();
+      } catch (e) {}
       return res;
     },
-    toggleAvailability: (id: string) => {
+    toggleAvailability: async (id: string) => {
       const res = jakloudStore.toggleMenuItemAvailability(id);
       reload();
+      try {
+        await syncBackendMenuItem(id, { available: res });
+      } catch (e) {}
       return res;
     },
+    refreshFromBackend,
     reload,
   };
 }
