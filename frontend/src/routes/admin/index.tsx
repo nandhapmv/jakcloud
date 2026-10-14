@@ -357,6 +357,15 @@ function AdminOverviewPage() {
     return set.size;
   }, [dateFilteredOrders]);
 
+  const uniqueDinersCount = useMemo(() => {
+    const set = new Set<string>();
+    orders.forEach((o) => {
+      const key = o.customer.phone || o.customer.email || o.customer.name;
+      if (key) set.add(key.toLowerCase().trim());
+    });
+    return set.size;
+  }, [orders]);
+
   // Dynamic Best Selling Dum Biryanis Aggregated from Live Database Orders
   const dynamicBestSellingDishes = useMemo(() => {
     const salesByDish: Record<string, { trays: number; revenue: number; dishName: string; basePrice: number }> = {};
