@@ -231,27 +231,27 @@ export function CustomizeOrderPage() {
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-32 sm:pb-36">
+    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-100 selection:text-amber-900 relative overflow-hidden pb-32 sm:pb-36">
       {/* 1. HEADER HERO BANNER */}
-      <section className="relative border-b border-white/[0.08] bg-[#121216] py-12 px-4 sm:px-8 text-center overflow-hidden">
+      <section className="relative border-b border-zinc-200 bg-white py-12 px-4 sm:px-8 text-center overflow-hidden">
         <div className="relative z-10 mx-auto max-w-4xl space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-medium text-amber-300">
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-1 text-xs font-medium text-amber-800">
+            <Sparkles className="h-3.5 w-3.5 text-amber-600" />
             <span>Layer-by-Layer Handi Customizer</span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-zinc-100">
-            Customize Your <span className="text-amber-400">Handi Order</span>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-zinc-900">
+            Customize Your <span className="text-amber-700">Handi Order</span>
           </h1>
 
-          <p className="mx-auto max-w-2xl text-xs sm:text-sm text-zinc-400 leading-relaxed font-normal">
+          <p className="mx-auto max-w-2xl text-xs sm:text-sm text-zinc-600 leading-relaxed font-normal">
             Specify your desired proteins, baby potatoes, spice levels, culinary instructions, and extra accompaniments.
             Every tray is freshly sealed with dough and slow-cooked for your batch booking.
           </p>
 
-          <div className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-[#18181f] px-3.5 py-1.5 text-xs text-zinc-300">
-            <Calendar className="h-3.5 w-3.5 text-amber-400" />
-            <span>Next Available Batch: <strong className="text-amber-300 font-medium">{nextDate}</strong> (Order by 2:00 PM)</span>
+          <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs text-zinc-700">
+            <Calendar className="h-3.5 w-3.5 text-amber-600" />
+            <span>Next Available Batch: <strong className="text-amber-800 font-semibold">{nextDate}</strong> (Order by 2:00 PM)</span>
           </div>
         </div>
       </section>
@@ -262,16 +262,16 @@ export function CustomizeOrderPage() {
           {/* LEFT: CUSTOMIZATION FORM CONTROLS */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-6">
             {/* STEP 1: CHOOSE BASE PROTEIN */}
-            <section className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-xl space-y-4">
-              <div className="border-b border-white/[0.08] pb-3 flex items-center justify-between">
+            <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="border-b border-zinc-200 pb-3 flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">Step 1</span>
-                  <h2 className="font-display text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                    <UtensilsCrossed className="h-4 w-4 text-amber-400" />
+                  <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Step 1</span>
+                  <h2 className="font-display text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                    <UtensilsCrossed className="h-4 w-4 text-amber-600" />
                     <span>Select Signature Biryani Protein</span>
                   </h2>
                 </div>
-                <span className="text-xs text-zinc-400 font-normal">1.6 – 1.8 kg Meat</span>
+                <span className="text-xs text-zinc-500 font-normal">1.6 – 1.8 kg Meat</span>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -283,11 +283,11 @@ export function CustomizeOrderPage() {
                       onClick={() => setSelectedProteinId(protein.id)}
                       className={`relative rounded-xl p-3 cursor-pointer border transition-all duration-200 flex flex-col justify-between ${
                         isSelected
-                          ? "bg-[#18181f] border-2 border-amber-500/70 shadow-md ring-1 ring-amber-500/30"
-                          : "bg-[#18181f] border-white/[0.06] hover:border-white/20 hover:bg-[#202028]"
+                          ? "bg-white border-2 border-amber-500 shadow-sm ring-1 ring-amber-400"
+                          : "bg-zinc-50 border-zinc-200 hover:border-amber-400 hover:bg-zinc-100"
                       }`}
                     >
-                      <div className="relative h-24 w-full rounded-lg overflow-hidden border border-white/10 mb-2">
+                      <div className="relative h-24 w-full rounded-lg overflow-hidden border border-zinc-200 mb-2">
                         <img
                           src={protein.image}
                           alt={protein.name}
@@ -295,11 +295,11 @@ export function CustomizeOrderPage() {
                         />
                         <div className="absolute top-1.5 left-1.5">
                           {protein.halal ? (
-                            <span className="rounded bg-emerald-950/90 border border-emerald-500/50 px-1.5 py-0.2 text-[0.6rem] font-medium text-emerald-400">
+                            <span className="rounded bg-emerald-50 border border-emerald-300 px-1.5 py-0.2 text-[0.6rem] font-medium text-emerald-800">
                               Halal
                             </span>
                           ) : (
-                            <span className="rounded bg-amber-950/90 border border-amber-500/50 px-1.5 py-0.2 text-[0.6rem] font-medium text-amber-300">
+                            <span className="rounded bg-amber-50 border border-amber-300 px-1.5 py-0.2 text-[0.6rem] font-medium text-amber-800">
                               Specialty
                             </span>
                           )}
@@ -307,18 +307,18 @@ export function CustomizeOrderPage() {
                       </div>
 
                       <div className="space-y-0.5">
-                        <h4 className={`text-xs font-semibold ${isSelected ? "text-amber-300" : "text-zinc-100"}`}>
+                        <h4 className={`text-xs font-semibold ${isSelected ? "text-amber-800" : "text-zinc-900"}`}>
                           {protein.name}
                         </h4>
                         <p className="text-[0.65rem] text-zinc-500">{protein.tag}</p>
                       </div>
 
-                      <div className="pt-2 mt-2 border-t border-white/[0.06] flex items-center justify-between">
-                        <span className="text-xs font-semibold text-amber-400">
+                      <div className="pt-2 mt-2 border-t border-zinc-200 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-amber-700">
                           {formatMoney(protein.price)}
                         </span>
                         {isSelected && (
-                          <div className="h-4 w-4 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center">
+                          <div className="h-4 w-4 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center">
                             <Check className="h-2.5 w-2.5 stroke-[3]" />
                           </div>
                         )}
@@ -330,37 +330,37 @@ export function CustomizeOrderPage() {
             </section>
 
             {/* STEP 2: POTATO & SPICE LEVEL */}
-            <section className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-xl space-y-4">
-              <div className="border-b border-white/[0.08] pb-3">
-                <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">Step 2</span>
-                <h2 className="font-display text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                  <Flame className="h-4 w-4 text-amber-400" />
+            <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="border-b border-zinc-200 pb-3">
+                <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Step 2</span>
+                <h2 className="font-display text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Flame className="h-4 w-4 text-amber-600" />
                   <span>Spice Level & Optional Baby Aloo</span>
                 </h2>
               </div>
 
-              <div className="rounded-xl border border-white/[0.06] bg-[#18181f] p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="aloo-switch" className="text-xs font-medium text-zinc-200 cursor-pointer">
+                    <Label htmlFor="aloo-switch" className="text-xs font-medium text-zinc-900 cursor-pointer">
                       🥔 Add Royal Dum Aloo (Slow-Steamed Baby Potatoes)
                     </Label>
-                    <span className="rounded bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 text-[0.65rem] font-medium text-emerald-400">
+                    <span className="rounded bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 text-[0.65rem] font-semibold text-emerald-800">
                       100% Free ($0.00)
                     </span>
                   </div>
-                  <p className="text-[0.7rem] text-zinc-400 leading-relaxed font-normal">
+                  <p className="text-[0.7rem] text-zinc-600 leading-relaxed font-normal">
                     Tender whole baby potatoes marinated with saffron, ghee, and roasted whole spices, steamed along with the rice on gentle dum.
                   </p>
                 </div>
                 <div className="shrink-0 flex items-center gap-2.5">
-                  <span className="text-xs text-zinc-400">{addPotato ? "Included" : "No Aloo"}</span>
+                  <span className="text-xs text-zinc-500">{addPotato ? "Included" : "No Aloo"}</span>
                   <Switch id="aloo-switch" checked={addPotato} onCheckedChange={setAddPotato} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-zinc-300">
+                <Label className="text-xs font-medium text-zinc-800">
                   Select Dum Spice Intensity:
                 </Label>
 
@@ -392,18 +392,18 @@ export function CustomizeOrderPage() {
                         onClick={() => setSpiceProfile(s.id as any)}
                         className={`rounded-xl p-3 cursor-pointer border transition-all text-left space-y-1 ${
                           isSelected
-                            ? "bg-amber-500/15 border-amber-500/50 text-amber-300"
-                            : "bg-[#18181f] border-white/[0.06] hover:bg-[#202028] text-zinc-400"
+                            ? "bg-amber-50/80 border-2 border-amber-500 text-zinc-900 ring-1 ring-amber-400 shadow-sm"
+                            : "bg-zinc-50 border-zinc-200 hover:bg-zinc-100 text-zinc-700"
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-xs">{s.flames}</span>
                           {isSelected && (
-                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                           )}
                         </div>
-                        <h4 className={`text-xs font-semibold ${isSelected ? "text-amber-300" : "text-zinc-200"}`}>{s.label}</h4>
-                        <p className="text-[0.65rem] text-zinc-500 leading-relaxed font-normal">{s.desc}</p>
+                        <h4 className={`text-xs font-semibold ${isSelected ? "text-amber-800" : "text-zinc-900"}`}>{s.label}</h4>
+                        <p className="text-[0.65rem] text-zinc-600 leading-relaxed font-normal">{s.desc}</p>
                       </div>
                     );
                   })}
@@ -412,12 +412,12 @@ export function CustomizeOrderPage() {
             </section>
 
             {/* STEP 3: GOURMET ADD-ON OPTIONS */}
-            <section className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-xl space-y-4">
-              <div className="border-b border-white/[0.08] pb-3 flex items-center justify-between">
+            <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="border-b border-zinc-200 pb-3 flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">Step 3</span>
-                  <h2 className="font-display text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-amber-400" />
+                  <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Step 3</span>
+                  <h2 className="font-display text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-amber-600" />
                     <span>Select Gourmet Add-Ons & Extras</span>
                   </h2>
                 </div>
@@ -433,19 +433,19 @@ export function CustomizeOrderPage() {
                       onClick={() => toggleAddon(addon.id)}
                       className={`rounded-xl p-3 cursor-pointer border transition-all flex items-start justify-between gap-2.5 ${
                         isChecked
-                          ? "bg-amber-500/10 border-amber-500/50 text-zinc-100"
-                          : "bg-[#18181f] border-white/[0.06] hover:bg-[#202028] text-zinc-300"
+                          ? "bg-amber-50/80 border-2 border-amber-500 text-zinc-900 ring-1 ring-amber-400 shadow-sm"
+                          : "bg-zinc-50 border-zinc-200 hover:bg-zinc-100 text-zinc-800"
                       }`}
                     >
                       <div className="space-y-0.5">
-                        <h4 className="text-xs font-medium text-zinc-200">{addon.name}</h4>
-                        <p className="text-[0.65rem] text-zinc-500 font-normal">{addon.description}</p>
-                        <p className="text-xs font-medium text-amber-400 pt-0.5">+{formatMoney(addon.price)}</p>
+                        <h4 className="text-xs font-medium text-zinc-900">{addon.name}</h4>
+                        <p className="text-[0.65rem] text-zinc-600 font-normal">{addon.description}</p>
+                        <p className="text-xs font-semibold text-amber-700 pt-0.5">+{formatMoney(addon.price)}</p>
                       </div>
 
                       <div
                         className={`h-4 w-4 rounded border flex items-center justify-center shrink-0 mt-0.5 transition-all ${
-                          isChecked ? "bg-amber-400 border-amber-400 text-zinc-950" : "border-zinc-600 bg-zinc-800"
+                          isChecked ? "bg-amber-500 border-amber-500 text-zinc-950" : "border-zinc-300 bg-white"
                         }`}
                       >
                         {isChecked && <Check className="h-2.5 w-2.5 stroke-[3]" />}
@@ -457,18 +457,18 @@ export function CustomizeOrderPage() {
             </section>
 
             {/* STEP 4: SPECIAL COOKING INSTRUCTIONS */}
-            <section className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-xl space-y-4">
-              <div className="border-b border-white/[0.08] pb-3">
-                <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">Step 4</span>
-                <h2 className="font-display text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-amber-400" />
+            <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="border-b border-zinc-200 pb-3">
+                <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Step 4</span>
+                <h2 className="font-display text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-amber-600" />
                   <span>Kitchen Cooking & Fulfilment Instructions</span>
                 </h2>
               </div>
 
               <div className="space-y-4 text-xs font-normal">
                 <div className="space-y-1.5">
-                  <Label htmlFor="cooking-notes" className="text-xs font-medium text-zinc-300">
+                  <Label htmlFor="cooking-notes" className="text-xs font-medium text-zinc-800">
                     Special Cooking & Flavor Instructions:
                   </Label>
                   <Textarea
@@ -477,12 +477,12 @@ export function CustomizeOrderPage() {
                     onChange={(e) => setCookingInstructions(e.target.value)}
                     placeholder="e.g. Less oil on top, pack mint raita separately, extra crispy fried onions on the side, nut allergy notification..."
                     rows={2}
-                    className="bg-[#18181f] border-white/[0.08] text-zinc-200 placeholder:text-zinc-500 text-xs rounded-xl focus:border-amber-500/50"
+                    className="bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 text-xs rounded-xl focus:border-amber-500"
                   />
                 </div>
 
                 <div className="space-y-2 pt-1">
-                  <Label className="text-xs font-medium text-zinc-300">
+                  <Label className="text-xs font-medium text-zinc-800">
                     Fulfilment Method & Time Slot:
                   </Label>
                   <div className="grid grid-cols-2 gap-2">
@@ -494,8 +494,8 @@ export function CustomizeOrderPage() {
                       }}
                       className={`rounded-xl p-2.5 text-left border transition-all ${
                         fulfilmentType === "pickup"
-                          ? "bg-amber-500/15 border-amber-500/50 text-amber-300 font-semibold"
-                          : "bg-[#18181f] border-white/[0.06] text-zinc-400"
+                          ? "bg-amber-50/80 border-2 border-amber-500 text-zinc-900 font-semibold ring-1 ring-amber-400 shadow-sm"
+                          : "bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100"
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
@@ -513,8 +513,8 @@ export function CustomizeOrderPage() {
                       }}
                       className={`rounded-xl p-2.5 text-left border transition-all ${
                         fulfilmentType === "delivery"
-                          ? "bg-amber-500/15 border-amber-500/50 text-amber-300 font-semibold"
-                          : "bg-[#18181f] border-white/[0.06] text-zinc-400"
+                          ? "bg-amber-50/80 border-2 border-amber-500 text-zinc-900 font-semibold ring-1 ring-amber-400 shadow-sm"
+                          : "bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100"
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
@@ -526,14 +526,14 @@ export function CustomizeOrderPage() {
                   </div>
 
                   <div className="pt-1 flex items-center gap-2">
-                    <Label className="text-xs text-zinc-400 shrink-0">Time Window:</Label>
+                    <Label className="text-xs text-zinc-600 shrink-0">Time Window:</Label>
                     <select
                       value={selectedTimeSlot}
                       onChange={(e) => setSelectedTimeSlot(e.target.value)}
-                      className="rounded-xl bg-[#18181f] border border-white/[0.08] text-amber-300 px-2.5 py-1 text-xs focus:border-amber-500/50 outline-none cursor-pointer flex-1"
+                      className="rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 px-2.5 py-1 text-xs focus:border-amber-500 outline-none cursor-pointer flex-1"
                     >
                       {(fulfilmentType === "pickup" ? PICKUP_TIMES : DELIVERY_TIMES).map((t) => (
-                        <option key={t} value={t} className="bg-[#121216] text-zinc-200">
+                        <option key={t} value={t} className="bg-white text-zinc-900">
                           {t} ({nextDate})
                         </option>
                       ))}
@@ -542,7 +542,7 @@ export function CustomizeOrderPage() {
                 </div>
 
                 <div className="space-y-1.5 pt-1">
-                  <Label htmlFor="delivery-notes" className="text-xs font-medium text-zinc-300">
+                  <Label htmlFor="delivery-notes" className="text-xs font-medium text-zinc-800">
                     Delivery Notes / Gate Code / Drop-off Instructions:
                   </Label>
                   <Textarea
@@ -551,7 +551,7 @@ export function CustomizeOrderPage() {
                     onChange={(e) => setDeliveryNotes(e.target.value)}
                     placeholder="e.g. Leave with building concierge, ring doorbell #2B, call on arrival..."
                     rows={2}
-                    className="bg-[#18181f] border-white/[0.08] text-zinc-200 placeholder:text-zinc-500 text-xs rounded-xl focus:border-amber-500/50"
+                    className="bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 text-xs rounded-xl focus:border-amber-500"
                   />
                 </div>
               </div>
@@ -560,21 +560,21 @@ export function CustomizeOrderPage() {
 
           {/* RIGHT: STICKY LIVE PRICE SUMMARY */}
           <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20 space-y-4">
-            <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
                 <div>
-                  <span className="text-[0.62rem] font-medium text-amber-400 uppercase tracking-wider">Live Summary</span>
-                  <h3 className="font-display text-lg font-semibold text-zinc-100">Configuration</h3>
+                  <span className="text-[0.62rem] font-semibold text-amber-700 uppercase tracking-wider">Live Summary</span>
+                  <h3 className="font-display text-lg font-semibold text-zinc-900">Configuration</h3>
                 </div>
-                <div className="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                <div className="h-8 w-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
                   <ShoppingBag className="h-4 w-4" />
                 </div>
               </div>
 
-              <div className="rounded-xl bg-[#18181f] border border-white/[0.06] p-3 space-y-1 text-xs">
+              <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-3 space-y-1 text-xs">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-zinc-100">{selectedProtein.name}</h4>
-                  <span className="font-semibold text-amber-400">
+                  <h4 className="font-medium text-zinc-900">{selectedProtein.name}</h4>
+                  <span className="font-semibold text-amber-700">
                     {formatMoney(selectedProtein.price)}
                   </span>
                 </div>
@@ -585,21 +585,21 @@ export function CustomizeOrderPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl bg-[#18181f] border border-white/[0.06] p-2.5 text-xs">
-                <span className="text-zinc-300 font-medium">Tray Quantity:</span>
-                <div className="flex items-center rounded-lg border border-white/[0.08] bg-[#121216] text-zinc-200">
+              <div className="flex items-center justify-between rounded-xl bg-zinc-50 border border-zinc-200 p-2.5 text-xs">
+                <span className="text-zinc-700 font-medium">Tray Quantity:</span>
+                <div className="flex items-center rounded-lg border border-zinc-200 bg-white text-zinc-900">
                   <button
                     type="button"
                     onClick={() => setTrayCount((q) => Math.max(1, q - 1))}
-                    className="px-2.5 py-1 text-xs text-zinc-400 hover:text-zinc-100 rounded-l-lg transition-colors"
+                    className="px-2.5 py-1 text-xs text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-l-lg transition-colors"
                   >
                     −
                   </button>
-                  <span className="w-6 text-center text-xs font-medium text-zinc-100">{trayCount}</span>
+                  <span className="w-6 text-center text-xs font-semibold text-zinc-900">{trayCount}</span>
                   <button
                     type="button"
                     onClick={() => setTrayCount((q) => q + 1)}
-                    className="px-2.5 py-1 text-xs text-zinc-400 hover:text-zinc-100 rounded-r-lg transition-colors"
+                    className="px-2.5 py-1 text-xs text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-r-lg transition-colors"
                   >
                     +
                   </button>
@@ -607,40 +607,39 @@ export function CustomizeOrderPage() {
               </div>
 
               {/* Itemized Calculations */}
-              <div className="space-y-1.5 pt-2 border-t border-white/[0.08] text-xs font-normal">
-                <div className="flex justify-between text-zinc-400">
+              <div className="space-y-1.5 pt-2 border-t border-zinc-200 text-xs font-normal">
+                <div className="flex justify-between text-zinc-600">
                   <span>{trayCount} × {selectedProtein.name}:</span>
-                  <span className="text-zinc-200">{formatMoney(selectedProtein.price * trayCount)}</span>
+                  <span className="text-zinc-900">{formatMoney(selectedProtein.price * trayCount)}</span>
                 </div>
 
                 {addPotato && (
-                  <div className="flex justify-between text-emerald-400">
+                  <div className="flex justify-between text-emerald-700 font-medium">
                     <span>Royal Dum Aloo ({trayCount} Trays):</span>
                     <span>Free ($0.00)</span>
                   </div>
                 )}
 
-                <div className="flex justify-between text-zinc-400">
+                <div className="flex justify-between text-zinc-600">
                   <span>Spice Level:</span>
-                  <span className="capitalize text-zinc-200">{spiceProfile}</span>
+                  <span className="capitalize text-zinc-900">{spiceProfile}</span>
                 </div>
 
                 {calculations.addonsSum > 0 && (
-                  <div className="flex justify-between text-amber-300">
+                  <div className="flex justify-between text-amber-700 font-medium">
                     <span>Gourmet Add-ons:</span>
                     <span>+{formatMoney(calculations.addonsSum)}</span>
                   </div>
                 )}
-
 
                 <div className="flex justify-between text-zinc-500">
                   <span>Fulfilment ({fulfilmentType === "pickup" ? "Pickup" : "Delivery"}):</span>
                   <span>{calculations.deliveryCost === 0 ? "Free" : formatMoney(calculations.deliveryCost)}</span>
                 </div>
 
-                <div className="pt-2 border-t border-white/[0.08] flex justify-between items-baseline">
-                  <span className="font-medium text-zinc-100">Estimated Total:</span>
-                  <span className="font-display text-xl font-semibold text-amber-400">
+                <div className="pt-2 border-t border-zinc-200 flex justify-between items-baseline">
+                  <span className="font-semibold text-zinc-900">Estimated Total:</span>
+                  <span className="font-display text-xl font-bold text-amber-700">
                     {formatMoney(calculations.grandTotal)}
                   </span>
                 </div>
@@ -651,7 +650,7 @@ export function CustomizeOrderPage() {
                 <Button
                   onClick={() => handleAddToCartAndCheckout("checkout")}
                   size="lg"
-                  className="w-full rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs py-4 shadow-md transition-colors gap-1.5"
+                  className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-105 text-zinc-950 font-bold text-xs py-4 shadow-sm transition-all gap-1.5"
                 >
                   <UtensilsCrossed className="h-3.5 w-3.5" />
                   <span>Proceed to Checkout ({formatMoney(calculations.grandTotal)}) →</span>
@@ -660,7 +659,7 @@ export function CustomizeOrderPage() {
                 <Button
                   variant="outline"
                   onClick={() => handleAddToCartAndCheckout("cart")}
-                  className="w-full rounded-xl border-white/10 text-zinc-300 hover:bg-white/[0.06] text-xs font-normal py-2.5"
+                  className="w-full rounded-xl border-zinc-300 text-zinc-800 hover:bg-zinc-100 text-xs font-medium py-2.5"
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" /> Add Customized Tray to Cart
                 </Button>
@@ -669,15 +668,15 @@ export function CustomizeOrderPage() {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/40 hover:bg-emerald-900/50 p-2.5 text-xs font-medium text-emerald-400 transition-colors"
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 p-2.5 text-xs font-semibold text-emerald-800 transition-colors"
                 >
                   <MessageSquare className="h-3.5 w-3.5" />
                   <span>Order on WhatsApp Direct</span>
                 </a>
               </div>
 
-              <div className="flex items-center gap-2 rounded-lg bg-[#18181f] border border-white/[0.04] p-2 text-[0.65rem] text-zinc-400 font-normal">
-                <Shield className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              <div className="flex items-center gap-2 rounded-lg bg-zinc-50 border border-zinc-200 p-2 text-[0.65rem] text-zinc-600 font-normal">
+                <Shield className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                 <span>100% Zabiha Halal Guarantee • Fresh Daily Dum</span>
               </div>
             </div>

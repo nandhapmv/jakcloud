@@ -178,30 +178,30 @@ export function CartPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-100 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-32 sm:pb-36">
+    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 relative overflow-hidden pb-32 sm:pb-36">
       {/* ------------------------------------------------------------- */}
       {/* 1. HERO HEADER                                                */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative border-b border-white/[0.08] bg-[#0c0c0e] py-10 px-6 sm:px-8 text-center overflow-hidden">
+      <section className="relative border-b border-zinc-200 bg-white py-10 px-6 sm:px-8 text-center overflow-hidden shadow-sm">
         <div className="relative z-10 mx-auto max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-black/60 px-4 py-1 text-xs font-medium text-amber-300 shadow-sm">
-            <ShoppingBag className="h-3.5 w-3.5 text-amber-400" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-1 text-xs font-semibold text-amber-800 shadow-sm">
+            <ShoppingBag className="h-3.5 w-3.5 text-amber-600" />
             <span>Handcrafted Dum Biryani Reservation</span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-4xl font-semibold text-zinc-100">
-            Your Handi <span className="text-amber-400 italic font-normal">Shopping Bag</span>
+          <h1 className="font-display text-3xl sm:text-4xl font-semibold text-zinc-900">
+            Your Handi <span className="text-amber-700 italic font-normal">Shopping Bag</span>
           </h1>
 
-          <p className="mx-auto max-w-xl text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed">
+          <p className="mx-auto max-w-xl text-xs sm:text-sm text-zinc-600 font-normal leading-relaxed">
             Every handi tray is cooked fresh to order by Master Chef Kartheek. Confirm your quantities and proceed to Springfield booking.
           </p>
 
-          <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-zinc-900/80 px-3.5 py-1.5 text-xs text-zinc-300 shadow-sm font-normal">
-            <Calendar className="h-3.5 w-3.5 text-amber-400" />
-            <span>Next Available Fulfillment: <strong className="text-zinc-100 font-medium">{nextDate}</strong></span>
-            <span className="text-zinc-600">•</span>
-            <span className="text-zinc-400">2:00 PM Cutoff</span>
+          <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs text-zinc-700 shadow-sm font-normal">
+            <Calendar className="h-3.5 w-3.5 text-amber-600" />
+            <span>Next Available Fulfillment: <strong className="text-zinc-900 font-semibold">{nextDate}</strong></span>
+            <span className="text-zinc-400">•</span>
+            <span className="text-zinc-600">2:00 PM Cutoff</span>
           </div>
         </div>
       </section>
@@ -213,28 +213,28 @@ export function CartPage() {
         {count === 0 ? (
           /* EMPTY CART SCREEN WITH RECOMMENDATIONS */
           <div className="max-w-3xl mx-auto space-y-8 text-center py-6">
-            <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-8 sm:p-10 shadow-sm space-y-5">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-8 sm:p-10 shadow-sm space-y-5">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 border border-amber-200 text-amber-700">
                 <ShoppingBag className="h-8 w-8 opacity-75" />
               </div>
 
               <div className="space-y-1">
-                <h2 className="font-display text-xl sm:text-2xl font-semibold text-zinc-100">
+                <h2 className="font-display text-xl sm:text-2xl font-semibold text-zinc-900">
                   Your Handi Cart is Empty
                 </h2>
-                <p className="text-xs sm:text-sm text-zinc-400 font-normal max-w-md mx-auto pt-1">
+                <p className="text-xs sm:text-sm text-zinc-600 font-normal max-w-md mx-auto pt-1">
                   You haven't reserved any slow-cooked Dum Biryani Handi trays yet. Explore our royal menu to begin.
                 </p>
               </div>
 
               <div className="flex flex-wrap justify-center gap-3 pt-2">
-                <Button asChild size="lg" className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold text-xs px-6 py-4 shadow-md hover:brightness-105 transition-all">
+                <Button asChild size="lg" className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold text-xs px-6 py-4 shadow-md hover:brightness-105 transition-all">
                   <Link to="/menu">
                     <UtensilsCrossed className="h-4 w-4 mr-1.5" /> Explore Handi Menu →
                   </Link>
                 </Button>
 
-                <Button asChild variant="outline" size="lg" className="rounded-xl border-white/10 text-zinc-300 hover:bg-zinc-800 text-xs font-medium px-6 py-4">
+                <Button asChild variant="outline" size="lg" className="rounded-xl border-zinc-300 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold px-6 py-4">
                   <Link to="/trays">
                     <Sparkles className="h-4 w-4 mr-1.5" /> Multi-Tray Packages
                   </Link>
@@ -244,27 +244,27 @@ export function CartPage() {
 
             {/* Quick Add Recommendations */}
             <div className="space-y-3.5 text-left">
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
-                <h3 className="font-semibold text-sm text-zinc-100 flex items-center gap-2">
-                  <Flame className="h-4 w-4 text-amber-400" />
+              <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+                <h3 className="font-semibold text-sm text-zinc-900 flex items-center gap-2">
+                  <Flame className="h-4 w-4 text-amber-600" />
                   <span>Popular Signature Trays</span>
                 </h3>
-                <span className="text-xs text-zinc-400 font-normal">Feeds 4–5 Adults Each</span>
+                <span className="text-xs text-zinc-500 font-normal">Feeds 4–5 Adults Each</span>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
                 {quickRecommendations.map((dish) => (
                   <div
                     key={dish.id}
-                    className="rounded-xl border border-white/[0.08] bg-[#121216] p-3.5 shadow-sm flex flex-col justify-between space-y-2.5 hover:border-amber-500/30 transition-all"
+                    className="rounded-xl border border-zinc-200 bg-white p-3.5 shadow-sm flex flex-col justify-between space-y-2.5 hover:border-amber-500/40 hover:shadow-md transition-all"
                   >
-                    <div className="relative h-32 w-full rounded-lg overflow-hidden border border-white/5">
+                    <div className="relative h-32 w-full rounded-lg overflow-hidden border border-zinc-200">
                       <img src={dish.image} alt={dish.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
                     </div>
                     <div className="space-y-0.5">
-                      <h4 className="text-xs font-semibold text-zinc-100 truncate">{dish.name}</h4>
-                      <p className="text-[11px] text-zinc-400 font-normal">{dish.servings} • 1.6–1.8 kg Meat</p>
-                      <p className="text-xs font-semibold text-amber-400 font-mono pt-1">{formatMoney(dish.price)}</p>
+                      <h4 className="text-xs font-semibold text-zinc-900 truncate">{dish.name}</h4>
+                      <p className="text-[11px] text-zinc-500 font-normal">{dish.servings} • 1.6–1.8 kg Meat</p>
+                      <p className="text-xs font-semibold text-amber-800 font-mono pt-1">{formatMoney(dish.price)}</p>
                     </div>
                     <Button
                       size="sm"
@@ -280,7 +280,7 @@ export function CartPage() {
                         });
                         toast.success(`${dish.name} added to your cart!`);
                       }}
-                      className="w-full rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 text-xs font-medium py-1.5 cursor-pointer"
+                      className="w-full rounded-lg bg-amber-500 text-zinc-950 hover:bg-amber-400 text-xs font-bold py-1.5 cursor-pointer shadow-sm"
                     >
                       <Plus className="h-3.5 w-3.5 mr-1" /> Add Tray
                     </Button>
@@ -294,9 +294,9 @@ export function CartPage() {
           <div className="grid gap-8 lg:grid-cols-12 items-start">
             {/* LEFT: ORDERED ITEMS LIST */}
             <div className="lg:col-span-7 xl:col-span-8 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+              <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base sm:text-lg font-semibold text-zinc-100">
+                  <h2 className="text-base sm:text-lg font-semibold text-zinc-900">
                     Reserved Handi Trays ({count})
                   </h2>
                 </div>
@@ -308,7 +308,7 @@ export function CartPage() {
                       toast.info("Cart cleared");
                     }
                   }}
-                  className="text-xs text-zinc-400 hover:text-rose-400 font-normal flex items-center gap-1 cursor-pointer transition-colors"
+                  className="text-xs text-zinc-500 hover:text-rose-600 font-normal flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   <span>Clear All</span>
@@ -324,11 +324,11 @@ export function CartPage() {
                   return (
                     <div
                       key={line.key}
-                      className="rounded-2xl border border-white/[0.08] bg-[#121216] p-4 shadow-sm transition-all hover:border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                      className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm transition-all hover:border-amber-500/40 hover:shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                     >
                       {/* Left: Thumbnail & Details */}
                       <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                        <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-xl overflow-hidden border border-white/5 shrink-0">
+                        <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-xl overflow-hidden border border-zinc-200 shrink-0">
                           <img
                             src={dishImage}
                             alt={line.name}
@@ -336,11 +336,11 @@ export function CartPage() {
                           />
                           <div className="absolute top-1 left-1">
                             {isHalal ? (
-                              <span className="rounded bg-black/70 border border-emerald-500/40 px-1.5 py-0.2 text-[9px] font-medium text-emerald-400">
+                              <span className="rounded bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 text-[9px] font-semibold text-emerald-800">
                                 Halal
                               </span>
                             ) : (
-                              <span className="rounded bg-black/70 border border-amber-500/40 px-1.5 py-0.2 text-[9px] font-medium text-amber-300">
+                              <span className="rounded bg-amber-50 border border-amber-200 px-1.5 py-0.2 text-[9px] font-semibold text-amber-800">
                                 Specialty
                               </span>
                             )}
@@ -349,43 +349,43 @@ export function CartPage() {
 
                         <div className="space-y-1 min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-2">
-                            <h3 className="text-sm sm:text-base font-semibold text-zinc-100 group-hover:text-amber-300 transition-colors">
+                            <h3 className="text-sm sm:text-base font-semibold text-zinc-900 group-hover:text-amber-800 transition-colors">
                               {line.name}
                             </h3>
                           </div>
 
                           <div className="flex flex-wrap items-center gap-2 text-xs font-normal">
-                            <span className="rounded-md bg-zinc-900 border border-white/[0.06] px-2 py-0.5 text-zinc-300">
+                            <span className="rounded-md bg-zinc-100 border border-zinc-200 px-2 py-0.5 text-zinc-700">
                               {line.aloo ? "• Royal Dum Aloo (Free)" : "• Plain / No Aloo"}
                             </span>
 
-                            <span className="rounded-md bg-zinc-900 border border-white/[0.06] px-2 py-0.5 text-zinc-400 flex items-center gap-1">
+                            <span className="rounded-md bg-zinc-100 border border-zinc-200 px-2 py-0.5 text-zinc-700 flex items-center gap-1">
                               {line.extraSpicy ? (
                                 <>
-                                  <Flame className="h-3 w-3 text-rose-400" />
-                                  <span className="text-rose-300 font-medium">Spicy</span>
+                                  <Flame className="h-3 w-3 text-rose-500" />
+                                  <span className="text-rose-700 font-medium">Spicy</span>
                                 </>
                               ) : (
                                 <>
-                                  <Sparkles className="h-3 w-3 text-emerald-400" />
-                                  <span className="text-emerald-300 font-medium">No Spicy (Mild)</span>
+                                  <Sparkles className="h-3 w-3 text-emerald-600" />
+                                  <span className="text-emerald-700 font-medium">No Spicy (Mild)</span>
                                 </>
                               )}
                             </span>
 
-                            <span className="text-zinc-600">•</span>
-                            <span className="text-zinc-400">Serves 4–5</span>
+                            <span className="text-zinc-400">•</span>
+                            <span className="text-zinc-500">Serves 4–5</span>
                           </div>
 
                           {line.notes && (
-                            <p className="text-[11px] text-zinc-400 bg-zinc-900/60 rounded-lg p-2 border border-white/[0.05] italic font-normal">
+                            <p className="text-[11px] text-zinc-600 bg-zinc-50 rounded-lg p-2 border border-zinc-200 italic font-normal">
                               Note: {line.notes}
                             </p>
                           )}
 
                           <div className="pt-0.5 flex items-baseline gap-2">
-                            <span className="text-xs text-zinc-400 font-normal">Unit Price:</span>
-                            <span className="text-xs font-semibold text-amber-400 font-mono">
+                            <span className="text-xs text-zinc-500 font-normal">Unit Price:</span>
+                            <span className="text-xs font-semibold text-amber-800 font-mono">
                               {formatMoney(line.unitPrice)}
                             </span>
                           </div>
@@ -393,30 +393,30 @@ export function CartPage() {
                       </div>
 
                       {/* Right: Quantity Stepper & Line Total */}
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-white/[0.06] shrink-0">
+                      <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-zinc-100 shrink-0">
                         <div className="text-right">
                           <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-normal">Line Total</span>
-                          <span className="text-base sm:text-lg font-semibold text-amber-400 font-mono">
+                          <span className="text-base sm:text-lg font-semibold text-amber-800 font-mono">
                             {formatMoney(line.unitPrice * line.qty)}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2">
                           {/* Quantity Controller */}
-                          <div className="flex items-center rounded-lg border border-white/10 bg-zinc-900/80 p-0.5">
+                          <div className="flex items-center rounded-lg border border-zinc-200 bg-zinc-50 p-0.5">
                             <button
                               type="button"
                               onClick={() => setQty(line.key, line.qty - 1)}
-                              className="h-7 w-7 flex items-center justify-center text-xs text-zinc-400 hover:text-zinc-100 rounded transition-colors cursor-pointer"
+                              className="h-7 w-7 flex items-center justify-center text-xs text-zinc-600 hover:text-zinc-900 rounded transition-colors cursor-pointer"
                               aria-label="Decrease quantity"
                             >
                               <Minus className="h-3 w-3" />
                             </button>
-                            <span className="w-7 text-center text-xs font-medium text-zinc-100 font-mono">{line.qty}</span>
+                            <span className="w-7 text-center text-xs font-medium text-zinc-900 font-mono">{line.qty}</span>
                             <button
                               type="button"
                               onClick={() => setQty(line.key, line.qty + 1)}
-                              className="h-7 w-7 flex items-center justify-center text-xs text-amber-400 hover:text-amber-300 rounded transition-colors cursor-pointer"
+                              className="h-7 w-7 flex items-center justify-center text-xs text-amber-800 hover:text-amber-950 rounded transition-colors cursor-pointer"
                               aria-label="Increase quantity"
                             >
                               <Plus className="h-3 w-3" />
@@ -430,7 +430,7 @@ export function CartPage() {
                               removeLine(line.key);
                               toast.info(`Removed ${line.name} from cart`);
                             }}
-                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-zinc-900/60 border border-white/10 text-zinc-400 hover:text-rose-400 transition-colors cursor-pointer"
+                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                             title="Remove item"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -443,26 +443,26 @@ export function CartPage() {
               </div>
 
               {/* Promo Code Card */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-4 shadow-sm space-y-2.5">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-amber-400" />
-                    <h3 className="text-xs sm:text-sm font-semibold text-zinc-100">Have a Promo Code?</h3>
+                    <Tag className="h-4 w-4 text-amber-600" />
+                    <h3 className="text-xs sm:text-sm font-semibold text-zinc-900">Have a Promo Code?</h3>
                   </div>
-                  <span className="text-xs text-zinc-400 font-mono">Try: SPICEKING</span>
+                  <span className="text-xs text-zinc-500 font-mono font-medium">Try: SPICEKING</span>
                 </div>
 
                 {appliedPromo ? (
-                  <div className="flex items-center justify-between rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-xs text-emerald-300">
+                  <div className="flex items-center justify-between rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800">
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                       <div>
                         <span className="font-semibold">{appliedPromo.code}</span> ({appliedPromo.label})
                       </div>
                     </div>
                     <button
                       onClick={handleRemovePromo}
-                      className="text-xs text-zinc-400 hover:text-rose-400 underline cursor-pointer"
+                      className="text-xs text-zinc-500 hover:text-rose-600 underline cursor-pointer"
                     >
                       Remove
                     </button>
@@ -473,11 +473,11 @@ export function CartPage() {
                       value={promoInput}
                       onChange={(e) => setPromoInput(e.target.value)}
                       placeholder="Enter promo code"
-                      className="bg-zinc-900/80 border-white/10 text-zinc-100 text-xs rounded-lg uppercase font-mono"
+                      className="bg-zinc-50 border-zinc-200 text-zinc-900 text-xs rounded-lg uppercase font-mono focus:border-amber-500 focus:bg-white"
                     />
                     <Button
                       type="submit"
-                      className="rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 text-xs font-medium px-4 cursor-pointer"
+                      className="rounded-lg bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold px-4 cursor-pointer shadow-sm"
                     >
                       Apply
                     </Button>
@@ -486,13 +486,13 @@ export function CartPage() {
               </div>
 
               {/* Fulfilment Method Switcher */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-4 shadow-sm space-y-3">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs sm:text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                    <Store className="h-4 w-4 text-amber-400" />
+                  <h3 className="text-xs sm:text-sm font-semibold text-zinc-900 flex items-center gap-2">
+                    <Store className="h-4 w-4 text-amber-600" />
                     <span>Select Fulfilment Method</span>
                   </h3>
-                  <span className="text-xs text-zinc-400 font-normal">Springfield, Missouri</span>
+                  <span className="text-xs text-zinc-500 font-normal">Springfield, Missouri</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -501,15 +501,15 @@ export function CartPage() {
                     onClick={() => setFulfilmentType("pickup")}
                     className={`rounded-xl p-3 text-left border transition-all cursor-pointer ${
                       fulfilmentType === "pickup"
-                        ? "bg-amber-500/10 border-amber-500/40 text-amber-300 font-medium"
-                        : "bg-zinc-900/40 border-white/[0.06] text-zinc-400 hover:text-zinc-200 font-normal"
+                        ? "bg-amber-50 border-amber-400 text-amber-950 font-semibold ring-1 ring-amber-400/50"
+                        : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:text-zinc-900 font-normal hover:bg-zinc-100"
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Store className="h-4 w-4 text-amber-400" />
-                      <span className="text-xs font-medium text-zinc-100">Counter Pickup (Free)</span>
+                      <Store className="h-4 w-4 text-amber-600" />
+                      <span className="text-xs font-semibold text-zinc-900">Counter Pickup (Free)</span>
                     </div>
-                    <p className="text-[10px] text-zinc-400 mt-1 font-normal">3625 S Bedford Ave, Springfield</p>
+                    <p className="text-[10px] text-zinc-500 mt-1 font-normal">3625 S Bedford Ave, Springfield</p>
                   </button>
 
                   <button
@@ -517,30 +517,30 @@ export function CartPage() {
                     onClick={() => setFulfilmentType("delivery")}
                     className={`rounded-xl p-3 text-left border transition-all cursor-pointer ${
                       fulfilmentType === "delivery"
-                        ? "bg-amber-500/10 border-amber-500/40 text-amber-300 font-medium"
-                        : "bg-zinc-900/40 border-white/[0.06] text-zinc-400 hover:text-zinc-200 font-normal"
+                        ? "bg-amber-50 border-amber-400 text-amber-950 font-semibold ring-1 ring-amber-400/50"
+                        : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:text-zinc-900 font-normal hover:bg-zinc-100"
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Truck className="h-4 w-4 text-amber-400" />
-                      <span className="text-xs font-medium text-zinc-100">
+                      <Truck className="h-4 w-4 text-amber-600" />
+                      <span className="text-xs font-semibold text-zinc-900">
                         Doorstep Delivery ({count >= 5 ? "FREE" : `$${DELIVERY_FEE}`})
                       </span>
                     </div>
-                    <p className="text-[10px] text-zinc-400 mt-1 font-normal">Within 10 miles of 65809</p>
+                    <p className="text-[10px] text-zinc-500 mt-1 font-normal">Within 10 miles of 65809</p>
                   </button>
                 </div>
               </div>
 
               {/* Add More Items Bar */}
               <div className="flex items-center justify-between pt-1">
-                <Button asChild variant="ghost" className="text-xs text-amber-400 hover:bg-amber-500/10 rounded-lg font-medium cursor-pointer">
+                <Button asChild variant="ghost" className="text-xs text-amber-800 hover:bg-amber-50 rounded-lg font-semibold cursor-pointer">
                   <Link to="/menu">
                     <ArrowLeft className="h-3.5 w-3.5 mr-1" /> Add More Dishes from Menu
                   </Link>
                 </Button>
 
-                <Button asChild variant="ghost" className="text-xs text-amber-400 hover:bg-amber-500/10 rounded-lg font-medium cursor-pointer">
+                <Button asChild variant="ghost" className="text-xs text-amber-800 hover:bg-amber-50 rounded-lg font-semibold cursor-pointer">
                   <Link to="/trays">
                     <Sparkles className="h-3.5 w-3.5 mr-1" /> Multi-Tray Packages
                   </Link>
@@ -550,57 +550,56 @@ export function CartPage() {
 
             {/* RIGHT: STICKY ORDER SUMMARY */}
             <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 space-y-4">
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 shadow-sm space-y-4">
-                <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
                   <div>
-                    <h3 className="text-sm font-semibold text-zinc-100">Checkout Summary</h3>
+                    <h3 className="text-sm font-semibold text-zinc-900">Checkout Summary</h3>
                   </div>
-                  <div className="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <div className="h-8 w-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
                     <ShoppingBag className="h-4 w-4" />
                   </div>
                 </div>
 
                 {/* Serving & Portion Guarantee */}
-                <div className="rounded-xl bg-zinc-900/50 border border-white/[0.05] p-3 space-y-1.5 text-xs font-normal">
-                  <div className="flex justify-between font-medium text-zinc-200">
+                <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-3 space-y-1.5 text-xs font-normal">
+                  <div className="flex justify-between font-semibold text-zinc-900">
                     <span>Total Trays:</span>
-                    <span className="text-amber-400 font-mono">{count} Handi Trays</span>
+                    <span className="text-amber-800 font-mono">{count} Handi Trays</span>
                   </div>
-                  <div className="space-y-0.5 text-[11px] text-zinc-400">
-                    <p className="flex items-center gap-1.5 text-zinc-300">
-                      <Users className="h-3.5 w-3.5 text-amber-400" />
+                  <div className="space-y-0.5 text-[11px] text-zinc-600">
+                    <p className="flex items-center gap-1.5 text-zinc-700">
+                      <Users className="h-3.5 w-3.5 text-amber-600" />
                       <span>Comfortably feeds {count * 4}–{count * 5} adults</span>
                     </p>
                     <p className="flex items-center gap-1.5">
-                      <Scale className="h-3.5 w-3.5 text-amber-400" />
+                      <Scale className="h-3.5 w-3.5 text-amber-600" />
                       <span>{(1.7 * count).toFixed(1)} kg Meat • {(1.0 * count).toFixed(1)} kg Basmati</span>
                     </p>
                   </div>
                 </div>
 
                 {/* Itemized Calculation */}
-                <div className="space-y-2 text-xs text-zinc-400 font-normal pt-1">
+                <div className="space-y-2 text-xs text-zinc-600 font-normal pt-1">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
-                    <span className="font-mono text-zinc-200">{formatMoney(calculations.subtotal)}</span>
+                    <span className="font-mono text-zinc-900 font-medium">{formatMoney(calculations.subtotal)}</span>
                   </div>
 
                   {calculations.discountAmount > 0 && (
-                    <div className="flex justify-between text-emerald-400">
+                    <div className="flex justify-between text-emerald-700 font-medium">
                       <span>Promo Discount ({appliedPromo?.code}):</span>
                       <span className="font-mono">−{formatMoney(calculations.discountAmount)}</span>
                     </div>
                   )}
 
-
                   <div className="flex justify-between">
                     <span>Fulfilment ({fulfilmentType === "pickup" ? "Pickup" : "Delivery"}):</span>
-                    <span className="font-mono text-zinc-200">{calculations.deliveryCost === 0 ? "Free" : formatMoney(calculations.deliveryCost)}</span>
+                    <span className="font-mono text-zinc-900 font-medium">{calculations.deliveryCost === 0 ? "Free" : formatMoney(calculations.deliveryCost)}</span>
                   </div>
 
-                  <div className="pt-2.5 border-t border-white/[0.08] flex justify-between items-baseline">
-                    <span className="text-sm font-semibold text-zinc-100">Grand Total:</span>
-                    <span className="text-lg font-semibold text-amber-400 font-mono">
+                  <div className="pt-2.5 border-t border-zinc-200 flex justify-between items-baseline">
+                    <span className="text-sm font-semibold text-zinc-900">Grand Total:</span>
+                    <span className="text-lg font-bold text-amber-800 font-mono">
                       {formatMoney(calculations.grandTotal)}
                     </span>
                   </div>
@@ -610,7 +609,7 @@ export function CartPage() {
                 <div className="space-y-2 pt-1">
                   <Button
                     onClick={() => navigate({ to: "/checkout" })}
-                    className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-semibold text-xs sm:text-sm py-3.5 shadow-md hover:brightness-105 transition-all gap-1.5 cursor-pointer"
+                    className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold text-xs sm:text-sm py-3.5 shadow-md hover:brightness-105 transition-all gap-1.5 cursor-pointer"
                   >
                     <span>Continue to Checkout ({formatMoney(calculations.grandTotal)}) →</span>
                   </Button>
@@ -619,24 +618,24 @@ export function CartPage() {
                     href={whatsappCheckoutUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 p-2.5 text-xs font-medium text-emerald-400 transition-all cursor-pointer"
+                    className="flex items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 p-2.5 text-xs font-semibold text-emerald-800 transition-all cursor-pointer"
                   >
-                    <MessageSquare className="h-3.5 w-3.5" />
+                    <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
                     <span>WhatsApp Instant Checkout</span>
                   </a>
 
                   <a
                     href={`tel:${BUSINESS.phone}`}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-zinc-900/60 hover:bg-zinc-800 p-2 text-xs font-normal text-zinc-300 hover:text-amber-400 transition-all"
+                    className="flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 p-2 text-xs font-medium text-zinc-700 hover:text-amber-800 transition-all"
                   >
-                    <Phone className="h-3 w-3 text-amber-400" />
+                    <Phone className="h-3 w-3 text-amber-600" />
                     <span>Call Hotline: {BUSINESS.phone}</span>
                   </a>
                 </div>
 
                 {/* Batch Guarantee Stamp */}
-                <div className="flex items-center gap-2 rounded-lg bg-zinc-900/40 border border-white/[0.06] p-2 text-[10px] text-zinc-400 font-normal">
-                  <Shield className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                <div className="flex items-center gap-2 rounded-lg bg-zinc-50 border border-zinc-200 p-2 text-[10px] text-zinc-600 font-normal">
+                  <Shield className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                   <span>100% Zabiha Halal • Handcrafted in Springfield, MO</span>
                 </div>
               </div>

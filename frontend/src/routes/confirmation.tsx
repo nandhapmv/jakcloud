@@ -214,35 +214,31 @@ export function OrderConfirmationPage() {
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#080503] font-sans text-cream selection:bg-gold/30 selection:text-gold relative overflow-hidden pb-28">
-      {/* Golden Confetti & Ambient Aura */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-gold/15 blur-[160px] pointer-events-none" />
-      <div className="absolute top-1/3 right-0 w-[450px] h-[450px] rounded-full bg-chili/10 blur-[150px] pointer-events-none" />
-
+    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 relative overflow-hidden pb-28">
       {/* ------------------------------------------------------------- */}
       {/* 1. HERO CELEBRATION & THANK-YOU ILLUSTRATION BANNER           */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative border-b border-gold/20 bg-gradient-to-r from-[#1a0f09] via-[#29170e] to-[#1a0f09] py-14 px-4 sm:px-8 text-center overflow-hidden">
+      <section className="relative border-b border-zinc-200 bg-white py-14 px-4 sm:px-8 text-center overflow-hidden">
         <div className="relative z-10 mx-auto max-w-4xl space-y-5">
           {/* Animated Royal Handi Crest */}
           <div className="relative mx-auto flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center">
-            <div className="absolute -inset-2 rounded-full bg-gold/30 blur-md animate-pulse" />
-            <div className="relative flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-chili via-amber-600 to-gold border-2 border-gold text-white shadow-[0_0_50px_rgba(212,160,23,0.8)]">
-              <CheckCircle2 className="h-14 w-14 sm:h-16 sm:w-16 stroke-[2.5] animate-bounce" />
+            <div className="absolute -inset-2 rounded-full bg-amber-400/20 blur-md animate-pulse" />
+            <div className="relative flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-amber-600 border-2 border-amber-400 text-zinc-950 shadow-md">
+              <CheckCircle2 className="h-14 w-14 sm:h-16 sm:w-16 stroke-[2.5]" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-black/70 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.25em] text-gold shadow-lg">
-              <Sparkles className="h-3.5 w-3.5 text-gold animate-spin" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-amber-800 shadow-xs">
+              <Sparkles className="h-3.5 w-3.5 text-amber-600 animate-spin" />
               <span>Royal Dum Reservation Confirmed</span>
             </div>
 
-            <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-wide text-cream">
-              Thank You, <span className="bg-gradient-to-r from-gold via-amber-200 to-gold bg-clip-text text-transparent">{orderData.customer.name}!</span>
+            <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-zinc-900">
+              Thank You, <span className="text-amber-700">{orderData.customer.name}!</span>
             </h1>
 
-            <p className="mx-auto max-w-2xl text-xs sm:text-sm text-cream/80 leading-relaxed">
+            <p className="mx-auto max-w-2xl text-xs sm:text-sm text-zinc-600 leading-relaxed font-normal">
               Your handcrafted Dum Biryani Handi booking has been scheduled with Master Chef Kartheek. Each tray is
               slow-cooked from scratch over morning hardwood coal embers for deep aromatic richness.
             </p>
@@ -250,17 +246,17 @@ export function OrderConfirmationPage() {
 
           {/* Order ID & Quick Copy Bar */}
           <div className="flex flex-col items-center gap-2">
-            <div className="inline-flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-black/80 border-2 border-gold/40 px-6 py-3.5 shadow-2xl backdrop-blur-xl">
+            <div className="inline-flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-zinc-50 border border-zinc-200 px-6 py-3.5 shadow-sm">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-cream/70 uppercase tracking-wider font-bold">Booking Ref:</span>
-                <span className="font-mono text-base sm:text-lg font-bold text-gold tracking-widest bg-gold/15 px-3 py-0.5 rounded-lg border border-gold/30">
+                <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Booking Ref:</span>
+                <span className="font-mono text-base sm:text-lg font-bold text-amber-800 tracking-widest bg-amber-100/70 px-3 py-0.5 rounded-lg border border-amber-300">
                   {orderData.orderId}
                 </span>
               </div>
 
               <button
                 onClick={handleCopyOrderId}
-                className="flex items-center gap-1 text-xs text-gold hover:text-white font-semibold bg-black/50 hover:bg-gold/20 px-3 py-1.5 rounded-xl border border-gold/30 transition-colors"
+                className="flex items-center gap-1 text-xs text-zinc-700 hover:text-zinc-900 font-semibold bg-white hover:bg-zinc-100 px-3 py-1.5 rounded-xl border border-zinc-200 transition-colors cursor-pointer shadow-xs"
                 title="Copy Booking ID"
               >
                 <Copy className="h-3.5 w-3.5" />
@@ -268,24 +264,24 @@ export function OrderConfirmationPage() {
               </button>
             </div>
             {orderData.orderId.match(/-(\d+)$/) && (
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 px-4 py-1 text-xs font-bold text-amber-300">
-                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-100/80 border border-amber-300 px-4 py-1 text-xs font-semibold text-amber-900">
+                <Sparkles className="h-3.5 w-3.5 text-amber-600" />
                 <span>Today's Handi Order #{parseInt(orderData.orderId.match(/-(\d+)$/)![1], 10)}</span>
               </div>
             )}
           </div>
 
           {/* PROMINENT TAKE SCREENSHOT CALLOUT CARD */}
-          <div className="max-w-xl mx-auto rounded-3xl bg-gradient-to-b from-amber-500/25 via-amber-600/15 to-amber-950/40 border-2 border-amber-400/90 p-5 sm:p-6 text-center space-y-3 shadow-[0_0_35px_rgba(245,158,11,0.25)]">
-            <div className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 text-black px-4 py-1.5 text-xs sm:text-sm font-black uppercase tracking-wider shadow">
+          <div className="max-w-xl mx-auto rounded-3xl bg-amber-50/80 border-2 border-amber-400 p-5 sm:p-6 text-center space-y-3 shadow-sm">
+            <div className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 text-zinc-950 px-4 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider shadow-xs">
               <Camera className="h-4 w-4 stroke-[2.5]" />
               <span>PLEASE TAKE A SCREENSHOT OF THIS SCREEN</span>
             </div>
             <div className="space-y-1">
-              <p className="text-base sm:text-lg font-bold text-amber-200">
+              <p className="text-base sm:text-lg font-bold text-amber-900">
                 📸 Important: Save Your Order Receipt
               </p>
-              <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed max-w-md mx-auto">
+              <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed max-w-md mx-auto font-normal">
                 Take a screenshot of this receipt now to show at kitchen pickup or to your delivery driver.
               </p>
             </div>
@@ -298,17 +294,17 @@ export function OrderConfirmationPage() {
                     window.print();
                   }
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 px-4 py-2 text-xs font-semibold text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-white hover:bg-zinc-100 border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-800 transition-all active:scale-95 cursor-pointer shadow-xs"
               >
-                <Printer className="h-4 w-4 text-amber-400" />
+                <Printer className="h-4 w-4 text-amber-600" />
                 <span>Save / Print Receipt</span>
               </button>
               <button
                 type="button"
                 onClick={handleCopyOrderId}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 px-4 py-2 text-xs font-semibold text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-white hover:bg-zinc-100 border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-800 transition-all active:scale-95 cursor-pointer shadow-xs"
               >
-                <Copy className="h-4 w-4 text-amber-400" />
+                <Copy className="h-4 w-4 text-amber-600" />
                 <span>Copy Order ID</span>
               </button>
             </div>
@@ -326,7 +322,7 @@ export function OrderConfirmationPage() {
             href={whatsappChatUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/50 bg-emerald-950/70 hover:bg-emerald-900/80 p-3.5 text-xs font-bold text-emerald-400 transition-all shadow-md hover:scale-105"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 p-3.5 text-xs font-semibold text-emerald-800 transition-all shadow-xs"
           >
             <MessageSquare className="h-4 w-4" />
             <span>WhatsApp Chef</span>
@@ -334,9 +330,9 @@ export function OrderConfirmationPage() {
 
           <a
             href={`tel:${BUSINESS.phone}`}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-gold/30 bg-black/60 hover:bg-gold/15 p-3.5 text-xs font-bold text-gold transition-all hover:scale-105"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white hover:bg-zinc-50 p-3.5 text-xs font-semibold text-zinc-800 transition-all shadow-xs"
           >
-            <Phone className="h-4 w-4" />
+            <Phone className="h-4 w-4 text-amber-600" />
             <span>Call Hotline</span>
           </a>
 
@@ -344,17 +340,17 @@ export function OrderConfirmationPage() {
             href="https://maps.google.com/?q=3625+S+Bedford+Ave+Springfield+MO+65809"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-center gap-2 rounded-2xl border border-gold/30 bg-black/60 hover:bg-gold/15 p-3.5 text-xs font-bold text-gold transition-all hover:scale-105"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white hover:bg-zinc-50 p-3.5 text-xs font-semibold text-zinc-800 transition-all shadow-xs"
           >
-            <Navigation className="h-4 w-4" />
+            <Navigation className="h-4 w-4 text-amber-600" />
             <span>View Kitchen Map ↗</span>
           </a>
 
           <button
             onClick={handleShareOrder}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-gold/30 bg-black/60 hover:bg-gold/15 p-3.5 text-xs font-bold text-cream transition-all hover:scale-105"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white hover:bg-zinc-50 p-3.5 text-xs font-semibold text-zinc-800 transition-all shadow-xs cursor-pointer"
           >
-            <Share2 className="h-4 w-4 text-gold" />
+            <Share2 className="h-4 w-4 text-amber-600" />
             <span>Share Order</span>
           </button>
         </div>
@@ -365,21 +361,21 @@ export function OrderConfirmationPage() {
           {/* ========================================================= */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-8">
             {/* 1. Interactive 5-Stage Dum Prep Status Timeline */}
-            <div className="rounded-3xl border border-gold/25 bg-[#120c08]/95 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
-              <div className="flex items-center justify-between border-b border-gold/15 pb-4">
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-gold" />
-                  <h2 className="font-display text-xl font-bold text-cream">
+                  <Clock className="h-5 w-5 text-amber-600" />
+                  <h2 className="font-display text-xl font-bold text-zinc-900">
                     Live Dum Preparation Timeline
                   </h2>
                 </div>
-                <span className="rounded-full bg-gold/15 border border-gold/30 px-3 py-1 text-[0.68rem] font-bold text-gold">
+                <span className="rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-[0.68rem] font-semibold text-amber-800">
                   Status: Marination Queue
                 </span>
               </div>
 
               {/* Stepper Timeline Visual */}
-              <div className="space-y-6 relative pl-4 sm:pl-6 before:absolute before:left-7 sm:before:left-9 before:top-3 before:bottom-3 before:w-0.5 before:bg-gradient-to-b before:from-emerald-500 before:via-gold before:to-neutral-800">
+              <div className="space-y-6 relative pl-4 sm:pl-6 before:absolute before:left-7 sm:before:left-9 before:top-3 before:bottom-3 before:w-0.5 before:bg-gradient-to-b before:from-emerald-500 before:via-amber-400 before:to-zinc-200">
                 {ORDER_TIMELINE_STAGES.map((stage) => {
                   const IconComp = stage.icon;
                   const isCompleted = stage.status === "completed";
@@ -391,10 +387,10 @@ export function OrderConfirmationPage() {
                       <div
                         className={`relative z-10 flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
                           isCompleted
-                            ? "bg-emerald-500 border-emerald-400 text-black shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+                            ? "bg-emerald-500 border-emerald-400 text-white shadow-xs"
                             : isCurrent
-                              ? "bg-gradient-to-tr from-chili to-gold border-gold text-white shadow-[0_0_20px_rgba(212,160,23,0.8)] animate-pulse"
-                              : "bg-black border-gold/30 text-cream/40"
+                              ? "bg-amber-500 border-amber-400 text-zinc-950 shadow-sm animate-pulse"
+                              : "bg-white border-zinc-300 text-zinc-400"
                         }`}
                       >
                         <IconComp className="h-4 w-4" />
@@ -404,20 +400,20 @@ export function OrderConfirmationPage() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                           <h3
                             className={`font-display text-sm sm:text-base font-bold ${
-                              isCompleted || isCurrent ? "text-cream" : "text-cream/50"
+                              isCompleted || isCurrent ? "text-zinc-900" : "text-zinc-400"
                             }`}
                           >
                             {stage.step}. {stage.title}
                           </h3>
                           <span
                             className={`font-mono text-[0.68rem] font-semibold ${
-                              isCurrent ? "text-gold" : isCompleted ? "text-emerald-400" : "text-cream/40"
+                              isCurrent ? "text-amber-800" : isCompleted ? "text-emerald-700" : "text-zinc-400"
                             }`}
                           >
                             {stage.time}
                           </span>
                         </div>
-                        <p className="text-xs text-cream/70 leading-relaxed">{stage.description}</p>
+                        <p className="text-xs text-zinc-600 leading-relaxed font-normal">{stage.description}</p>
                       </div>
                     </div>
                   );
@@ -426,45 +422,45 @@ export function OrderConfirmationPage() {
             </div>
 
             {/* 2. Customer & Fulfilment Details Card */}
-            <div className="rounded-3xl border border-gold/25 bg-[#120c08]/95 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
-              <div className="flex items-center justify-between border-b border-gold/15 pb-4">
-                <h2 className="font-display text-xl font-bold text-cream flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-gold" />
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
+                <h2 className="font-display text-xl font-bold text-zinc-900 flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-amber-600" />
                   <span>Customer & Fulfilment Destination</span>
                 </h2>
-                <span className="text-xs text-gold font-bold uppercase tracking-wider">
+                <span className="text-xs text-amber-800 font-semibold uppercase tracking-wider">
                   {orderData.fulfilmentType}
                 </span>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 text-xs text-cream/85">
-                <div className="space-y-1.5 rounded-2xl bg-black/40 border border-gold/15 p-4">
-                  <p className="text-[0.65rem] text-gold font-bold uppercase tracking-wider">Patron Contact</p>
-                  <p className="font-bold text-cream text-sm">{orderData.customer.name}</p>
-                  <p className="text-cream/70 flex items-center gap-1.5 pt-0.5">
-                    <Phone className="h-3.5 w-3.5 text-gold" /> {orderData.customer.phone}
+              <div className="grid gap-4 sm:grid-cols-2 text-xs text-zinc-700">
+                <div className="space-y-1.5 rounded-2xl bg-zinc-50 border border-zinc-200 p-4">
+                  <p className="text-[0.65rem] text-amber-800 font-semibold uppercase tracking-wider">Patron Contact</p>
+                  <p className="font-bold text-zinc-900 text-sm">{orderData.customer.name}</p>
+                  <p className="text-zinc-600 flex items-center gap-1.5 pt-0.5">
+                    <Phone className="h-3.5 w-3.5 text-amber-600" /> {orderData.customer.phone}
                   </p>
-                  <p className="text-cream/70 flex items-center gap-1.5">
-                    <Mail className="h-3.5 w-3.5 text-gold" /> {orderData.customer.email}
+                  <p className="text-zinc-600 flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5 text-amber-600" /> {orderData.customer.email}
                   </p>
-                  <p className="text-[0.68rem] text-emerald-400 font-semibold pt-1">
+                  <p className="text-[0.68rem] text-emerald-700 font-semibold pt-1">
                     ✓ SMS & WhatsApp Tracking Active
                   </p>
                 </div>
 
-                <div className="space-y-1.5 rounded-2xl bg-black/40 border border-gold/15 p-4">
-                  <p className="text-[0.65rem] text-gold font-bold uppercase tracking-wider">Scheduled Window</p>
-                  <p className="font-bold text-cream text-sm capitalize">{orderData.fulfilmentType} Order</p>
-                  <p className="text-gold font-semibold">
+                <div className="space-y-1.5 rounded-2xl bg-zinc-50 border border-zinc-200 p-4">
+                  <p className="text-[0.65rem] text-amber-800 font-semibold uppercase tracking-wider">Scheduled Window</p>
+                  <p className="font-bold text-zinc-900 text-sm capitalize">{orderData.fulfilmentType} Order</p>
+                  <p className="text-amber-800 font-semibold">
                     {orderData.fulfilmentDate} at {orderData.fulfilmentTime}
                   </p>
                   {orderData.fulfilmentType === "pickup" ? (
-                    <p className="text-[0.68rem] text-cream/70 pt-0.5">{BUSINESS.address}</p>
+                    <p className="text-[0.68rem] text-zinc-600 pt-0.5">{BUSINESS.address}</p>
                   ) : (
-                    <div className="text-[0.68rem] text-cream/70 pt-0.5 space-y-0.5">
+                    <div className="text-[0.68rem] text-zinc-600 pt-0.5 space-y-0.5">
                       <p>{orderData.customer.address}, {orderData.customer.city} {orderData.customer.zipCode}</p>
                       {orderData.customer.landmark && (
-                        <p className="text-gold/90 italic">Landmark: {orderData.customer.landmark}</p>
+                        <p className="text-amber-800 italic">Landmark: {orderData.customer.landmark}</p>
                       )}
                     </div>
                   )}
@@ -473,30 +469,30 @@ export function OrderConfirmationPage() {
             </div>
 
             {/* 3. Customer Rating & Experience Review CTA */}
-            <div className="rounded-3xl border border-gold/25 bg-[#120c08]/95 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-5">
-              <div className="flex items-center justify-between border-b border-gold/15 pb-4">
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm space-y-5">
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                 <div>
-                  <span className="text-[0.65rem] font-bold uppercase tracking-widest text-gold">Patron Feedback</span>
-                  <h3 className="font-display text-xl font-bold text-cream flex items-center gap-2">
-                    <Star className="h-5 w-5 text-gold fill-gold" />
+                  <span className="text-[0.65rem] font-bold uppercase tracking-widest text-amber-800">Patron Feedback</span>
+                  <h3 className="font-display text-xl font-bold text-zinc-900 flex items-center gap-2">
+                    <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
                     <span>Rate Your Dum Pukht Experience</span>
                   </h3>
                 </div>
-                <span className="text-xs text-gold/80 font-mono">Google & Yelp Reviews</span>
+                <span className="text-xs text-zinc-500 font-mono">Google & Yelp Reviews</span>
               </div>
 
               {reviewSubmitted ? (
-                <div className="rounded-2xl bg-emerald-950/60 border border-emerald-500/50 p-5 text-center text-xs text-emerald-300 space-y-2 animate-in fade-in">
-                  <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto" />
-                  <p className="font-bold text-sm text-white">Thank You for Your Royal Rating!</p>
-                  <p className="text-cream/80 max-w-md mx-auto">
+                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center text-xs text-emerald-800 space-y-2 animate-in fade-in">
+                  <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto" />
+                  <p className="font-bold text-sm text-zinc-900">Thank You for Your Royal Rating!</p>
+                  <p className="text-zinc-600 max-w-md mx-auto font-normal">
                     Your compliments have been forwarded directly to Master Chef Kartheek and the kitchen team.
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleReviewSubmit} className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-cream/80 font-bold">Your Rating:</span>
+                    <span className="text-xs text-zinc-700 font-semibold">Your Rating:</span>
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -505,17 +501,17 @@ export function OrderConfirmationPage() {
                           onClick={() => setRating(star)}
                           onMouseEnter={() => setHoverRating(star)}
                           onMouseLeave={() => setHoverRating(0)}
-                          className="p-1 text-gold transition-transform hover:scale-125"
+                          className="p-1 text-amber-500 transition-transform hover:scale-125 cursor-pointer"
                         >
                           <Star
                             className={`h-6 w-6 ${
-                              (hoverRating || rating) >= star ? "fill-gold text-gold" : "text-neutral-700"
+                              (hoverRating || rating) >= star ? "fill-amber-500 text-amber-500" : "text-zinc-300"
                             }`}
                           />
                         </button>
                       ))}
                     </div>
-                    <span className="text-xs font-bold text-gold ml-2">{rating} / 5 Stars</span>
+                    <span className="text-xs font-bold text-amber-800 ml-2">{rating} / 5 Stars</span>
                   </div>
 
                   <textarea
@@ -523,14 +519,14 @@ export function OrderConfirmationPage() {
                     value={reviewText}
                     onChange={(e) => setReviewText(e.target.value)}
                     placeholder="Tell Master Chef Kartheek what you loved about the biryani aroma, saffron flavors, or tender meat..."
-                    className="w-full bg-black/60 border border-gold/25 rounded-2xl p-3 text-xs text-cream focus:border-gold focus:ring-1 focus:ring-gold"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-3 text-xs text-zinc-900 focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                   />
 
                   <div className="flex items-center justify-between pt-1">
-                    <p className="text-[0.65rem] text-cream/60">Help other Springfield foodies discover authentic Dum Biryani</p>
+                    <p className="text-[0.65rem] text-zinc-500 font-normal">Help other Springfield foodies discover authentic Dum Biryani</p>
                     <Button
                       type="submit"
-                      className="rounded-xl bg-gold text-black hover:bg-gold/90 text-xs font-bold px-5"
+                      className="rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold px-5 cursor-pointer"
                     >
                       Submit Review
                     </Button>
@@ -544,12 +540,12 @@ export function OrderConfirmationPage() {
           {/* RIGHT: ORDERED DISHES & FINANCIAL RECEIPT (4-5 COLS)      */}
           {/* ========================================================= */}
           <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 space-y-6">
-            <div className="rounded-3xl border-2 border-gold/40 bg-gradient-to-b from-[#1c120a] via-[#140c07] to-[#0a0705] p-6 shadow-2xl backdrop-blur-2xl space-y-6">
-              <div className="flex items-center justify-between border-b border-gold/20 pb-4">
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-6">
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                 <div>
-                  <span className="text-[0.65rem] font-bold uppercase tracking-widest text-gold">Official Receipt</span>
-                  <h2 className="flex items-center gap-2 font-display text-xl font-bold text-cream">
-                    <ShoppingBag className="h-5 w-5 text-gold" />
+                  <span className="text-[0.65rem] font-bold uppercase tracking-widest text-amber-800">Official Receipt</span>
+                  <h2 className="flex items-center gap-2 font-display text-xl font-bold text-zinc-900">
+                    <ShoppingBag className="h-5 w-5 text-amber-600" />
                     <span>Order Receipt</span>
                   </h2>
                 </div>
@@ -558,36 +554,36 @@ export function OrderConfirmationPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => window.print()}
-                  className="text-xs text-gold hover:bg-gold/15 rounded-xl font-bold gap-1"
+                  className="text-xs text-amber-800 hover:bg-zinc-100 rounded-xl font-bold gap-1 cursor-pointer"
                 >
                   <Printer className="h-3.5 w-3.5" /> Print
                 </Button>
               </div>
 
               {/* Ordered Dishes List */}
-              <div className="space-y-3 divide-y divide-gold/15">
+              <div className="space-y-3 divide-y divide-zinc-100">
                 {orderData.items.map((item, idx) => {
                   const dishImage = DISH_IMAGES[item.id] || heroImg;
                   return (
                     <div key={idx} className="pt-3 first:pt-0 flex items-start gap-3 text-xs">
-                      <div className="relative h-14 w-14 rounded-xl overflow-hidden border border-gold/30 shrink-0">
+                      <div className="relative h-14 w-14 rounded-xl overflow-hidden border border-zinc-200 shrink-0">
                         <img src={dishImage} alt={item.name} className="h-full w-full object-cover" />
                       </div>
                       <div className="flex-1 min-w-0 space-y-0.5">
-                        <div className="flex justify-between font-bold text-cream">
+                        <div className="flex justify-between font-bold text-zinc-900">
                           <span className="truncate pr-1">
                             {item.qty}× {item.name}
                           </span>
-                          <span className="text-gold font-display shrink-0">
+                          <span className="text-amber-800 font-display shrink-0">
                             {formatMoney(item.unitPrice * item.qty)}
                           </span>
                         </div>
-                        <p className="text-[0.68rem] text-cream/70">
+                        <p className="text-[0.68rem] text-zinc-600 font-normal">
                           {item.aloo ? "✓ Added Spiced Baby Aloo" : "No Aloo"} ·{" "}
                           {item.extraSpicy ? "Extra Spicy" : "Regular Spice"}
                         </p>
-                        <p className="text-[0.62rem] text-cream/50">{item.serves}</p>
-                        {item.notes && <p className="text-[0.62rem] text-gold/80 italic">{item.notes}</p>}
+                        <p className="text-[0.62rem] text-zinc-400 font-normal">{item.serves}</p>
+                        {item.notes && <p className="text-[0.62rem] text-amber-800 italic">{item.notes}</p>}
                       </div>
                     </div>
                   );
@@ -595,49 +591,49 @@ export function OrderConfirmationPage() {
               </div>
 
               {/* Financial Calculation Summary */}
-              <div className="space-y-2 border-t border-gold/20 pt-3 text-xs">
-                <div className="flex justify-between text-cream/80">
+              <div className="space-y-2 border-t border-zinc-100 pt-3 text-xs font-normal">
+                <div className="flex justify-between text-zinc-600">
                   <span>Subtotal:</span>
-                  <span>{formatMoney(orderData.pricing.subtotal)}</span>
+                  <span className="text-zinc-900">{formatMoney(orderData.pricing.subtotal)}</span>
                 </div>
 
-                <div className="flex justify-between text-emerald-400 font-semibold">
+                <div className="flex justify-between text-emerald-700 font-semibold">
                   <span>Promo Discount ({orderData.pricing.promoCode}):</span>
                   <span>−{formatMoney(orderData.pricing.promoDiscount)}</span>
                 </div>
 
                 {orderData.pricing.tax > 0 && (
-                  <div className="flex justify-between text-cream/70">
+                  <div className="flex justify-between text-zinc-500">
                     <span>Springfield Food Tax (8.6%):</span>
                     <span>{formatMoney(orderData.pricing.tax)}</span>
                   </div>
                 )}
 
-                <div className="flex justify-between text-cream/70">
+                <div className="flex justify-between text-zinc-500">
                   <span>Delivery Charge:</span>
                   <span>{formatMoney(orderData.pricing.deliveryFee)}</span>
                 </div>
 
-                <div className="flex justify-between border-t border-gold/25 pt-3 font-display text-xl font-bold text-cream">
+                <div className="flex justify-between border-t border-zinc-200 pt-3 font-display text-xl font-bold text-zinc-900">
                   <span>Grand Total Paid:</span>
-                  <span className="text-gold drop-shadow-md">{formatMoney(orderData.pricing.grandTotal)}</span>
+                  <span className="text-amber-700">{formatMoney(orderData.pricing.grandTotal)}</span>
                 </div>
               </div>
 
               {/* Quality & Halal Badges */}
-              <div className="rounded-2xl bg-black/50 border border-gold/20 p-3.5 space-y-2 text-[0.68rem] text-cream/80">
-                <div className="flex items-center gap-2 text-emerald-400 font-semibold">
+              <div className="rounded-2xl bg-zinc-50 border border-zinc-200 p-3.5 space-y-2 text-[0.68rem] text-zinc-600">
+                <div className="flex items-center gap-2 text-emerald-700 font-semibold">
                   <Shield className="h-4 w-4 shrink-0" />
                   <span>100% Zabiha Halal Certified • Fresh Clay Coal Dum</span>
                 </div>
-                <div className="flex items-center gap-2 text-gold">
+                <div className="flex items-center gap-2 text-amber-800 font-medium">
                   <Flame className="h-4 w-4 shrink-0" />
                   <span>90-Minute Thermal Bag Heat Retention Guarantee</span>
                 </div>
               </div>
 
               <div className="pt-2">
-                <Button asChild className="w-full rounded-2xl bg-gradient-to-r from-chili to-gold text-white font-bold text-xs py-5 shadow-lg">
+                <Button asChild className="w-full rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold text-xs py-5 shadow-sm hover:brightness-105 cursor-pointer">
                   <Link to="/">Order Another Handi Tray →</Link>
                 </Button>
               </div>

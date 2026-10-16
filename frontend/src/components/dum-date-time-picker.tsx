@@ -360,12 +360,12 @@ export function DumDateTimePicker({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {/* 1. INTERACTIVE CALENDAR DATE TRIGGER */}
         <div className="space-y-1">
-          <label className="block text-[11px] font-medium text-zinc-300 flex items-center justify-between">
+          <label className="text-[11px] font-medium text-zinc-700 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
-              <CalendarIcon className="h-3.5 w-3.5 text-amber-400" />
+              <CalendarIcon className="h-3.5 w-3.5 text-amber-600" />
               <span>Handi Dum Date</span>
             </span>
-            <span className="text-[9px] text-amber-400/90 font-mono">
+            <span className="text-[9px] text-amber-700 font-mono font-medium">
               Cutoff {cutoffLabel}
             </span>
           </label>
@@ -373,18 +373,18 @@ export function DumDateTimePicker({
           <button
             type="button"
             onClick={() => setCalendarOpen(true)}
-            className="w-full text-left rounded-xl bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-[#18161a] border border-amber-500/30 hover:border-amber-400 p-2.5 shadow-sm transition-all group flex items-center justify-between cursor-pointer active:scale-[0.99]"
+            className="w-full text-left rounded-xl bg-white border border-zinc-200 hover:border-amber-400 p-2.5 shadow-sm transition-all group flex items-center justify-between cursor-pointer active:scale-[0.99]"
           >
             <div className="min-w-0 pr-2">
               <span className="block text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">
                 Scheduled Date
               </span>
-              <span className="block text-xs font-semibold text-amber-300 truncate mt-0.5 group-hover:text-amber-200">
+              <span className="block text-xs font-semibold text-zinc-900 truncate mt-0.5 group-hover:text-amber-700">
                 {selectedDate || "Tap to Select Date"}
               </span>
             </div>
 
-            <div className="h-7 w-7 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center justify-center shrink-0 group-hover:bg-amber-500/25 transition-colors">
+            <div className="h-7 w-7 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors">
               <CalendarIcon className="h-3.5 w-3.5" />
             </div>
           </button>
@@ -392,12 +392,12 @@ export function DumDateTimePicker({
 
         {/* 2. INTERACTIVE CLOCK TIME TRIGGER */}
         <div className="space-y-1">
-          <label className="block text-[11px] font-medium text-zinc-300 flex items-center justify-between">
+          <label className="text-[11px] font-medium text-zinc-700 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-amber-400" />
+              <Clock className="h-3.5 w-3.5 text-amber-600" />
               <span>Fulfilment Time</span>
             </span>
-            <span className="text-[9px] text-zinc-400">
+            <span className="text-[9px] text-zinc-500">
               {fulfilmentMode === "delivery" ? "2 PM – 6 PM" : "11 AM – 1 PM (Lunch)"}
             </span>
           </label>
@@ -405,18 +405,18 @@ export function DumDateTimePicker({
           <button
             type="button"
             onClick={() => setClockModalOpen(true)}
-            className="w-full text-left rounded-xl bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-[#18161a] border border-amber-500/30 hover:border-amber-400 p-2.5 shadow-sm transition-all group flex items-center justify-between cursor-pointer active:scale-[0.99]"
+            className="w-full text-left rounded-xl bg-white border border-zinc-200 hover:border-amber-400 p-2.5 shadow-sm transition-all group flex items-center justify-between cursor-pointer active:scale-[0.99]"
           >
             <div className="min-w-0 pr-2">
               <span className="block text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">
                 Ready Window
               </span>
-              <span className="block text-xs font-semibold text-amber-300 truncate mt-0.5 group-hover:text-amber-200">
+              <span className="block text-xs font-semibold text-zinc-900 truncate mt-0.5 group-hover:text-amber-700">
                 {selectedTime || "Tap to Select Time"}
               </span>
             </div>
 
-            <div className="h-7 w-7 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center justify-center shrink-0 group-hover:bg-amber-500/25 transition-colors">
+            <div className="h-7 w-7 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors">
               <Clock className="h-3.5 w-3.5" />
             </div>
           </button>
@@ -426,7 +426,7 @@ export function DumDateTimePicker({
       {/* ------------------------------------------------------------- */}
       {/* DYNAMIC TRAFFIC-LIGHT CAPACITY LINE (NO RAW NUMBERS)          */}
       {/* ------------------------------------------------------------- */}
-      <div className="px-3.5 py-2.5 rounded-xl bg-zinc-900/70 border border-white/[0.08] text-xs space-y-2">
+      <div className="px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span
@@ -434,44 +434,44 @@ export function DumDateTimePicker({
                 selectedCapacity.status === "green"
                   ? "bg-emerald-500 shadow-[0_0_8px_#10b981]"
                   : selectedCapacity.status === "yellow"
-                  ? "bg-amber-400 shadow-[0_0_8px_#f59e0b]"
+                  ? "bg-amber-500 shadow-[0_0_8px_#f59e0b]"
                   : selectedCapacity.status === "red"
                   ? "bg-rose-500 animate-pulse shadow-[0_0_8px_#ef4444]"
-                  : "bg-zinc-600"
+                  : "bg-zinc-400"
               }`}
             />
-            <span className="font-semibold text-zinc-100">
+            <span className="font-semibold text-zinc-900">
               {selectedCapacity.status === "green" && (
-                <span className="text-emerald-400">Available</span>
+                <span className="text-emerald-700">Available</span>
               )}
               {selectedCapacity.status === "yellow" && (
-                <span className="text-amber-300">Filling Fast</span>
+                <span className="text-amber-700">Filling Fast</span>
               )}
               {selectedCapacity.status === "red" && (
-                <span className="text-rose-400">Limited Slots</span>
+                <span className="text-rose-600">Limited Slots</span>
               )}
               {selectedCapacity.status === "sold_out" && (
-                <span className="text-zinc-400">Sold Out Today</span>
+                <span className="text-zinc-500">Sold Out Today</span>
               )}
             </span>
           </div>
 
-          <span className="text-[11px] text-zinc-400 font-medium">
+          <span className="text-[11px] text-zinc-500 font-medium">
             Fresh Handi Batch
           </span>
         </div>
 
         {/* Dynamic Capacity Line decreasing as orders increase */}
-        <div className="h-1.5 w-full rounded-full bg-zinc-800/90 overflow-hidden">
+        <div className="h-1.5 w-full rounded-full bg-zinc-200 overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ease-out ${
               selectedCapacity.status === "green"
-                ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                ? "bg-emerald-500"
                 : selectedCapacity.status === "yellow"
-                ? "bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                ? "bg-amber-500"
                 : selectedCapacity.status === "red"
-                ? "bg-rose-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
-                : "bg-zinc-600"
+                ? "bg-rose-500"
+                : "bg-zinc-400"
             }`}
             style={{
               width: `${
@@ -486,8 +486,8 @@ export function DumDateTimePicker({
 
       {/* Auto-lock & rollover advisory if date reached limit */}
       {selectedCapacity.isSoldOut && (
-        <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 p-2.5 text-xs text-rose-300 flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-rose-400 shrink-0" />
+        <div className="rounded-lg bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700 flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
           <span>This day is fully booked. Please choose another date.</span>
         </div>
       )}
@@ -496,18 +496,18 @@ export function DumDateTimePicker({
       {/* 1. INTERACTIVE FULL CALENDAR MODAL                             */}
       {/* ============================================================= */}
       <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
-        <DialogContent className="max-w-md w-[94vw] sm:w-full rounded-2xl bg-[#121217] border border-amber-500/30 text-zinc-100 p-3.5 sm:p-4 shadow-2xl max-h-[86vh] overflow-y-auto scrollbar-thin flex flex-col gap-2.5">
-          <DialogHeader className="pb-2 border-b border-white/[0.08] space-y-1.5 text-left">
+        <DialogContent className="max-w-md w-[94vw] sm:w-full rounded-2xl bg-white border border-zinc-200 text-zinc-900 p-3.5 sm:p-4 shadow-2xl max-h-[86vh] overflow-y-auto scrollbar-thin flex flex-col gap-2.5">
+          <DialogHeader className="pb-2 border-b border-zinc-100 space-y-1.5 text-left">
             <div className="flex items-center justify-between gap-2">
-              <DialogTitle className="text-sm sm:text-base font-semibold text-zinc-100 flex items-center gap-1.5">
-                <CalendarIcon className="h-4 w-4 text-amber-400 shrink-0" />
+              <DialogTitle className="text-sm sm:text-base font-semibold text-zinc-900 flex items-center gap-1.5">
+                <CalendarIcon className="h-4 w-4 text-amber-600 shrink-0" />
                 <span>Select Dum Handi Date</span>
               </DialogTitle>
               <span
                 className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 ${
                   isPastCutoff
-                    ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
-                    : "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                    ? "bg-rose-50 border-rose-200 text-rose-700"
+                    : "bg-emerald-50 border-emerald-200 text-emerald-700"
                 }`}
               >
                 {isPastCutoff ? "3:00 PM Passed · Tomorrow Closed" : "Open for Tomorrow"}
@@ -515,14 +515,14 @@ export function DumDateTimePicker({
             </div>
 
             {/* CRITICAL NOTE: ORDER BEFORE 3:00 PM THE DAY BEFORE */}
-            <div className="rounded-xl border border-amber-500/35 bg-amber-500/10 p-2 text-amber-200">
+            <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-2 text-amber-950">
               <div className="flex items-start gap-1.5">
-                <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
                 <div className="text-[10px] leading-snug">
-                  <span className="font-bold text-amber-300 block">
+                  <span className="font-bold text-amber-900 block">
                     ⚠️ Cutoff Rule: Order by 3:00 PM the Day Before
                   </span>
-                  <span className="text-zinc-300 font-normal">
+                  <span className="text-zinc-600 font-normal">
                     Dum biryani requires overnight marinating. Orders must be booked before <strong>3:00 PM the previous day</strong>. At 3:00 PM sharp, next-day booking automatically closes.
                   </span>
                 </div>
@@ -530,12 +530,12 @@ export function DumDateTimePicker({
             </div>
 
             {/* Dynamic Rolling Window Pill */}
-            <div className="flex items-center justify-between rounded-lg bg-zinc-900/70 border border-white/[0.06] px-2.5 py-1 text-[10px]">
-              <span className="flex items-center gap-1 text-amber-300 font-medium">
-                <Sparkles className="h-3 w-3 text-amber-400 shrink-0" />
+            <div className="flex items-center justify-between rounded-lg bg-zinc-50 border border-zinc-200 px-2.5 py-1 text-[10px]">
+              <span className="flex items-center gap-1 text-amber-700 font-medium">
+                <Sparkles className="h-3 w-3 text-amber-600 shrink-0" />
                 <span>Rolling {horizonDays}-Day Horizon</span>
               </span>
-              <span className="font-mono text-zinc-400">
+              <span className="font-mono text-zinc-500">
                 Open through {rollingWindowRange.endStr.split(",")[1]}
               </span>
             </div>
@@ -543,7 +543,7 @@ export function DumDateTimePicker({
 
           {/* Month Header with < > Nav */}
           <div className="flex items-center justify-between pt-0.5 px-0.5">
-            <span className="font-display font-semibold text-sm text-amber-300">
+            <span className="font-display font-semibold text-sm text-zinc-900">
               {MONTH_NAMES[viewMonth]} {viewYear}
             </span>
 
@@ -551,7 +551,7 @@ export function DumDateTimePicker({
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                className="h-7 w-7 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white hover:border-amber-500/40 transition-colors cursor-pointer"
+                className="h-7 w-7 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 hover:text-zinc-900 hover:border-amber-400 transition-colors cursor-pointer"
                 title="Previous Month"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
@@ -559,7 +559,7 @@ export function DumDateTimePicker({
               <button
                 type="button"
                 onClick={handleNextMonth}
-                className="h-7 w-7 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white hover:border-amber-500/40 transition-colors cursor-pointer"
+                className="h-7 w-7 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700 hover:text-zinc-900 hover:border-amber-400 transition-colors cursor-pointer"
                 title="Next Month"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -568,7 +568,7 @@ export function DumDateTimePicker({
           </div>
 
           {/* Days of Week Header */}
-          <div className="grid grid-cols-7 gap-1 text-center text-[9px] font-semibold text-zinc-400 uppercase tracking-wider py-0.5 border-b border-white/[0.05]">
+          <div className="grid grid-cols-7 gap-1 text-center text-[9px] font-semibold text-zinc-500 uppercase tracking-wider py-0.5 border-b border-zinc-100">
             {DAY_NAMES_SHORT.map((day) => (
               <span key={day}>{day}</span>
             ))}
@@ -587,12 +587,12 @@ export function DumDateTimePicker({
                   onClick={() => handleSelectDay(cell.year, cell.month, cell.day)}
                   className={`relative flex flex-col items-center justify-center rounded-lg p-0.5 h-8 sm:h-8.5 text-xs transition-all ${
                     cell.disabled
-                      ? "opacity-30 cursor-not-allowed bg-zinc-950/40 text-zinc-600 border border-transparent"
+                      ? "opacity-30 cursor-not-allowed bg-zinc-100 text-zinc-400 border border-transparent"
                       : isSelected
-                      ? "bg-amber-500 text-zinc-950 font-bold ring-2 ring-amber-400 shadow-md scale-105 z-10 cursor-pointer"
+                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold ring-2 ring-amber-400 shadow-md scale-105 z-10 cursor-pointer"
                       : cell.isCurrentMonth
-                      ? "bg-zinc-900/60 border border-white/[0.06] text-zinc-200 hover:border-amber-500/50 hover:bg-amber-500/10 cursor-pointer"
-                      : "bg-transparent text-zinc-600 hover:text-zinc-400 cursor-pointer"
+                      ? "bg-white border border-zinc-200 text-zinc-800 hover:border-amber-400 hover:bg-amber-50 cursor-pointer shadow-xs"
+                      : "bg-transparent text-zinc-400 hover:text-zinc-600 cursor-pointer"
                   }`}
                   title={cell.reason || `${cell.dateStr} — ${cell.capacity.remainingSlots} slots left`}
                 >
@@ -600,23 +600,23 @@ export function DumDateTimePicker({
 
                   {/* Badges / Dots for availability */}
                   {cell.isSoldOut ? (
-                    <span className="text-[6.5px] text-rose-400 font-bold leading-none mt-0.5">
+                    <span className="text-[6.5px] text-rose-600 font-bold leading-none mt-0.5">
                       Full
                     </span>
                   ) : !cell.disabled && cell.isCurrentMonth ? (
                     <span
                       className={`h-1.5 w-1.5 rounded-full mt-0.5 ${
                         cell.capacity.status === "green"
-                          ? "bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.6)]"
+                          ? "bg-emerald-500"
                           : cell.capacity.status === "yellow"
-                          ? "bg-amber-400 shadow-[0_0_4px_rgba(251,191,36,0.6)]"
-                          : "bg-rose-400 shadow-[0_0_4px_rgba(251,113,133,0.6)]"
+                          ? "bg-amber-500"
+                          : "bg-rose-500"
                       }`}
                     />
                   ) : null}
 
                   {cell.isEarliest && !cell.disabled && !isSelected && (
-                    <span className="absolute top-0.5 right-0.5 h-1 w-1 rounded-full bg-emerald-400 ring-1 ring-emerald-500/40" />
+                    <span className="absolute top-0.5 right-0.5 h-1 w-1 rounded-full bg-emerald-500 ring-1 ring-emerald-300" />
                   )}
                 </button>
               );
@@ -624,22 +624,22 @@ export function DumDateTimePicker({
           </div>
 
           {/* Kitchen Rule Indicator Notes */}
-          <div className="pt-1.5 border-t border-white/[0.06] flex items-center justify-center gap-3 text-[8.5px] text-zinc-400 font-normal">
-            <span className="flex items-center gap-1 text-emerald-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Available
+          <div className="pt-1.5 border-t border-zinc-100 flex items-center justify-center gap-3 text-[8.5px] text-zinc-500 font-normal">
+            <span className="flex items-center gap-1 text-emerald-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Available
             </span>
-            <span className="flex items-center gap-1 text-amber-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Filling Fast
+            <span className="flex items-center gap-1 text-amber-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Filling Fast
             </span>
-            <span className="flex items-center gap-1 text-rose-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-400" /> Limited
+            <span className="flex items-center gap-1 text-rose-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" /> Limited
             </span>
           </div>
 
           {/* Quick Preset Buttons (Single Horizontal Scrollable Line) */}
           {quickPresets.length > 0 && (
             <div className="space-y-1 pt-0.5">
-              <span className="block text-[9.5px] text-zinc-400 font-medium">Quick Dates:</span>
+              <span className="block text-[9.5px] text-zinc-500 font-medium">Quick Dates:</span>
               <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
                 {quickPresets.map((preset, i) => (
                   <button
@@ -650,7 +650,7 @@ export function DumDateTimePicker({
                       onDateChange(formatted, preset.date);
                       setCalendarOpen(false);
                     }}
-                    className="px-2 py-1 rounded-md bg-zinc-900 border border-white/10 hover:border-amber-500/40 text-[9.5px] text-zinc-300 hover:text-amber-300 whitespace-nowrap transition-colors cursor-pointer shrink-0"
+                    className="px-2 py-1 rounded-md bg-zinc-50 border border-zinc-200 hover:border-amber-400 text-[9.5px] text-zinc-700 hover:text-amber-700 whitespace-nowrap transition-colors cursor-pointer shrink-0"
                   >
                     ✨ {preset.label} ({preset.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })})
                   </button>
@@ -665,13 +665,13 @@ export function DumDateTimePicker({
       {/* 2. INTERACTIVE TIME SLOT CLOCK MODAL                           */}
       {/* ============================================================= */}
       <Dialog open={clockModalOpen} onOpenChange={setClockModalOpen}>
-        <DialogContent className="max-w-sm w-[95vw] rounded-2xl bg-[#121217] border border-amber-500/30 text-zinc-100 p-4 sm:p-5 shadow-2xl">
-          <DialogHeader className="pb-2 border-b border-white/[0.08]">
-            <DialogTitle className="text-sm sm:text-base font-semibold text-zinc-100 flex items-center gap-2">
-              <Clock className="h-4 w-4 text-amber-400" />
+        <DialogContent className="max-w-sm w-[95vw] rounded-2xl bg-white border border-zinc-200 text-zinc-900 p-4 sm:p-5 shadow-2xl">
+          <DialogHeader className="pb-2 border-b border-zinc-100">
+            <DialogTitle className="text-sm sm:text-base font-semibold text-zinc-900 flex items-center gap-2">
+              <Clock className="h-4 w-4 text-amber-600" />
               <span>Select Ready Window</span>
             </DialogTitle>
-            <DialogDescription className="text-xs text-zinc-400 mt-0.5 font-normal">
+            <DialogDescription className="text-xs text-zinc-500 mt-0.5 font-normal">
               {fulfilmentMode === "delivery"
                 ? "Doorstep delivery routes depart hot between 2:00 PM and 6:00 PM."
                 : "Kitchen counter pickup is available fresh for lunch between 11:00 AM and 1:00 PM."}
@@ -691,12 +691,12 @@ export function DumDateTimePicker({
                   }}
                   className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex items-center justify-between ${
                     isSelected
-                      ? "bg-amber-500 text-zinc-950 font-bold border-amber-400 shadow-md"
-                      : "bg-zinc-900/70 border-white/10 text-zinc-200 hover:border-amber-500/40 hover:text-amber-300"
+                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold border-amber-500 shadow-sm"
+                      : "bg-zinc-50 border-zinc-200 text-zinc-800 hover:border-amber-400 hover:bg-amber-50/50"
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Clock className={`h-4 w-4 ${isSelected ? "text-zinc-950" : "text-amber-400"}`} />
+                    <Clock className={`h-4 w-4 ${isSelected ? "text-zinc-950" : "text-amber-600"}`} />
                     <span className="text-xs font-semibold">{time}</span>
                   </div>
                   {isSelected && <Check className="h-4 w-4 text-zinc-950 stroke-[3]" />}
@@ -705,8 +705,8 @@ export function DumDateTimePicker({
             })}
           </div>
 
-          <div className="mt-3 rounded-xl bg-zinc-900/40 border border-white/[0.06] p-2.5 text-[11px] text-zinc-400 font-normal leading-relaxed">
-            <span className="text-amber-300 font-medium">Dum Heat Guarantee:</span> Trays are sealed in traditional dough containers and transferred directly into insulated carriers before release.
+          <div className="mt-3 rounded-xl bg-amber-50/60 border border-amber-200/60 p-2.5 text-[11px] text-zinc-600 font-normal leading-relaxed">
+            <span className="text-amber-800 font-semibold">Dum Heat Guarantee:</span> Trays are sealed in traditional dough containers and transferred directly into insulated carriers before release.
           </div>
         </DialogContent>
       </Dialog>

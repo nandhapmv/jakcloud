@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
       },
       { name: "author", content: "JAKLOUD Spice King" },
-      { name: "theme-color", content: "#1a120b" },
+      { name: "theme-color", content: "#fbf9f5" },
       { property: "og:site_name", content: "JAKLOUD Spice King" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -144,7 +144,11 @@ function RootComponent() {
       <AuthProvider>
         <CartProvider>
           <div
-            className={`flex w-full max-w-full flex-col bg-[#080503] font-sans text-cream overflow-x-hidden ${
+            className={`flex w-full max-w-full flex-col font-sans overflow-x-hidden ${
+              isAdminRoute
+                ? "bg-[#080503] text-cream"
+                : "bg-[#fbf9f5] text-zinc-900"
+            } ${
               isAdminDashboard ? "h-screen h-[100dvh] max-h-[100dvh] overflow-hidden" : "min-h-screen"
             }`}
           >

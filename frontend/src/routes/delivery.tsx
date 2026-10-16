@@ -127,27 +127,27 @@ export function PickupDeliveryPage() {
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-24">
+    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 relative overflow-hidden pb-24">
       {/* 1. HERO HEADER BANNER */}
-      <section className="relative border-b border-white/[0.08] bg-[#121216] py-12 px-4 sm:px-8 text-center overflow-hidden">
+      <section className="relative border-b border-zinc-200 bg-white py-12 px-4 sm:px-8 text-center overflow-hidden">
         <div className="relative z-10 mx-auto max-w-4xl space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-medium text-amber-300">
-            <MapPin className="h-3.5 w-3.5 text-amber-400" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-xs font-medium text-amber-800">
+            <MapPin className="h-3.5 w-3.5 text-amber-600" />
             <span>Fulfilment Hub & Delivery Radius</span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-zinc-100">
-            Pickup or <span className="text-amber-400">Doorstep Delivery</span>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-zinc-900">
+            Pickup or <span className="text-amber-700">Doorstep Delivery</span>
           </h1>
 
-          <p className="mx-auto max-w-2xl text-xs sm:text-sm text-zinc-400 leading-relaxed font-normal">
+          <p className="mx-auto max-w-2xl text-xs sm:text-sm text-zinc-600 leading-relaxed font-normal">
             Every Dum Biryani Handi tray is slow-cooked to order and packed in thermal insulated carriers to ensure
             steaming hot, aromatic delivery or counter pickup across Springfield, Missouri.
           </p>
 
-          <div className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-[#18181f] px-3.5 py-1.5 text-xs text-zinc-300">
-            <Calendar className="h-3.5 w-3.5 text-amber-400" />
-            <span>Next Available Batch: <strong className="text-amber-300 font-medium">{nextDate}</strong> (Order by 2:00 PM)</span>
+          <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs text-zinc-700">
+            <Calendar className="h-3.5 w-3.5 text-amber-600" />
+            <span>Next Available Batch: <strong className="text-amber-800 font-semibold">{nextDate}</strong> (Order by 2:00 PM)</span>
           </div>
         </div>
       </section>
@@ -163,8 +163,8 @@ export function PickupDeliveryPage() {
             }}
             className={`relative rounded-2xl p-5 sm:p-6 cursor-pointer transition-all duration-200 flex flex-col justify-between overflow-hidden ${
               selectedMethod === "pickup"
-                ? "bg-[#18181f] border-2 border-amber-500/70 shadow-lg shadow-amber-500/5 ring-1 ring-amber-500/30"
-                : "bg-[#121216] border border-white/[0.08] hover:border-white/20 hover:bg-[#15151a]"
+                ? "bg-amber-50/60 border-2 border-amber-500 shadow-sm ring-1 ring-amber-400"
+                : "bg-white border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60 shadow-xs"
             }`}
           >
             <div className="space-y-4">
@@ -174,62 +174,62 @@ export function PickupDeliveryPage() {
                     className={`h-11 w-11 rounded-xl flex items-center justify-center transition-all ${
                       selectedMethod === "pickup"
                         ? "bg-amber-500 text-zinc-950 font-semibold"
-                        : "bg-white/[0.06] border border-white/10 text-zinc-300"
+                        : "bg-zinc-100 border border-zinc-200 text-zinc-700"
                     }`}
                   >
                     <Store className="h-5 w-5" />
                   </div>
                   <div>
-                    <span className="text-[0.62rem] font-medium text-amber-400 uppercase tracking-wider block">
+                    <span className="text-[0.62rem] font-semibold text-amber-800 uppercase tracking-wider block">
                       Free Fulfilment
                     </span>
-                    <h2 className="font-display text-lg font-semibold text-zinc-100">
+                    <h2 className="font-display text-lg font-semibold text-zinc-900">
                       Counter Pickup
                     </h2>
                   </div>
                 </div>
 
                 {selectedMethod === "pickup" && (
-                  <div className="flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-semibold text-zinc-950 shadow-sm">
+                  <div className="flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-semibold text-zinc-950 shadow-xs">
                     <Check className="h-3 w-3 stroke-[3]" />
                     <span>Selected</span>
                   </div>
                 )}
               </div>
 
-              <div className="space-y-2 rounded-xl bg-[#18181f] border border-white/[0.06] p-3 text-xs text-zinc-300 font-normal">
+              <div className="space-y-2 rounded-xl bg-zinc-50 border border-zinc-200 p-3 text-xs text-zinc-700 font-normal">
                 <div className="flex items-start gap-2">
-                  <MapPin className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
+                  <MapPin className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-zinc-200">{BUSINESS.address}</p>
+                    <p className="font-semibold text-zinc-900">{BUSINESS.address}</p>
                     <p className="text-[0.68rem] text-zinc-500">East Springfield (Near Highway 65 & Battlefield)</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 border-t border-white/[0.04] pt-2">
-                  <Clock className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 border-t border-zinc-200/60 pt-2">
+                  <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-zinc-200">Lunch Pickup Hours: 11:00 AM – 1:00 PM</p>
+                    <p className="font-semibold text-zinc-900">Lunch Pickup Hours: 11:00 AM – 1:00 PM</p>
                     <p className="text-[0.68rem] text-zinc-500">Available daily across all 7 days of the week</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 border-t border-white/[0.04] pt-2">
-                  <Shield className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 border-t border-zinc-200/60 pt-2">
+                  <Shield className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-emerald-400">Freshly Hot-Sealed Guarantee</p>
+                    <p className="font-semibold text-emerald-700">Freshly Hot-Sealed Guarantee</p>
                     <p className="text-[0.68rem] text-zinc-500">Packed in thermal bags for 90-min heat retention</p>
                   </div>
                 </div>
               </div>
 
-              <p className="text-xs text-zinc-400 leading-relaxed font-normal">
+              <p className="text-xs text-zinc-600 leading-relaxed font-normal">
                 Pick up your handi directly from our kitchen counter. Ideal for family feasts, weekend pickups, and local Springfield residents.
               </p>
 
               {selectedMethod === "pickup" && (
                 <div className="space-y-1.5 pt-1 animate-in fade-in duration-200">
-                  <Label className="text-[0.65rem] uppercase tracking-wider text-zinc-400 font-medium">
+                  <Label className="text-[0.65rem] uppercase tracking-wider text-zinc-500 font-medium">
                     Select Pickup Time Slot ({nextDate}):
                   </Label>
                   <div className="grid grid-cols-4 gap-1.5">
@@ -243,8 +243,8 @@ export function PickupDeliveryPage() {
                         }}
                         className={`rounded-lg py-1.5 text-xs font-medium border transition-all ${
                           selectedTimeSlot === slot
-                            ? "bg-amber-500/15 border-amber-500/50 text-amber-300 font-semibold"
-                            : "bg-[#18181f] border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                            ? "bg-amber-100 border-amber-400 text-amber-900 font-semibold"
+                            : "bg-white border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-50"
                         }`}
                       >
                         {slot}
@@ -255,10 +255,10 @@ export function PickupDeliveryPage() {
               )}
             </div>
 
-            <div className="pt-4 mt-4 border-t border-white/[0.06] flex items-center justify-between">
+            <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between">
               <div>
                 <span className="text-[0.62rem] text-zinc-500 uppercase tracking-wider block">Fulfilment Cost</span>
-                <p className="font-display text-lg font-semibold text-emerald-400">FREE ($0.00)</p>
+                <p className="font-display text-lg font-semibold text-emerald-700">FREE ($0.00)</p>
               </div>
 
               <a
@@ -266,9 +266,9 @@ export function PickupDeliveryPage() {
                 target="_blank"
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-[#18181f] hover:bg-[#22222a] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors"
+                className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors"
               >
-                <Navigation className="h-3 w-3 text-amber-400" />
+                <Navigation className="h-3 w-3 text-amber-600" />
                 <span>Google Maps Directions ↗</span>
               </a>
             </div>
@@ -282,8 +282,8 @@ export function PickupDeliveryPage() {
             }}
             className={`relative rounded-2xl p-5 sm:p-6 cursor-pointer transition-all duration-200 flex flex-col justify-between overflow-hidden ${
               selectedMethod === "delivery"
-                ? "bg-[#18181f] border-2 border-amber-500/70 shadow-lg shadow-amber-500/5 ring-1 ring-amber-500/30"
-                : "bg-[#121216] border border-white/[0.08] hover:border-white/20 hover:bg-[#15151a]"
+                ? "bg-amber-50/60 border-2 border-amber-500 shadow-sm ring-1 ring-amber-400"
+                : "bg-white border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60 shadow-xs"
             }`}
           >
             <div className="space-y-4">
@@ -293,62 +293,62 @@ export function PickupDeliveryPage() {
                     className={`h-11 w-11 rounded-xl flex items-center justify-center transition-all ${
                       selectedMethod === "delivery"
                         ? "bg-amber-500 text-zinc-950 font-semibold"
-                        : "bg-white/[0.06] border border-white/10 text-zinc-300"
+                        : "bg-zinc-100 border border-zinc-200 text-zinc-700"
                     }`}
                   >
                     <Truck className="h-5 w-5" />
                   </div>
                   <div>
-                    <span className="text-[0.62rem] font-medium text-amber-400 uppercase tracking-wider block">
+                    <span className="text-[0.62rem] font-semibold text-amber-800 uppercase tracking-wider block">
                       Doorstep Service
                     </span>
-                    <h2 className="font-display text-lg font-semibold text-zinc-100">
+                    <h2 className="font-display text-lg font-semibold text-zinc-900">
                       Doorstep Delivery
                     </h2>
                   </div>
                 </div>
 
                 {selectedMethod === "delivery" && (
-                  <div className="flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-semibold text-zinc-950 shadow-sm">
+                  <div className="flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-semibold text-zinc-950 shadow-xs">
                     <Check className="h-3 w-3 stroke-[3]" />
                     <span>Selected</span>
                   </div>
                 )}
               </div>
 
-              <div className="space-y-2 rounded-xl bg-[#18181f] border border-white/[0.06] p-3 text-xs text-zinc-300 font-normal">
+              <div className="space-y-2 rounded-xl bg-zinc-50 border border-zinc-200 p-3 text-xs text-zinc-700 font-normal">
                 <div className="flex items-start gap-2">
-                  <Truck className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
+                  <Truck className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-zinc-200">Flat $10 Delivery Fee</p>
-                    <p className="text-[0.68rem] text-emerald-400">FREE Delivery for orders of 5+ Handi Trays</p>
+                    <p className="font-semibold text-zinc-900">Flat $10 Delivery Fee</p>
+                    <p className="text-[0.68rem] text-emerald-700">FREE Delivery for orders of 5+ Handi Trays</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 border-t border-white/[0.04] pt-2">
-                  <MapPin className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 border-t border-zinc-200/60 pt-2">
+                  <MapPin className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-zinc-200">10-Mile Springfield Radius</p>
+                    <p className="font-semibold text-zinc-900">10-Mile Springfield Radius</p>
                     <p className="text-[0.68rem] text-zinc-500">Serving Springfield, Galloway, Battlefield & Metro</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 border-t border-white/[0.04] pt-2">
-                  <Clock className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 border-t border-zinc-200/60 pt-2">
+                  <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-zinc-200">Delivery Windows: 2:00 PM – 6:00 PM</p>
+                    <p className="font-semibold text-zinc-900">Delivery Windows: 2:00 PM – 6:00 PM</p>
                     <p className="text-[0.68rem] text-zinc-500">Dispatched hot in thermal insulated carriers</p>
                   </div>
                 </div>
               </div>
 
-              <p className="text-xs text-zinc-400 leading-relaxed font-normal">
+              <p className="text-xs text-zinc-600 leading-relaxed font-normal">
                 Enjoy hot royal Dum Biryani handi trays delivered directly to your doorstep, hospital office, medical center, or event venue in Springfield.
               </p>
 
               {selectedMethod === "delivery" && (
                 <div className="space-y-1.5 pt-1 animate-in fade-in duration-200">
-                  <Label className="text-[0.65rem] uppercase tracking-wider text-zinc-400 font-medium">
+                  <Label className="text-[0.65rem] uppercase tracking-wider text-zinc-500 font-medium">
                     Select Delivery Time Window ({nextDate}):
                   </Label>
                   <div className="grid grid-cols-5 gap-1">
@@ -362,8 +362,8 @@ export function PickupDeliveryPage() {
                         }}
                         className={`rounded-lg py-1.5 text-xs font-medium border transition-all ${
                           selectedTimeSlot === slot
-                            ? "bg-amber-500/15 border-amber-500/50 text-amber-300 font-semibold"
-                            : "bg-[#18181f] border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                            ? "bg-amber-100 border-amber-400 text-amber-900 font-semibold"
+                            : "bg-white border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-50"
                         }`}
                       >
                         {slot}
@@ -374,10 +374,10 @@ export function PickupDeliveryPage() {
               )}
             </div>
 
-            <div className="pt-4 mt-4 border-t border-white/[0.06] flex items-center justify-between">
+            <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between">
               <div>
                 <span className="text-[0.62rem] text-zinc-500 uppercase tracking-wider block">Standard Fee</span>
-                <p className="font-display text-lg font-semibold text-amber-400">$10.00 <span className="text-xs font-normal text-zinc-500">Flat</span></p>
+                <p className="font-display text-lg font-semibold text-amber-700">$10.00 <span className="text-xs font-normal text-zinc-500">Flat</span></p>
               </div>
 
               <button
@@ -388,9 +388,9 @@ export function PickupDeliveryPage() {
                   const inputEl = document.getElementById("zip-checker-input");
                   if (inputEl) inputEl.focus();
                 }}
-                className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-[#18181f] hover:bg-[#22222a] px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors"
+                className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors"
               >
-                <Search className="h-3 w-3 text-amber-400" />
+                <Search className="h-3 w-3 text-amber-600" />
                 <span>Check Delivery Zip ↓</span>
               </button>
             </div>
@@ -398,15 +398,15 @@ export function PickupDeliveryPage() {
         </div>
 
         {/* 3. INTERACTIVE MAP & DELIVERY RADIUS RADAR */}
-        <section className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
+        <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-sm space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
             <div className="space-y-1">
-              <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">Coverage Radius</span>
-              <h3 className="font-display text-xl font-semibold text-zinc-100">
+              <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Coverage Radius</span>
+              <h3 className="font-display text-xl font-semibold text-zinc-900">
                 Springfield Delivery Radius & Zones
               </h3>
-              <p className="text-xs text-zinc-400 font-normal">
-                Hub Location: <strong className="text-zinc-200 font-medium">3625 S Bedford Ave, Springfield, MO 65809</strong>
+              <p className="text-xs text-zinc-500 font-normal">
+                Hub Location: <strong className="text-zinc-800 font-medium">3625 S Bedford Ave, Springfield, MO 65809</strong>
               </p>
             </div>
 
@@ -417,11 +417,11 @@ export function PickupDeliveryPage() {
                 placeholder="Enter Springfield ZIP (e.g. 65804)"
                 value={zipCheckInput}
                 onChange={(e) => setZipCheckInput(e.target.value)}
-                className="bg-[#18181f] border-white/[0.08] text-zinc-200 placeholder:text-zinc-500 text-xs rounded-xl focus:border-amber-500/50"
+                className="bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 text-xs rounded-xl focus:border-amber-500 focus:bg-white"
               />
               <Button
                 type="submit"
-                className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-medium text-xs px-4 rounded-xl shrink-0"
+                className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs px-4 rounded-xl shrink-0"
               >
                 Verify
               </Button>
@@ -432,21 +432,21 @@ export function PickupDeliveryPage() {
             <div
               className={`rounded-xl p-3 text-xs flex items-center justify-between border animate-in fade-in duration-200 ${
                 zipCheckResult.valid
-                  ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-300"
-                  : "bg-amber-950/40 border-amber-500/30 text-amber-200"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                  : "bg-amber-50 border-amber-200 text-amber-800"
               }`}
             >
               <div className="flex items-center gap-2">
                 {zipCheckResult.valid ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                 ) : (
-                  <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
+                  <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
                 )}
                 <span>{zipCheckResult.message}</span>
               </div>
               <button
                 onClick={() => setZipCheckResult(null)}
-                className="text-xs text-zinc-500 hover:text-zinc-300"
+                className="text-xs text-zinc-500 hover:text-zinc-900"
               >
                 ✕
               </button>
@@ -454,28 +454,28 @@ export function PickupDeliveryPage() {
           )}
 
           <div className="grid gap-6 lg:grid-cols-12 items-center">
-            <div className="lg:col-span-6 relative h-72 w-full rounded-2xl bg-[#09090b] border border-white/[0.08] overflow-hidden flex items-center justify-center p-4">
-              <div className="absolute h-64 w-64 rounded-full border border-white/[0.06] border-dashed pointer-events-none" />
-              <div className="absolute h-44 w-44 rounded-full border border-white/[0.08] pointer-events-none" />
-              <div className="absolute h-24 w-24 rounded-full border border-amber-500/30 bg-amber-500/5 pointer-events-none" />
+            <div className="lg:col-span-6 relative h-72 w-full rounded-2xl bg-zinc-50 border border-zinc-200 overflow-hidden flex items-center justify-center p-4">
+              <div className="absolute h-64 w-64 rounded-full border border-zinc-200 border-dashed pointer-events-none" />
+              <div className="absolute h-44 w-44 rounded-full border border-zinc-200 pointer-events-none" />
+              <div className="absolute h-24 w-24 rounded-full border border-amber-300 bg-amber-50/50 pointer-events-none" />
 
-              <span className="absolute top-4 text-[0.62rem] text-zinc-500 uppercase tracking-wider">
+              <span className="absolute top-4 text-[0.62rem] text-zinc-400 uppercase tracking-wider font-semibold">
                 10-Mile Metro Radius ($10)
               </span>
-              <span className="absolute top-14 text-[0.62rem] text-zinc-500 uppercase tracking-wider">
+              <span className="absolute top-14 text-[0.62rem] text-zinc-400 uppercase tracking-wider font-semibold">
                 6-Mile District
               </span>
-              <span className="absolute top-24 text-[0.62rem] text-amber-400/80 uppercase tracking-wider">
+              <span className="absolute top-24 text-[0.62rem] text-amber-700 uppercase tracking-wider font-bold">
                 3-Mile Hub
               </span>
 
               <div className="relative z-10 flex flex-col items-center">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-zinc-950 shadow-md">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-zinc-950 shadow-sm">
                   <Store className="h-4 w-4" />
                 </div>
-                <div className="mt-1.5 rounded-lg bg-[#18181f] border border-white/[0.08] px-2.5 py-0.5 text-center shadow-md">
-                  <p className="text-[0.7rem] font-medium text-amber-300">JAKLOUD Kitchen</p>
-                  <p className="text-[0.6rem] text-zinc-400">3625 S Bedford Ave</p>
+                <div className="mt-1.5 rounded-lg bg-white border border-zinc-200 px-2.5 py-0.5 text-center shadow-xs">
+                  <p className="text-[0.7rem] font-semibold text-zinc-900">JAKLOUD Kitchen</p>
+                  <p className="text-[0.6rem] text-zinc-500">3625 S Bedford Ave</p>
                 </div>
               </div>
             </div>
@@ -484,24 +484,24 @@ export function PickupDeliveryPage() {
               {SPRINGFIELD_ZONES.map((zone, idx) => (
                 <div
                   key={idx}
-                  className="rounded-xl border border-white/[0.06] bg-[#18181f] p-3.5 space-y-1 hover:border-white/10 transition-colors"
+                  className="rounded-xl border border-zinc-200 bg-zinc-50/60 p-3.5 space-y-1 hover:border-zinc-300 hover:bg-zinc-50 transition-colors"
                 >
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
-                      <span className="text-amber-400 font-mono text-[0.7rem]">0{idx + 1}.</span>
+                    <h4 className="text-xs font-semibold text-zinc-900 flex items-center gap-1.5">
+                      <span className="text-amber-700 font-mono text-[0.7rem]">0{idx + 1}.</span>
                       <span>{zone.name}</span>
                     </h4>
-                    <span className="rounded bg-white/[0.06] border border-white/10 px-2 py-0.5 text-[0.62rem] font-medium text-zinc-300">
+                    <span className="rounded bg-white border border-zinc-200 px-2 py-0.5 text-[0.62rem] font-medium text-zinc-700">
                       {zone.radius}
                     </span>
                   </div>
 
-                  <p className="text-[0.68rem] text-zinc-400 font-normal">
-                    Covered Zip Codes: <span className="text-zinc-200 font-mono">{zone.zipCodes.join(", ")}</span>
+                  <p className="text-[0.68rem] text-zinc-600 font-normal">
+                    Covered Zip Codes: <span className="text-zinc-900 font-mono font-medium">{zone.zipCodes.join(", ")}</span>
                   </p>
 
-                  <div className="flex items-center justify-between pt-1 text-[0.65rem] text-zinc-500 border-t border-white/[0.04]">
-                    <span className="text-emerald-400 font-medium">✓ {zone.status}</span>
+                  <div className="flex items-center justify-between pt-1 text-[0.65rem] text-zinc-500 border-t border-zinc-200/60">
+                    <span className="text-emerald-700 font-medium">✓ {zone.status}</span>
                     <span>Est. Window: {zone.eta}</span>
                   </div>
                 </div>
@@ -511,17 +511,17 @@ export function PickupDeliveryPage() {
         </section>
 
         {/* 4. CALL TO ACTION & FLOW TRANSITION */}
-        <section className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-5">
+        <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5">
           <div className="space-y-1 text-center md:text-left">
-            <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
               Ready to Order?
             </span>
-            <h3 className="font-display text-xl font-semibold text-zinc-100">
+            <h3 className="font-display text-xl font-semibold text-zinc-900">
               Proceed with {selectedMethod === "pickup" ? "Counter Pickup" : "Doorstep Delivery"}
             </h3>
-            <p className="text-xs text-zinc-400 font-normal">
-              Selected window: <strong className="text-zinc-200 font-medium">{selectedTimeSlot}</strong> on{" "}
-              <strong className="text-zinc-200 font-medium">{nextDate}</strong>.
+            <p className="text-xs text-zinc-600 font-normal">
+              Selected window: <strong className="text-zinc-900 font-medium">{selectedTimeSlot}</strong> on{" "}
+              <strong className="text-zinc-900 font-medium">{nextDate}</strong>.
             </p>
           </div>
 
@@ -529,7 +529,7 @@ export function PickupDeliveryPage() {
             <Button
               asChild
               size="lg"
-              className="rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs px-5 py-4 shadow-md transition-colors gap-1.5"
+              className="rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs px-5 py-4 shadow-sm transition-colors gap-1.5 cursor-pointer"
             >
               <Link to="/menu">
                 <UtensilsCrossed className="h-4 w-4" />
@@ -541,7 +541,7 @@ export function PickupDeliveryPage() {
               href={whatsappInquiryUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/40 hover:bg-emerald-900/50 px-4 py-2 text-xs font-medium text-emerald-400 transition-colors"
+              className="flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 text-xs font-semibold text-emerald-800 transition-colors shadow-xs"
             >
               <MessageSquare className="h-3.5 w-3.5" />
               <span>WhatsApp Inquiry</span>
@@ -549,9 +549,9 @@ export function PickupDeliveryPage() {
 
             <a
               href={`tel:${BUSINESS.phone}`}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#18181f] hover:bg-[#22222a] px-3.5 py-2 text-xs font-normal text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 px-3.5 py-2 text-xs font-medium text-zinc-700 hover:text-zinc-900 transition-colors"
             >
-              <Phone className="h-3.5 w-3.5" />
+              <Phone className="h-3.5 w-3.5 text-amber-600" />
               <span>{BUSINESS.phone}</span>
             </a>
           </div>

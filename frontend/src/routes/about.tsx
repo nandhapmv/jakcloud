@@ -25,22 +25,22 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 pb-12">
-      <section className="relative border-b border-white/[0.08] bg-[#121216] px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 pb-12">
+      <section className="relative border-b border-zinc-200 bg-white px-4 sm:px-6 lg:px-8 py-8 sm:py-10 shadow-sm">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-start sm:items-center gap-5 text-left">
           <img
             src={logoImg}
             alt="JAKLOUD Spice King heritage seal"
-            className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-full border border-amber-500/30 object-cover shadow-lg"
+            className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-full border border-amber-500/30 object-cover shadow-md"
             width={96}
             height={96}
           />
           <div className="space-y-1">
-            <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">Culinary Heritage</span>
-            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-semibold text-zinc-100">
+            <span className="text-xs uppercase tracking-wider text-amber-800 font-semibold">Culinary Heritage</span>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-semibold text-zinc-900">
               Two Backgrounds. One Shared Table.
             </h1>
-            <p className="max-w-2xl text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed">
+            <p className="max-w-2xl text-xs sm:text-sm text-zinc-600 font-normal leading-relaxed">
               Spice King is a JAKLOUD culinary brand founded by Kartheek A. and Jeanette C. in Springfield, Missouri.
             </p>
           </div>
@@ -49,7 +49,7 @@ function AboutPage() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <section className="grid gap-6 md:grid-cols-2 items-center">
-          <div className="space-y-3 text-xs sm:text-sm leading-relaxed text-zinc-400 font-normal">
+          <div className="space-y-3 text-xs sm:text-sm leading-relaxed text-zinc-700 font-normal">
             <p>
               Kartheek comes from Hyderabad, a city whose centuries-old food culture shaped the foundation of the Spice King
               recipe. He brings deep appreciation for authentic dum preparation, layered slow-roasted spices, and the belief that handcrafted biryani turns every meal into an occasion.
@@ -63,7 +63,7 @@ function AboutPage() {
               slow-cooking technique with Missouri warmth, we offer Springfield a new way to celebrate with memorable meals.
             </p>
           </div>
-          <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] shadow-xl">
+          <div className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-md">
             <img
               src={handiImg}
               alt="Clay handi of dum biryani"
@@ -74,15 +74,15 @@ function AboutPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-sm hover:border-amber-500/30 transition-all space-y-2">
-            <h2 className="font-display text-lg font-semibold text-amber-400">Our Vision</h2>
-            <p className="text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm hover:border-amber-500/40 hover:shadow-md transition-all space-y-2">
+            <h2 className="font-display text-lg font-semibold text-amber-800">Our Vision</h2>
+            <p className="text-xs sm:text-sm text-zinc-600 font-normal leading-relaxed">
               To make authentic, Hyderabad-inspired dum biryani a beloved staple of Springfield's culinary landscape, building a trusted JAKLOUD brand celebrated for pure flavors, nourishment, and hospitality.
             </p>
           </div>
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-sm hover:border-amber-500/30 transition-all space-y-2">
-            <h2 className="font-display text-lg font-semibold text-amber-400">Our Mission</h2>
-            <p className="text-xs sm:text-sm text-zinc-400 font-normal leading-relaxed">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm hover:border-amber-500/40 hover:shadow-md transition-all space-y-2">
+            <h2 className="font-display text-lg font-semibold text-amber-800">Our Mission</h2>
+            <p className="text-xs sm:text-sm text-zinc-600 font-normal leading-relaxed">
               To prepare generous, made-to-order dum biryani using 100% Zabiha Halal proteins, aged long-grain basmati, and traditional sealed-dough slow-cooking with reliable local pickup and delivery.
             </p>
           </div>
@@ -90,11 +90,11 @@ function AboutPage() {
 
         <section className="space-y-3">
           <div className="text-left space-y-1">
-            <span className="text-xs uppercase tracking-wider text-amber-400 font-medium">Safe Preparation & Care</span>
-            <h2 className="font-display text-xl sm:text-2xl font-semibold text-zinc-100">Ingredients & Storage Guide</h2>
+            <span className="text-xs uppercase tracking-wider text-amber-800 font-semibold">Safe Preparation & Care</span>
+            <h2 className="font-display text-xl sm:text-2xl font-semibold text-zinc-900">Ingredients & Storage Guide</h2>
           </div>
-          <div className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 text-xs text-zinc-400 space-y-3 font-normal leading-relaxed">
-            <p className="font-medium text-zinc-200">Spice King Dum Biryani (Chicken)</p>
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 text-xs text-zinc-600 space-y-3 font-normal leading-relaxed shadow-sm">
+            <p className="font-semibold text-zinc-900">Spice King Dum Biryani (Chicken)</p>
             <p>
               Basmati rice, chicken, water, potato (only if aloo is selected), yogurt and sour cream (MILK), onion, egg,
               ghee (MILK), cashew (TREE NUT), milk (MILK), ginger, garlic, green chili, cilantro, mint, dates, dried
@@ -103,7 +103,7 @@ function AboutPage() {
               dried rose petal). Complimentary dessert (Chef's Selection laddoo): chickpea flour, sugar, ghee (MILK),
               cashew (TREE NUT), cardamom. For mutton, beef, or pork trays, substitute the protein name.
             </p>
-            <p className="font-medium text-amber-400">
+            <p className="font-semibold text-amber-800">
               CONTAINS: MILK, EGG, TREE NUT (CASHEW). MAY CONTAIN WHEAT AND PEANUT.
             </p>
             <p className="text-zinc-500">

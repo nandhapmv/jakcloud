@@ -227,32 +227,32 @@ export function ProteinSelectionPage() {
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 relative overflow-hidden pb-24">
+    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-100 selection:text-amber-900 relative overflow-hidden pb-24">
       {/* 1. HERO BANNER */}
-      <section className="relative border-b border-white/[0.08] bg-[#121216] py-12 px-4 sm:px-8 text-center overflow-hidden">
+      <section className="relative border-b border-zinc-200 bg-white py-12 px-4 sm:px-8 text-center overflow-hidden">
         <div className="relative z-10 mx-auto max-w-4xl space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-medium text-amber-300">
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-1 text-xs font-medium text-amber-800">
+            <Sparkles className="h-3.5 w-3.5 text-amber-600" />
             <span>Cut & Marinade Selection</span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-zinc-100">
-            Choose Your Signature <span className="text-amber-400">Protein Cut</span>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-zinc-900">
+            Choose Your Signature <span className="text-amber-700">Protein Cut</span>
           </h1>
 
-          <p className="mx-auto max-w-2xl text-xs sm:text-sm text-zinc-400 leading-relaxed font-normal">
+          <p className="mx-auto max-w-2xl text-xs sm:text-sm text-zinc-600 leading-relaxed font-normal">
             Every Handi Tray includes 1.6 to 1.8 kg of marinated protein slow-cooked on traditional Dum Pukht with aged saffron basmati. 100% Zabiha Halal chicken, mutton, and beef cuts.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <div className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-[#18181f] px-3.5 py-1.5 text-xs text-zinc-300">
-              <Calendar className="h-3.5 w-3.5 text-amber-400" />
-              <span>Next Handi Batch: <strong className="text-amber-300 font-medium">{nextDate}</strong></span>
-              <span className="text-zinc-600">•</span>
-              <span className="text-amber-400/90 font-medium">2:00 PM Cutoff</span>
+            <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs text-zinc-700">
+              <Calendar className="h-3.5 w-3.5 text-amber-600" />
+              <span>Next Handi Batch: <strong className="text-amber-800 font-semibold">{nextDate}</strong></span>
+              <span className="text-zinc-400">•</span>
+              <span className="text-amber-700 font-medium">2:00 PM Cutoff</span>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-3 py-1.5 text-xs font-medium text-emerald-400">
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800">
               <Shield className="h-3.5 w-3.5" />
               <span>100% Zabiha Halal Certified</span>
             </div>
@@ -261,7 +261,7 @@ export function ProteinSelectionPage() {
       </section>
 
       {/* 2. CATEGORY FILTER TABS */}
-      <div className="border-b border-white/[0.08] bg-[#121216]/80 backdrop-blur-xl py-3 px-4 sm:px-8">
+      <div className="border-b border-zinc-200 bg-white/80 backdrop-blur-xl py-3 px-4 sm:px-8">
         <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
             {[
@@ -274,8 +274,8 @@ export function ProteinSelectionPage() {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`rounded-xl px-3.5 py-1.5 text-xs font-medium transition-all border ${
                   activeTab === tab.id
-                    ? "bg-amber-500/15 border-amber-500/50 text-amber-300 font-semibold"
-                    : "bg-[#18181f] border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                    ? "bg-amber-50/80 border-2 border-amber-500 text-zinc-900 font-semibold ring-1 ring-amber-400 shadow-sm"
+                    : "bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100"
                 }`}
               >
                 {tab.label}
@@ -283,7 +283,7 @@ export function ProteinSelectionPage() {
             ))}
           </div>
 
-          <span className="hidden md:inline text-xs text-zinc-400 font-normal">
+          <span className="hidden md:inline text-xs text-zinc-500 font-normal">
             Click any card to configure & order
           </span>
         </div>
@@ -300,37 +300,37 @@ export function ProteinSelectionPage() {
                 onClick={() => setSelectedProteinId(protein.id)}
                 className={`group relative rounded-2xl p-4 sm:p-5 cursor-pointer transition-all duration-200 flex flex-col justify-between overflow-hidden ${
                   isSelected
-                    ? "bg-[#18181f] border-2 border-amber-500/70 shadow-lg shadow-amber-500/5 ring-1 ring-amber-500/30"
-                    : "bg-[#121216] border border-white/[0.08] hover:border-white/20 hover:bg-[#15151a]"
+                    ? "bg-white border-2 border-amber-500 shadow-md ring-1 ring-amber-400"
+                    : "bg-white border border-zinc-200 hover:border-amber-400 hover:shadow-sm"
                 }`}
               >
                 <div className="space-y-3">
-                  <div className="relative h-44 w-full rounded-xl overflow-hidden border border-white/[0.08]">
+                  <div className="relative h-44 w-full rounded-xl overflow-hidden border border-zinc-200">
                     <img
                       src={protein.dishImage}
                       alt={protein.name}
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
                     <div className="absolute top-2 inset-x-2 flex items-center justify-between">
                       {protein.halal ? (
-                        <span className="rounded-full bg-emerald-950/90 border border-emerald-500/50 px-2 py-0.5 text-[0.62rem] font-medium text-emerald-400 backdrop-blur-md flex items-center gap-1">
+                        <span className="rounded-full bg-emerald-50 border border-emerald-300 px-2 py-0.5 text-[0.62rem] font-medium text-emerald-800 backdrop-blur-md flex items-center gap-1">
                           <Shield className="h-3 w-3" /> Halal
                         </span>
                       ) : (
-                        <span className="rounded-full bg-amber-950/90 border border-amber-500/50 px-2 py-0.5 text-[0.62rem] font-medium text-amber-300 backdrop-blur-md flex items-center gap-1">
+                        <span className="rounded-full bg-amber-50 border border-amber-300 px-2 py-0.5 text-[0.62rem] font-medium text-amber-800 backdrop-blur-md flex items-center gap-1">
                           <Sparkles className="h-3 w-3" /> Specialty
                         </span>
                       )}
 
-                      <span className="rounded-full bg-black/70 border border-white/10 px-2 py-0.5 text-[0.62rem] font-medium text-zinc-300 backdrop-blur-md">
+                      <span className="rounded-full bg-black/60 border border-white/20 px-2 py-0.5 text-[0.62rem] font-medium text-white backdrop-blur-md">
                         {protein.serves}
                       </span>
                     </div>
 
                     {isSelected && (
-                      <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-[0.65rem] font-semibold text-zinc-950 shadow-md">
+                      <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-[0.65rem] font-bold text-zinc-950 shadow-md">
                         <Check className="h-3 w-3 stroke-[3]" />
                         <span>Selected</span>
                       </div>
@@ -338,26 +338,26 @@ export function ProteinSelectionPage() {
                   </div>
 
                   <div>
-                    <span className="text-[0.65rem] font-medium text-amber-400 uppercase tracking-wider block">
+                    <span className="text-[0.65rem] font-semibold text-amber-700 uppercase tracking-wider block">
                       {protein.tagline}
                     </span>
-                    <h3 className={`font-display text-base font-semibold mt-0.5 ${isSelected ? "text-amber-300" : "text-zinc-100 group-hover:text-amber-400"} transition-colors`}>
+                    <h3 className={`font-display text-base font-semibold mt-0.5 ${isSelected ? "text-amber-800" : "text-zinc-900 group-hover:text-amber-700"} transition-colors`}>
                       {protein.name}
                     </h3>
                   </div>
 
-                  <div className="space-y-1 text-[0.7rem] text-zinc-400 bg-[#18181f] rounded-xl p-2.5 border border-white/[0.06] font-normal">
-                    <p className="flex items-center gap-1.5 text-zinc-300 font-medium">
-                      <Scale className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                  <div className="space-y-1 text-[0.7rem] text-zinc-600 bg-zinc-50 rounded-xl p-2.5 border border-zinc-200 font-normal">
+                    <p className="flex items-center gap-1.5 text-zinc-800 font-medium">
+                      <Scale className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                       <span>{protein.meatWeight}</span>
                     </p>
-                    <p className="flex items-center gap-1.5 text-zinc-400">
-                      <Clock className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                    <p className="flex items-center gap-1.5 text-zinc-600">
+                      <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                       <span>{protein.marinationTime}</span>
                     </p>
                   </div>
 
-                  <p className="text-xs text-zinc-400 leading-relaxed line-clamp-2 font-normal">
+                  <p className="text-xs text-zinc-600 leading-relaxed line-clamp-2 font-normal">
                     {protein.description}
                   </p>
 
@@ -365,7 +365,7 @@ export function ProteinSelectionPage() {
                     {protein.flavorProfile.map((tag, i) => (
                       <span
                         key={i}
-                        className="rounded-md bg-white/[0.04] border border-white/[0.06] px-1.5 py-0.5 text-[0.62rem] text-zinc-400 font-normal"
+                        className="rounded-md bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 text-[0.62rem] text-zinc-700 font-normal"
                       >
                         {tag}
                       </span>
@@ -373,12 +373,12 @@ export function ProteinSelectionPage() {
                   </div>
                 </div>
 
-                <div className="pt-3 mt-3 border-t border-white/[0.06] space-y-2">
-                  <div className="flex items-center justify-between text-[0.68rem] text-zinc-400 font-normal">
+                <div className="pt-3 mt-3 border-t border-zinc-100 space-y-2">
+                  <div className="flex items-center justify-between text-[0.68rem] text-zinc-600 font-normal">
                     <span className="flex items-center gap-1.5">
                       <span
                         className={`h-1.5 w-1.5 rounded-full ${
-                          protein.stockStatus === "limited" ? "bg-amber-400" : "bg-emerald-400"
+                          protein.stockStatus === "limited" ? "bg-amber-500" : "bg-emerald-500"
                         }`}
                       />
                       <span>{protein.availability}</span>
@@ -389,17 +389,17 @@ export function ProteinSelectionPage() {
                   <div className="flex items-end justify-between">
                     <div>
                       <span className="text-[0.62rem] text-zinc-500 uppercase tracking-wider block">Price / Handi Tray</span>
-                      <p className="font-display text-lg font-semibold text-amber-400">
+                      <p className="font-display text-lg font-semibold text-amber-700">
                         {formatMoney(protein.basePrice)}
                       </p>
                     </div>
 
                     <button
                       type="button"
-                      className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all ${
+                      className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
                         isSelected
-                          ? "bg-amber-500 text-zinc-950 font-semibold"
-                          : "bg-[#18181f] border border-white/10 text-zinc-300 hover:bg-[#22222a]"
+                          ? "bg-amber-500 text-zinc-950"
+                          : "bg-zinc-100 border border-zinc-200 text-zinc-800 hover:bg-zinc-200"
                       }`}
                     >
                       {isSelected ? "Selected" : "Select"}
@@ -412,28 +412,28 @@ export function ProteinSelectionPage() {
         </div>
 
         {/* 4. ACTIVE PROTEIN ORDER CONFIGURATOR */}
-        <section className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
+        <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-sm space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 pb-4">
             <div className="space-y-1">
-              <span className="text-xs font-medium text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-medium text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
                 <UtensilsCrossed className="h-3.5 w-3.5" />
                 <span>Customizing Cut</span>
               </span>
-              <h2 className="font-display text-xl sm:text-2xl font-semibold text-zinc-100">
+              <h2 className="font-display text-xl sm:text-2xl font-semibold text-zinc-900">
                 {currentProtein.name} Handi Tray
               </h2>
-              <p className="text-xs text-zinc-400 font-normal">
+              <p className="text-xs text-zinc-600 font-normal">
                 {currentProtein.meatWeight} • 1.0 kg Aged Basmati • 2 Boiled Eggs • Cashews • Raita • Salan • Dessert
               </p>
             </div>
 
-            <div className="flex items-center gap-2.5 bg-[#18181f] border border-white/[0.06] rounded-xl p-2.5 shrink-0">
-              <div className="rounded-lg bg-emerald-950/60 p-1.5 text-emerald-400 border border-emerald-500/30">
+            <div className="flex items-center gap-2.5 bg-zinc-50 border border-zinc-200 rounded-xl p-2.5 shrink-0">
+              <div className="rounded-lg bg-emerald-100 p-1.5 text-emerald-800 border border-emerald-300">
                 <Shield className="h-4 w-4" />
               </div>
               <div className="text-left text-xs font-normal">
-                <p className="font-medium text-zinc-200">{currentProtein.halal ? "100% Zabiha Halal Certified" : "Dedicated Separate Pot"}</p>
-                <p className="text-[0.68rem] text-zinc-400">{currentProtein.halalCert}</p>
+                <p className="font-medium text-zinc-900">{currentProtein.halal ? "100% Zabiha Halal Certified" : "Dedicated Separate Pot"}</p>
+                <p className="text-[0.68rem] text-zinc-500">{currentProtein.halalCert}</p>
               </div>
             </div>
           </div>
@@ -441,7 +441,7 @@ export function ProteinSelectionPage() {
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Column 1: Flavor & Spice */}
             <div className="space-y-3">
-              <Label className="text-xs font-medium text-zinc-300">
+              <Label className="text-xs font-medium text-zinc-800">
                 1. Select Spice Intensity:
               </Label>
               <div className="grid grid-cols-3 gap-2">
@@ -456,8 +456,8 @@ export function ProteinSelectionPage() {
                     onClick={() => setSpiceLevel(s.id as any)}
                     className={`rounded-xl p-2.5 text-center border transition-all ${
                       spiceLevel === s.id
-                        ? "bg-amber-500/15 border-amber-500/50 text-amber-300 font-semibold"
-                        : "bg-[#18181f] border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                        ? "bg-amber-50/80 border-2 border-amber-500 text-zinc-900 font-semibold ring-1 ring-amber-400 shadow-sm"
+                        : "bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100"
                     }`}
                   >
                     <p className="text-xs">{s.label}</p>
@@ -466,12 +466,12 @@ export function ProteinSelectionPage() {
                 ))}
               </div>
 
-              <div className="flex items-center justify-between rounded-xl bg-[#18181f] border border-white/[0.06] p-3 mt-2">
+              <div className="flex items-center justify-between rounded-xl bg-zinc-50 border border-zinc-200 p-3 mt-2">
                 <div>
-                  <Label htmlFor="protein-aloo" className="text-xs font-medium text-zinc-200 cursor-pointer">
+                  <Label htmlFor="protein-aloo" className="text-xs font-medium text-zinc-900 cursor-pointer">
                     🥔 Add Royal Dum Aloo
                   </Label>
-                  <p className="text-[0.68rem] text-emerald-400 mt-0.5 font-medium">
+                  <p className="text-[0.68rem] text-emerald-700 mt-0.5 font-semibold">
                     100% Free ($0.00) Included
                   </p>
                 </div>
@@ -481,35 +481,35 @@ export function ProteinSelectionPage() {
 
             {/* Column 2: Quantity & Notes */}
             <div className="space-y-3">
-              <Label className="text-xs font-medium text-zinc-300">
+              <Label className="text-xs font-medium text-zinc-800">
                 2. Number of Handi Trays:
               </Label>
 
               <div className="flex items-center gap-3">
-                <div className="flex items-center rounded-xl border border-white/[0.08] bg-[#18181f] text-zinc-200 p-1">
+                <div className="flex items-center rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-900 p-1">
                   <button
                     type="button"
                     onClick={() => setTrayQty((q) => Math.max(1, q - 1))}
-                    className="h-8 w-8 flex items-center justify-center text-sm text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] rounded-lg transition-colors"
+                    className="h-8 w-8 flex items-center justify-center text-sm text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200 rounded-lg transition-colors"
                   >
                     −
                   </button>
-                  <span className="w-10 text-center text-sm font-medium text-zinc-100">{trayQty}</span>
+                  <span className="w-10 text-center text-sm font-semibold text-zinc-900">{trayQty}</span>
                   <button
                     type="button"
                     onClick={() => setTrayQty((q) => q + 1)}
-                    className="h-8 w-8 flex items-center justify-center text-sm text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] rounded-lg transition-colors"
+                    className="h-8 w-8 flex items-center justify-center text-sm text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200 rounded-lg transition-colors"
                   >
                     +
                   </button>
                 </div>
-                <span className="text-xs text-zinc-400 font-normal">
-                  Feeds approx. <strong className="text-zinc-200 font-medium">{trayQty * 4}–{trayQty * 5} Adults</strong>
+                <span className="text-xs text-zinc-600 font-normal">
+                  Feeds approx. <strong className="text-zinc-900 font-semibold">{trayQty * 4}–{trayQty * 5} Adults</strong>
                 </span>
               </div>
 
               <div className="space-y-1.5 pt-1">
-                <Label className="text-xs font-medium text-zinc-400">
+                <Label className="text-xs font-medium text-zinc-700">
                   Kitchen Notes (Optional):
                 </Label>
                 <Textarea
@@ -517,31 +517,31 @@ export function ProteinSelectionPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="e.g. Extra salan, well-done meat, deliver at 5:00 PM"
                   rows={2}
-                  className="bg-[#18181f] border-white/[0.08] text-zinc-200 placeholder:text-zinc-500 text-xs rounded-xl focus:border-amber-500/50"
+                  className="bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 text-xs rounded-xl focus:border-amber-500"
                 />
               </div>
             </div>
 
             {/* Column 3: Summary & CTA */}
-            <div className="space-y-3 rounded-xl bg-[#18181f] border border-white/[0.06] p-4 flex flex-col justify-between">
+            <div className="space-y-3 rounded-xl bg-zinc-50 border border-zinc-200 p-4 flex flex-col justify-between">
               <div className="space-y-2 text-xs font-normal">
-                <div className="flex justify-between text-zinc-400">
+                <div className="flex justify-between text-zinc-600">
                   <span>Selected Cut:</span>
-                  <span className="text-zinc-200 font-medium">{currentProtein.name}</span>
+                  <span className="text-zinc-900 font-medium">{currentProtein.name}</span>
                 </div>
-                <div className="flex justify-between text-zinc-400">
+                <div className="flex justify-between text-zinc-600">
                   <span>Portion ({trayQty} Trays):</span>
-                  <span className="text-amber-400 font-medium">{(1.7 * trayQty).toFixed(1)} kg Protein</span>
+                  <span className="text-amber-800 font-semibold">{(1.7 * trayQty).toFixed(1)} kg Protein</span>
                 </div>
                 {addAloo && (
-                  <div className="flex justify-between text-zinc-400">
+                  <div className="flex justify-between text-zinc-600">
                     <span>Royal Dum Aloo:</span>
-                    <span className="text-emerald-400 font-medium">Free ($0.00)</span>
+                    <span className="text-emerald-700 font-semibold">Free ($0.00)</span>
                   </div>
                 )}
-                <div className="pt-2 border-t border-white/[0.08] flex items-baseline justify-between">
-                  <span className="font-medium text-zinc-200">Order Total:</span>
-                  <span className="font-display text-xl font-semibold text-amber-400">
+                <div className="pt-2 border-t border-zinc-200 flex items-baseline justify-between">
+                  <span className="font-semibold text-zinc-900">Order Total:</span>
+                  <span className="font-display text-xl font-bold text-amber-700">
                     {formatMoney(totalPrice)}
                   </span>
                 </div>
@@ -550,7 +550,7 @@ export function ProteinSelectionPage() {
               <div className="space-y-2 pt-2">
                 <Button
                   onClick={handleAddToCart}
-                  className="w-full rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs py-4 shadow-md transition-colors gap-1.5"
+                  className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-105 text-zinc-950 font-bold text-xs py-4 shadow-sm transition-all gap-1.5"
                 >
                   <Plus className="h-4 w-4" /> Add to Order · {formatMoney(totalPrice)}
                 </Button>
@@ -559,7 +559,7 @@ export function ProteinSelectionPage() {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/40 hover:bg-emerald-900/50 p-2 text-xs font-medium text-emerald-400 transition-colors"
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 p-2 text-xs font-semibold text-emerald-800 transition-colors"
                 >
                   <MessageSquare className="h-3.5 w-3.5" />
                   <span>Order on WhatsApp</span>
@@ -570,10 +570,10 @@ export function ProteinSelectionPage() {
         </section>
 
         {/* 5. SIDE-BY-SIDE PROTEIN COMPARISON */}
-        <section className="rounded-2xl border border-white/[0.08] bg-[#121216] p-5 sm:p-6 shadow-xl space-y-4">
-          <div className="border-b border-white/[0.08] pb-3">
-            <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">Culinary Specs</span>
-            <h3 className="font-display text-lg font-semibold text-zinc-100 mt-0.5">
+        <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="border-b border-zinc-200 pb-3">
+            <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Culinary Specs</span>
+            <h3 className="font-display text-lg font-semibold text-zinc-900 mt-0.5">
               Protein Comparison & Dietary Standards
             </h3>
           </div>
@@ -581,7 +581,7 @@ export function ProteinSelectionPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-normal">
               <thead>
-                <tr className="border-b border-white/[0.08] text-zinc-400 uppercase tracking-wider text-[0.65rem]">
+                <tr className="border-b border-zinc-200 text-zinc-500 uppercase tracking-wider text-[0.65rem]">
                   <th className="pb-2.5 font-medium">Protein Cut</th>
                   <th className="pb-2.5 font-medium">Halal Standard</th>
                   <th className="pb-2.5 font-medium">Meat Weight</th>
@@ -590,34 +590,34 @@ export function ProteinSelectionPage() {
                   <th className="pb-2.5 font-medium">Price / Tray</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04] text-zinc-300">
+              <tbody className="divide-y divide-zinc-100 text-zinc-700">
                 {PROTEINS_DATA.map((p) => (
                   <tr
                     key={p.id}
                     onClick={() => setSelectedProteinId(p.id)}
                     className={`cursor-pointer transition-colors ${
-                      selectedProteinId === p.id ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
+                      selectedProteinId === p.id ? "bg-amber-50/50" : "hover:bg-zinc-50"
                     }`}
                   >
-                    <td className="py-3 font-medium text-zinc-100 flex items-center gap-2">
+                    <td className="py-3 font-semibold text-zinc-900 flex items-center gap-2">
                       <img src={p.dishImage} alt={p.name} className="h-7 w-7 rounded-lg object-cover" />
                       <span>{p.name}</span>
                     </td>
                     <td className="py-3">
                       {p.halal ? (
-                        <span className="inline-flex items-center gap-1 text-emerald-400 font-medium text-[0.68rem]">
-                          <Shield className="h-3 w-3" /> 100% Zabiha Halal
+                        <span className="inline-flex items-center gap-1 text-emerald-800 font-semibold text-[0.68rem]">
+                          <Shield className="h-3 w-3 text-emerald-600" /> 100% Zabiha Halal
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-amber-300 font-medium text-[0.68rem]">
+                        <span className="inline-flex items-center gap-1 text-amber-800 font-semibold text-[0.68rem]">
                           Dedicated Pot
                         </span>
                       )}
                     </td>
-                    <td className="py-3 text-amber-400">{p.meatWeight}</td>
-                    <td className="py-3 text-zinc-400">{p.marinationTime}</td>
-                    <td className="py-3 text-zinc-400">4-Hour Sealed Dough Dum</td>
-                    <td className="py-3 font-semibold text-amber-400">
+                    <td className="py-3 text-amber-800 font-medium">{p.meatWeight}</td>
+                    <td className="py-3 text-zinc-600">{p.marinationTime}</td>
+                    <td className="py-3 text-zinc-600">4-Hour Sealed Dough Dum</td>
+                    <td className="py-3 font-bold text-amber-700">
                       {formatMoney(p.basePrice)}
                     </td>
                   </tr>
@@ -633,16 +633,16 @@ export function ProteinSelectionPage() {
         <div className="fixed bottom-6 inset-x-4 max-w-md mx-auto z-50 animate-in slide-in-from-bottom-5 duration-300">
           <Button
             asChild
-            className="w-full rounded-2xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs py-3.5 shadow-xl flex items-center justify-between px-4 transition-transform"
+            className="w-full rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-105 text-zinc-950 font-bold text-xs py-3.5 shadow-xl flex items-center justify-between px-4 transition-transform"
           >
             <Link to="/checkout">
               <span className="flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-950 text-amber-400 text-xs font-semibold">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-950 text-amber-400 text-xs font-bold">
                   {count}
                 </span>
                 <span>{count === 1 ? "1 Handi Tray in Cart" : `${count} Handi Trays in Cart`}</span>
               </span>
-              <span className="flex items-center gap-1 font-semibold text-xs uppercase tracking-wider">
+              <span className="flex items-center gap-1 font-bold text-xs uppercase tracking-wider">
                 <span>Proceed to Checkout</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </span>

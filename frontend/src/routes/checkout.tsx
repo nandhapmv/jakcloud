@@ -408,26 +408,23 @@ function CheckoutPage() {
   // -------------------------------------------------------------------------
   if (confirmedOrder) {
     return (
-      <div className="min-h-screen bg-[#080503] font-sans text-cream selection:bg-gold/30 selection:text-gold py-12 px-4 sm:px-8 relative overflow-hidden">
-        {/* Background glow flares */}
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-gold/15 blur-[120px] pointer-events-none" />
-
+      <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 py-12 px-4 sm:px-8 relative overflow-hidden">
         <div className="mx-auto max-w-3xl space-y-8 relative z-10">
-          <div className="rounded-3xl border-2 border-gold/50 bg-gradient-to-b from-[#1c120a] via-[#140c07] to-[#0a0705] p-6 sm:p-12 text-center shadow-[0_0_60px_rgba(212,175,55,0.25)] backdrop-blur-2xl space-y-6">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-12 text-center shadow-xl space-y-6">
             {/* Animated Royal Checkmark */}
-            <div className="mx-auto flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-gradient-to-tr from-chili to-gold border-2 border-gold text-white shadow-[0_0_40px_rgba(212,160,23,0.6)] animate-bounce">
+            <div className="mx-auto flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-600 to-amber-500 border-2 border-emerald-400 text-white shadow-lg animate-bounce">
               <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 stroke-[2.5]" />
             </div>
 
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-black/60 px-4 py-1 text-xs font-bold uppercase tracking-[0.25em] text-gold shadow-md">
-                <Sparkles className="h-3.5 w-3.5 text-gold" />
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-800 shadow-sm">
+                <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
                 <span>Handi Dum Booking Confirmed</span>
               </div>
-              <h1 className="font-display text-3xl sm:text-4xl font-bold text-cream">
+              <h1 className="font-display text-3xl sm:text-4xl font-bold text-zinc-900">
                 Thank You, {confirmedOrder.customer.name}!
               </h1>
-              <p className="text-xs sm:text-sm text-cream/80 max-w-md mx-auto pt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-zinc-600 max-w-md mx-auto pt-1 leading-relaxed">
                 Your royal Dum Biryani handi reservation has been scheduled with Master Chef Kartheek. Each tray is
                 slow-cooked to order on morning wood coals.
               </p>
@@ -435,31 +432,31 @@ function CheckoutPage() {
 
             {/* Booking Ref Badge */}
             <div className="flex flex-col items-center gap-2">
-              <div className="inline-flex items-center gap-3 rounded-2xl bg-black/80 border-2 border-gold/40 px-6 py-3 font-mono text-sm sm:text-base font-bold text-gold shadow-xl">
-                <span>Booking Reference:</span>
-                <span className="text-white tracking-widest bg-gold/20 px-3 py-1 rounded-xl border border-gold/30">
+              <div className="inline-flex items-center gap-3 rounded-2xl bg-zinc-50 border-2 border-amber-300 px-6 py-3 font-mono text-sm sm:text-base font-bold text-zinc-900 shadow-sm">
+                <span className="text-zinc-700">Booking Reference:</span>
+                <span className="text-amber-900 tracking-widest bg-amber-100/80 px-3 py-1 rounded-xl border border-amber-300">
                   {confirmedOrder.orderNumber}
                 </span>
               </div>
               {confirmedOrder.orderNumber.match(/-(\d+)$/) && (
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 px-4 py-1 text-xs font-bold text-amber-300">
-                  <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-4 py-1 text-xs font-bold text-amber-800">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-600" />
                   <span>Today's Handi Order #{parseInt(confirmedOrder.orderNumber.match(/-(\d+)$/)![1], 10)}</span>
                 </div>
               )}
             </div>
 
             {/* PROMINENT TAKE SCREENSHOT CALLOUT CARD */}
-            <div className="max-w-xl mx-auto rounded-3xl bg-gradient-to-b from-amber-500/25 via-amber-600/15 to-amber-950/40 border-2 border-amber-400/90 p-5 sm:p-6 text-center space-y-3 shadow-[0_0_35px_rgba(245,158,11,0.25)]">
-              <div className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 text-black px-4 py-1.5 text-xs sm:text-sm font-black uppercase tracking-wider shadow">
+            <div className="max-w-xl mx-auto rounded-3xl bg-amber-50 border-2 border-amber-400 p-5 sm:p-6 text-center space-y-3 shadow-md">
+              <div className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 text-zinc-950 px-4 py-1.5 text-xs sm:text-sm font-black uppercase tracking-wider shadow">
                 <Camera className="h-4 w-4 stroke-[2.5]" />
                 <span>PLEASE TAKE A SCREENSHOT OF THIS SCREEN</span>
               </div>
               <div className="space-y-1">
-                <p className="text-base sm:text-lg font-bold text-amber-200">
+                <p className="text-base sm:text-lg font-bold text-amber-950">
                   📸 Important: Save Your Order Receipt
                 </p>
-                <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed max-w-md mx-auto">
+                <p className="text-xs sm:text-sm text-zinc-700 leading-relaxed max-w-md mx-auto">
                   Take a screenshot of this receipt now to show at kitchen pickup or to your delivery driver.
                 </p>
               </div>
@@ -472,9 +469,9 @@ function CheckoutPage() {
                       window.print();
                     }
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 px-4 py-2 text-xs font-semibold text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-white hover:bg-zinc-50 border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-800 transition-all active:scale-95 cursor-pointer shadow-sm"
                 >
-                  <Printer className="h-4 w-4 text-amber-400" />
+                  <Printer className="h-4 w-4 text-amber-600" />
                   <span>Save / Print Receipt</span>
                 </button>
                 <button
@@ -485,86 +482,86 @@ function CheckoutPage() {
                       toast.success("Order ID copied to clipboard!");
                     }
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 px-4 py-2 text-xs font-semibold text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-white hover:bg-zinc-50 border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-800 transition-all active:scale-95 cursor-pointer shadow-sm"
                 >
-                  <Copy className="h-4 w-4 text-amber-400" />
+                  <Copy className="h-4 w-4 text-amber-600" />
                   <span>Copy Order ID</span>
                 </button>
               </div>
             </div>
 
             {/* Fulfilment & Summary Breakdown Grid */}
-            <div className="grid gap-4 rounded-2xl border border-gold/25 bg-black/50 p-6 text-left text-xs sm:grid-cols-2 text-cream/85">
+            <div className="grid gap-4 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-6 text-left text-xs sm:grid-cols-2 text-zinc-700">
               <div className="space-y-2">
-                <p className="text-[0.68rem] font-bold text-gold uppercase tracking-wider flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5" />
+                <p className="text-[0.68rem] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-amber-600" />
                   <span>Fulfilment Schedule</span>
                 </p>
-                <p className="font-bold text-cream capitalize text-sm">
+                <p className="font-bold text-zinc-900 capitalize text-sm">
                   {confirmedOrder.fulfilmentType === "pickup" ? "Counter Pickup (Free)" : "Springfield Doorstep Delivery"}
                 </p>
-                <p className="text-gold font-semibold">
+                <p className="text-amber-800 font-semibold">
                   {confirmedOrder.fulfilmentDate} at {confirmedOrder.fulfilmentTime}
                 </p>
 
                 {confirmedOrder.fulfilmentType === "pickup" ? (
-                  <div className="pt-2 text-[0.72rem] text-cream/75">
-                    <p className="font-bold text-cream">Pickup Location:</p>
+                  <div className="pt-2 text-[0.72rem] text-zinc-600">
+                    <p className="font-bold text-zinc-900">Pickup Location:</p>
                     <p>{BUSINESS.address}</p>
                     <a
                       href="https://maps.google.com/?q=3625+S+Bedford+Ave+Springfield+MO+65809"
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-gold hover:underline pt-1 font-bold"
+                      className="inline-flex items-center gap-1 text-amber-800 hover:underline pt-1 font-bold"
                     >
                       <Navigation className="h-3 w-3" /> Get Google Maps Directions ↗
                     </a>
                   </div>
                 ) : (
-                  <div className="pt-2 text-[0.72rem] text-cream/75">
-                    <p className="font-bold text-cream">Delivery Destination:</p>
+                  <div className="pt-2 text-[0.72rem] text-zinc-600">
+                    <p className="font-bold text-zinc-900">Delivery Destination:</p>
                     <p>
                       {confirmedOrder.customer.address}, {confirmedOrder.customer.city} {confirmedOrder.customer.zipCode}
                     </p>
                     {confirmedOrder.customer.deliveryInstructions && (
-                      <p className="text-gold/90 italic pt-0.5">Landmark: {confirmedOrder.customer.deliveryInstructions}</p>
+                      <p className="text-amber-800 italic pt-0.5">Landmark: {confirmedOrder.customer.deliveryInstructions}</p>
                     )}
                   </div>
                 )}
               </div>
 
-              <div className="space-y-2 border-t sm:border-t-0 sm:border-l border-gold/15 sm:pl-4 pt-4 sm:pt-0">
-                <p className="text-[0.68rem] font-bold text-gold uppercase tracking-wider flex items-center gap-1.5">
-                  <ShoppingBag className="h-3.5 w-3.5" />
+              <div className="space-y-2 border-t sm:border-t-0 sm:border-l border-zinc-200 sm:pl-4 pt-4 sm:pt-0">
+                <p className="text-[0.68rem] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <ShoppingBag className="h-3.5 w-3.5 text-amber-600" />
                   <span>Order Items & Payment</span>
                 </p>
                 <div className="space-y-1">
                   {confirmedOrder.items.map((item, idx) => (
                     <div key={idx} className="flex justify-between text-[0.72rem]">
-                      <span className="text-cream">
+                      <span className="text-zinc-800">
                         {item.qty}× {item.name} {item.aloo ? "(+Aloo)" : ""}
                       </span>
-                      <span className="text-gold font-mono">{formatMoney(item.lineTotal)}</span>
+                      <span className="text-amber-800 font-mono font-semibold">{formatMoney(item.lineTotal)}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="pt-2 border-t border-gold/15 space-y-1 text-[0.72rem]">
+                <div className="pt-2 border-t border-zinc-200 space-y-1 text-[0.72rem]">
                   {confirmedOrder.deliveryFee > 0 && (
-                    <div className="flex justify-between text-cream/75">
+                    <div className="flex justify-between text-zinc-600">
                       <span>Delivery Fee:</span>
                       <span>{formatMoney(confirmedOrder.deliveryFee)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between font-display text-base font-bold text-cream pt-1">
+                  <div className="flex justify-between font-display text-base font-bold text-zinc-900 pt-1">
                     <span>Total Amount:</span>
-                    <span className="text-gold">{formatMoney(confirmedOrder.total)}</span>
+                    <span className="text-amber-800">{formatMoney(confirmedOrder.total)}</span>
                   </div>
                 </div>
 
-                <p className="text-[0.68rem] text-cream/60 pt-1">
-                  Confirmation receipt dispatched to <strong className="text-cream">{confirmedOrder.customer.email}</strong> &{" "}
-                  <strong className="text-cream">{confirmedOrder.customer.phone}</strong>
+                <p className="text-[0.68rem] text-zinc-500 pt-1">
+                  Confirmation receipt dispatched to <strong className="text-zinc-900">{confirmedOrder.customer.email}</strong> &{" "}
+                  <strong className="text-zinc-900">{confirmedOrder.customer.phone}</strong>
                 </p>
               </div>
             </div>
@@ -573,7 +570,7 @@ function CheckoutPage() {
             <div className="flex flex-wrap justify-center gap-3 pt-2">
               <Button
                 asChild
-                className="rounded-2xl bg-gradient-to-r from-chili to-gold text-white font-bold text-xs px-6 py-5 shadow-lg hover:scale-105 transition-all"
+                className="rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold text-xs px-6 py-5 shadow-md hover:brightness-105 transition-all"
               >
                 <Link to="/">Return to Home</Link>
               </Button>
@@ -582,9 +579,9 @@ function CheckoutPage() {
                 href={whatsappBookingUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/50 bg-emerald-950/70 hover:bg-emerald-900/80 px-5 py-3 text-xs font-bold text-emerald-400 transition-all shadow-md"
+                className="inline-flex items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 px-5 py-3 text-xs font-bold text-emerald-800 transition-all shadow-sm"
               >
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare className="h-4 w-4 text-emerald-600" />
                 <span>Track on WhatsApp</span>
               </a>
 
@@ -592,7 +589,7 @@ function CheckoutPage() {
                 type="button"
                 variant="outline"
                 onClick={() => window.print()}
-                className="rounded-2xl border-gold/40 text-gold hover:bg-gold/15 text-xs font-bold px-5 py-5 gap-1.5"
+                className="rounded-2xl border-zinc-300 text-zinc-700 hover:bg-zinc-50 text-xs font-bold px-5 py-5 gap-1.5"
               >
                 <Printer className="h-4 w-4" />
                 <span>Print Receipt</span>
@@ -608,15 +605,15 @@ function CheckoutPage() {
   // MAIN CHECKOUT FORM SCREEN
   // -------------------------------------------------------------------------
   return (
-    <div className="min-h-screen w-full max-w-full bg-[#09090b] font-sans text-zinc-200 selection:bg-amber-500/20 selection:text-amber-300 py-6 sm:py-10 px-3 sm:px-6 lg:px-8 relative overflow-x-hidden pb-28">
+    <div className="min-h-screen w-full max-w-full bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 py-6 sm:py-10 px-3 sm:px-6 lg:px-8 relative overflow-x-hidden pb-28">
       <div className="mx-auto max-w-7xl w-full min-w-0 space-y-6 relative z-10">
         {/* Top Header & Breadcrumbs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 pb-4">
           <Button
             asChild
             variant="ghost"
             size="sm"
-            className="gap-1.5 text-amber-400 hover:bg-white/[0.06] rounded-xl text-xs font-medium w-fit -ml-2"
+            className="gap-1.5 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl text-xs font-medium w-fit -ml-2"
           >
             <Link to="/cart">
               <ArrowLeft className="h-4 w-4" /> Back to Shopping Cart
@@ -624,19 +621,19 @@ function CheckoutPage() {
           </Button>
 
           {/* Checkout Progress Pills (Responsive wrap) */}
-          <div className="flex flex-wrap items-center gap-1.5 text-[0.65rem] sm:text-[0.68rem] font-medium uppercase tracking-wider text-zinc-400">
-            <span className="text-emerald-400">1. Menu</span>
-            <span className="text-zinc-600">›</span>
-            <span className="text-emerald-400">2. Customizer</span>
-            <span className="text-zinc-600">›</span>
-            <span className="text-emerald-400">3. Cart</span>
-            <span className="text-zinc-600">›</span>
-            <span className="rounded-full bg-amber-500/20 border border-amber-500/40 px-2.5 py-0.5 text-amber-300 font-semibold shadow-sm">
+          <div className="flex flex-wrap items-center gap-1.5 text-[0.65rem] sm:text-[0.68rem] font-medium uppercase tracking-wider text-zinc-500">
+            <span className="text-emerald-700 font-semibold">1. Menu</span>
+            <span className="text-zinc-300">›</span>
+            <span className="text-emerald-700 font-semibold">2. Customizer</span>
+            <span className="text-zinc-300">›</span>
+            <span className="text-emerald-700 font-semibold">3. Cart</span>
+            <span className="text-zinc-300">›</span>
+            <span className="rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-amber-900 font-bold shadow-xs">
               4. Checkout & Details
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-amber-400">
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-amber-800 font-medium">
             <Lock className="h-3.5 w-3.5" />
             <span>256-Bit SSL Secure Checkout</span>
           </div>
@@ -648,14 +645,14 @@ function CheckoutPage() {
           {/* ========================================================= */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-6">
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-0.5 text-[0.65rem] font-medium text-amber-300">
-                <Sparkles className="h-3 w-3 text-amber-400" />
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-0.5 text-[0.65rem] font-medium text-amber-800">
+                <Sparkles className="h-3 w-3 text-amber-600" />
                 <span>Made To Order Handi Reservation</span>
               </div>
-              <h1 className="font-display text-2xl sm:text-3xl font-semibold text-zinc-100">
-                Booking & <span className="text-amber-400">Fulfilment Details</span>
+              <h1 className="font-display text-2xl sm:text-3xl font-semibold text-zinc-900">
+                Booking & <span className="text-amber-700">Fulfilment Details</span>
               </h1>
-              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed font-normal">
                 Provide your contact details, choose Springfield counter pickup or doorstep delivery, and schedule your slow-cooked dum biryani batch.
               </p>
             </div>
@@ -664,13 +661,13 @@ function CheckoutPage() {
               {/* ===================================================== */}
               {/* SECTION 1: FULFILMENT & SCHEDULE                      */}
               {/* ===================================================== */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-4 min-w-0 w-full overflow-hidden">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-3.5 sm:p-6 shadow-sm space-y-4 min-w-0 w-full overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
-                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-100 flex items-center gap-2 min-w-0 truncate">
-                    <Store className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-900 flex items-center gap-2 min-w-0 truncate">
+                    <Store className="h-4.5 w-4.5 text-amber-600 shrink-0" />
                     <span className="truncate">1. Fulfilment & Schedule</span>
                   </h2>
-                  <span className="text-[10px] sm:text-[11px] font-medium text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full shrink-0">
+                  <span className="text-[10px] sm:text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full shrink-0">
                     Springfield, MO
                   </span>
                 </div>
@@ -685,32 +682,32 @@ function CheckoutPage() {
                     }}
                     className={`rounded-xl border p-4 text-left transition-all flex flex-col justify-between cursor-pointer ${
                       fulfilmentType === "pickup"
-                        ? "border-amber-400 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/50"
-                        : "bg-zinc-900/60 border-white/[0.08] hover:border-white/20 text-zinc-400 hover:text-zinc-200"
+                        ? "border-amber-500 bg-amber-50/70 shadow-sm ring-1 ring-amber-400"
+                        : "bg-zinc-50 border-zinc-200 hover:border-zinc-300 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
                     }`}
                   >
                     <div className="flex items-start justify-between w-full">
                       <div className="flex items-center gap-3">
                         <div
                           className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
-                            fulfilmentType === "pickup" ? "bg-amber-400 text-zinc-950 font-bold" : "bg-zinc-800 text-zinc-300"
+                            fulfilmentType === "pickup" ? "bg-amber-500 text-zinc-950 font-bold" : "bg-zinc-200 text-zinc-700"
                           }`}
                         >
                           <Store className="h-4.5 w-4.5" />
                         </div>
                         <div>
-                          <p className="font-semibold text-sm text-zinc-100">Counter Pickup</p>
-                          <p className="text-[11px] text-emerald-400 font-medium">FREE ($0.00)</p>
+                          <p className="font-semibold text-sm text-zinc-900">Counter Pickup</p>
+                          <p className="text-[11px] text-emerald-700 font-medium">FREE ($0.00)</p>
                         </div>
                       </div>
                       {fulfilmentType === "pickup" && (
-                        <div className="h-5 w-5 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center">
+                        <div className="h-5 w-5 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center">
                           <Check className="h-3 w-3 stroke-[3]" />
                         </div>
                       )}
                     </div>
-                    <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[11px] text-zinc-400 space-y-0.5">
-                      <p className="font-medium text-zinc-200">{BUSINESS.address}</p>
+                    <div className="mt-3 pt-2.5 border-t border-zinc-100 text-[11px] text-zinc-600 space-y-0.5">
+                      <p className="font-medium text-zinc-900">{BUSINESS.address}</p>
                       <p className="text-zinc-500">Pickup window: 11:00 AM – 1:00 PM (Lunch)</p>
                     </div>
                   </button>
@@ -724,41 +721,41 @@ function CheckoutPage() {
                     }}
                     className={`rounded-xl border p-4 text-left transition-all flex flex-col justify-between cursor-pointer ${
                       fulfilmentType === "delivery"
-                        ? "border-amber-400 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/50"
-                        : "bg-zinc-900/60 border-white/[0.08] hover:border-white/20 text-zinc-400 hover:text-zinc-200"
+                        ? "border-amber-500 bg-amber-50/70 shadow-sm ring-1 ring-amber-400"
+                        : "bg-zinc-50 border-zinc-200 hover:border-zinc-300 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
                     }`}
                   >
                     <div className="flex items-start justify-between w-full">
                       <div className="flex items-center gap-3">
                         <div
                           className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
-                            fulfilmentType === "delivery" ? "bg-amber-400 text-zinc-950 font-bold" : "bg-zinc-800 text-zinc-300"
+                            fulfilmentType === "delivery" ? "bg-amber-500 text-zinc-950 font-bold" : "bg-zinc-200 text-zinc-700"
                           }`}
                         >
                           <Truck className="h-4.5 w-4.5" />
                         </div>
                         <div>
-                          <p className="font-semibold text-sm text-zinc-100">Doorstep Delivery</p>
-                          <p className="text-[11px] text-amber-300 font-medium">
+                          <p className="font-semibold text-sm text-zinc-900">Doorstep Delivery</p>
+                          <p className="text-[11px] text-amber-800 font-medium">
                             {count >= 5 ? "FREE (5+ Trays)" : `$${DELIVERY_FEE}.00 Flat Rate`}
                           </p>
                         </div>
                       </div>
                       {fulfilmentType === "delivery" && (
-                        <div className="h-5 w-5 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center">
+                        <div className="h-5 w-5 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center">
                           <Check className="h-3 w-3 stroke-[3]" />
                         </div>
                       )}
                     </div>
-                    <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[11px] text-zinc-400 space-y-0.5">
-                      <p className="font-medium text-zinc-200">Springfield 10-Mile Radius</p>
+                    <div className="mt-3 pt-2.5 border-t border-zinc-100 text-[11px] text-zinc-600 space-y-0.5">
+                      <p className="font-medium text-zinc-900">Springfield 10-Mile Radius</p>
                       <p className="text-zinc-500">Delivered piping hot: 2:00 PM – 6:00 PM</p>
                     </div>
                   </button>
                 </div>
 
                 {/* Date & Time Picker */}
-                <div className="pt-2 border-t border-white/[0.06]">
+                <div className="pt-2 border-t border-zinc-100">
                   <DumDateTimePicker
                     selectedDate={selectedDate}
                     onDateChange={(newDate) => setSelectedDate(newDate)}
@@ -772,19 +769,19 @@ function CheckoutPage() {
               {/* ===================================================== */}
               {/* SECTION 2: CUSTOMER CONTACT DETAILS                   */}
               {/* ===================================================== */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-4 min-w-0 w-full overflow-hidden">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-3.5 sm:p-6 shadow-sm space-y-4 min-w-0 w-full overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
-                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-100 flex items-center gap-2 min-w-0 truncate">
-                    <User className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-900 flex items-center gap-2 min-w-0 truncate">
+                    <User className="h-4.5 w-4.5 text-amber-600 shrink-0" />
                     <span className="truncate">2. Contact Details</span>
                   </h2>
-                  <span className="text-[10px] sm:text-[11px] text-zinc-400 shrink-0">Order Confirmation</span>
+                  <span className="text-[10px] sm:text-[11px] text-zinc-500 shrink-0">Order Confirmation</span>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   {/* Full Name */}
                   <div className="sm:col-span-2 space-y-1.5">
-                    <Label htmlFor="fullName" className="text-xs font-medium text-zinc-300">
+                    <Label htmlFor="fullName" className="text-xs font-medium text-zinc-700">
                       Full Name *
                     </Label>
                     <div className="relative">
@@ -795,7 +792,7 @@ function CheckoutPage() {
                         placeholder="John Doe"
                         value={name}
                         onChange={(e) => setName(sanitizeName(e.target.value))}
-                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="h-11 bg-zinc-50 border-zinc-200 text-zinc-900 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
                   </div>
@@ -803,17 +800,17 @@ function CheckoutPage() {
                   {/* US Mobile Phone */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="mobilePhone" className="text-xs font-medium text-zinc-300">
+                      <Label htmlFor="mobilePhone" className="text-xs font-medium text-zinc-700">
                         US Phone Number *
                       </Label>
                       {isValidUsPhone(phone) && (
-                        <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                        <span className="text-[10px] text-emerald-700 font-medium flex items-center gap-1">
                           <Check className="h-3 w-3" /> Valid US Number
                         </span>
                       )}
                     </div>
                     <div className="relative">
-                      <div className="absolute left-3.5 top-3 flex items-center gap-1 text-xs text-zinc-400 font-mono">
+                      <div className="absolute left-3.5 top-3 flex items-center gap-1 text-xs text-zinc-500 font-mono">
                         <span>🇺🇸</span>
                         <span>+1</span>
                       </div>
@@ -826,14 +823,14 @@ function CheckoutPage() {
                         maxLength={14}
                         value={phone}
                         onChange={(e) => setPhone(formatUsPhone(e.target.value))}
-                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-16 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="h-11 bg-zinc-50 border-zinc-200 text-zinc-900 text-base sm:text-sm rounded-xl pl-16 focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
                   </div>
 
                   {/* Email Address */}
                   <div className="space-y-1.5">
-                    <Label htmlFor="emailAddress" className="text-xs font-medium text-zinc-300">
+                    <Label htmlFor="emailAddress" className="text-xs font-medium text-zinc-700">
                       Email Address *
                     </Label>
                     <div className="relative">
@@ -845,7 +842,7 @@ function CheckoutPage() {
                         placeholder="john@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="h-11 bg-zinc-50 border-zinc-200 text-zinc-900 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
                   </div>
@@ -856,13 +853,13 @@ function CheckoutPage() {
               {/* SECTION 3: DELIVERY ADDRESS (IF DELIVERY SELECTED)    */}
               {/* ===================================================== */}
               {fulfilmentType === "delivery" && (
-                <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-4 animate-in fade-in duration-200 min-w-0 w-full overflow-hidden">
+                <div className="rounded-2xl border border-zinc-200 bg-white p-3.5 sm:p-6 shadow-sm space-y-4 animate-in fade-in duration-200 min-w-0 w-full overflow-hidden">
                   <div className="flex items-center justify-between gap-2">
-                    <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-100 flex items-center gap-2 min-w-0 truncate">
-                      <MapPin className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                    <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-900 flex items-center gap-2 min-w-0 truncate">
+                      <MapPin className="h-4.5 w-4.5 text-amber-600 shrink-0" />
                       <span className="truncate">3. Delivery Address</span>
                     </h2>
-                    <span className="text-[10px] sm:text-[11px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
+                    <span className="text-[10px] sm:text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
                       10-Mile Radius
                     </span>
                   </div>
@@ -870,7 +867,7 @@ function CheckoutPage() {
                   <div className="grid gap-3.5 sm:grid-cols-2">
                     {/* Street Address */}
                     <div className="sm:col-span-2 space-y-1.5">
-                      <Label htmlFor="streetAddress" className="text-xs font-medium text-zinc-300">
+                      <Label htmlFor="streetAddress" className="text-xs font-medium text-zinc-700">
                         Street Address *
                       </Label>
                       <div className="relative">
@@ -881,14 +878,14 @@ function CheckoutPage() {
                           placeholder="e.g. 1234 S National Ave"
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
-                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                          className="h-11 bg-zinc-50 border-zinc-200 text-zinc-900 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                         />
                       </div>
                     </div>
 
                     {/* Suite / Apartment */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="aptSuite" className="text-xs font-medium text-zinc-300">
+                      <Label htmlFor="aptSuite" className="text-xs font-medium text-zinc-700">
                         Apt / Suite / Unit (Optional)
                       </Label>
                       <div className="relative">
@@ -898,14 +895,14 @@ function CheckoutPage() {
                           placeholder="Apt 4B"
                           value={suite}
                           onChange={(e) => setSuite(e.target.value)}
-                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                          className="h-11 bg-zinc-50 border-zinc-200 text-zinc-900 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                         />
                       </div>
                     </div>
 
                     {/* Landmark / Gate Code */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="landmarkInstructions" className="text-xs font-medium text-zinc-300">
+                      <Label htmlFor="landmarkInstructions" className="text-xs font-medium text-zinc-700">
                         Gate Code / Landmark (Optional)
                       </Label>
                       <div className="relative">
@@ -915,14 +912,14 @@ function CheckoutPage() {
                           placeholder="e.g. Gate code #1234 / Leave on porch"
                           value={landmark}
                           onChange={(e) => setLandmark(e.target.value)}
-                          className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                          className="h-11 bg-zinc-50 border-zinc-200 text-zinc-900 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                         />
                       </div>
                     </div>
 
                     {/* City */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="cityName" className="text-xs font-medium text-zinc-300">
+                      <Label htmlFor="cityName" className="text-xs font-medium text-zinc-700">
                         City
                       </Label>
                       <Input
@@ -930,13 +927,13 @@ function CheckoutPage() {
                         required
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl px-3.5 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="h-11 bg-zinc-50 border-zinc-200 text-zinc-900 text-sm rounded-xl px-3.5 focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
 
                     {/* Springfield ZIP Code */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="zipCodeInput" className="text-xs font-medium text-zinc-300">
+                      <Label htmlFor="zipCodeInput" className="text-xs font-medium text-zinc-700">
                         ZIP Code (5 Digits) *
                       </Label>
                       <Input
@@ -948,7 +945,7 @@ function CheckoutPage() {
                         maxLength={5}
                         value={zipCode}
                         onChange={(e) => setZipCode(sanitizeZipCode(e.target.value))}
-                        className="h-11 bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl px-3.5 font-mono focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="h-11 bg-zinc-50 border-zinc-200 text-zinc-900 text-sm rounded-xl px-3.5 font-mono focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
                   </div>
@@ -957,15 +954,15 @@ function CheckoutPage() {
                   <div
                     className={`rounded-xl px-3.5 py-2.5 text-xs flex items-center justify-between border ${
                       zipValidation.valid
-                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                        : "bg-amber-500/10 border-amber-500/30 text-amber-200"
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                        : "bg-amber-50 border-amber-200 text-amber-800"
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       {zipValidation.valid ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                       ) : (
-                        <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
+                        <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
                       )}
                       <span className="font-medium">{zipValidation.message}</span>
                     </div>
@@ -976,13 +973,13 @@ function CheckoutPage() {
               {/* ===================================================== */}
               {/* SECTION 4: KITCHEN PREPARATION & SPECIAL NOTES        */}
               {/* ===================================================== */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-3 min-w-0 w-full overflow-hidden">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-3.5 sm:p-6 shadow-sm space-y-3 min-w-0 w-full overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
-                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-100 flex items-center gap-2 min-w-0 truncate">
-                    <Flame className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-900 flex items-center gap-2 min-w-0 truncate">
+                    <Flame className="h-4.5 w-4.5 text-amber-600 shrink-0" />
                     <span className="truncate">4. Kitchen Notes (Optional)</span>
                   </h2>
-                  <span className="text-[10px] sm:text-[11px] text-zinc-400 shrink-0">Dietary & Prefs</span>
+                  <span className="text-[10px] sm:text-[11px] text-zinc-500 shrink-0">Dietary & Prefs</span>
                 </div>
 
                 <Textarea
@@ -991,44 +988,44 @@ function CheckoutPage() {
                   onChange={(e) => setInstructions(e.target.value)}
                   placeholder="Allergies, extra gravy request, heating notes, or delivery drop-off spot..."
                   rows={2}
-                  className="bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-sm rounded-xl p-3 focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                  className="bg-zinc-50 border-zinc-200 text-zinc-900 text-sm rounded-xl p-3 focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                 />
               </div>
 
               {/* ===================================================== */}
               {/* SECTION 5: PAYMENT PREFERENCE                         */}
               {/* ===================================================== */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-4 min-w-0 w-full overflow-hidden">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-3.5 sm:p-6 shadow-sm space-y-4 min-w-0 w-full overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
-                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-100 flex items-center gap-2 min-w-0 truncate">
-                    <CreditCard className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                  <h2 className="font-display text-sm sm:text-lg font-semibold text-zinc-900 flex items-center gap-2 min-w-0 truncate">
+                    <CreditCard className="h-4.5 w-4.5 text-amber-600 shrink-0" />
                     <span className="truncate">5. Payment Method</span>
                   </h2>
-                  <span className="text-[10px] sm:text-[11px] text-emerald-400 font-medium shrink-0">Zero Surcharges</span>
+                  <span className="text-[10px] sm:text-[11px] text-emerald-700 font-medium shrink-0">Zero Surcharges</span>
                 </div>
 
                 {/* Only Razorpay Online Payment */}
-                <div className="rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-3.5 sm:p-4 shadow-[0_0_20px_rgba(245,158,11,0.12)] ring-1 ring-amber-400/30">
+                <div className="rounded-xl border border-amber-300 bg-gradient-to-r from-amber-50 via-amber-50/40 to-transparent p-3.5 sm:p-4 ring-1 ring-amber-300/40 shadow-xs">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-10 w-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 shrink-0">
+                      <div className="h-10 w-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800 shrink-0">
                         <CreditCard className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-xs sm:text-sm text-zinc-100 truncate">
+                          <p className="font-semibold text-xs sm:text-sm text-zinc-900 truncate">
                             Razorpay Online Payment
                           </p>
-                          <span className="rounded-full bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 text-[9.5px] font-semibold text-emerald-400 uppercase tracking-wider shrink-0">
+                          <span className="rounded-full bg-emerald-100 border border-emerald-300 px-2 py-0.5 text-[9.5px] font-semibold text-emerald-800 uppercase tracking-wider shrink-0">
                             Instant
                           </span>
                         </div>
-                        <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
+                        <p className="text-[11px] text-zinc-600 mt-0.5 truncate">
                           Cards, UPI & Netbanking (Instant Kitchen Order Dispatch)
                         </p>
                       </div>
                     </div>
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-zinc-950 font-bold text-xs shrink-0">
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-zinc-950 font-bold text-xs shrink-0">
                       ✓
                     </div>
                   </div>
@@ -1040,7 +1037,7 @@ function CheckoutPage() {
                 type="submit"
                 disabled={isSubmitting || lines.length === 0}
                 size="lg"
-                className="w-full rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-zinc-950 font-bold text-sm sm:text-base py-5 sm:py-6 shadow-lg shadow-amber-500/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer px-3"
+                className="w-full rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-zinc-950 font-bold text-sm sm:text-base py-5 sm:py-6 shadow-md hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer px-3"
               >
                 {isSubmitting ? (
                   "Opening Razorpay Payment..."
@@ -1060,60 +1057,60 @@ function CheckoutPage() {
           {/* RIGHT: STICKY ORDER SUMMARY (4-5 COLS)                    */}
           {/* ========================================================= */}
           <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 space-y-5 min-w-0 w-full">
-            <div className="rounded-2xl border border-white/[0.08] bg-[#121217] p-3.5 sm:p-6 shadow-xl space-y-4 sm:space-y-5 min-w-0 w-full overflow-hidden">
-              <div className="flex items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-3.5 sm:p-6 shadow-sm space-y-4 sm:space-y-5 min-w-0 w-full overflow-hidden">
+              <div className="flex items-center justify-between gap-2 border-b border-zinc-100 pb-3">
                 <div className="min-w-0">
-                  <span className="text-[9.5px] sm:text-[10px] font-semibold uppercase tracking-wider text-amber-400 block">Order Review</span>
-                  <h2 className="flex items-center gap-1.5 font-display text-base sm:text-lg font-semibold text-zinc-100 truncate">
-                    <ShoppingBag className="h-4.5 w-4.5 text-amber-400 shrink-0" />
+                  <span className="text-[9.5px] sm:text-[10px] font-semibold uppercase tracking-wider text-amber-700 block">Order Review</span>
+                  <h2 className="flex items-center gap-1.5 font-display text-base sm:text-lg font-semibold text-zinc-900 truncate">
+                    <ShoppingBag className="h-4.5 w-4.5 text-amber-600 shrink-0" />
                     <span className="truncate">Summary ({count} {count === 1 ? "Tray" : "Trays"})</span>
                   </h2>
                 </div>
-                <Button asChild variant="ghost" size="sm" className="text-xs text-amber-400 hover:bg-white/[0.06] rounded-xl font-medium shrink-0 px-2 sm:px-3">
+                <Button asChild variant="ghost" size="sm" className="text-xs text-amber-800 hover:bg-zinc-100 rounded-xl font-medium shrink-0 px-2 sm:px-3">
                   <Link to="/cart">Edit Cart</Link>
                 </Button>
               </div>
 
               {count === 0 ? (
                 <div className="text-center py-8 space-y-3">
-                  <p className="text-xs text-zinc-400">Your cart is currently empty.</p>
-                  <Button asChild className="rounded-xl bg-amber-400 text-zinc-950 font-bold text-xs px-4 hover:bg-amber-300">
+                  <p className="text-xs text-zinc-500">Your cart is currently empty.</p>
+                  <Button asChild className="rounded-xl bg-amber-500 text-zinc-950 font-bold text-xs px-4 hover:bg-amber-400">
                     <Link to="/menu">Explore Handi Menu</Link>
                   </Button>
                 </div>
               ) : (
                 <>
                   {/* Cart Item Cards */}
-                  <div className="max-h-72 space-y-3 overflow-y-auto divide-y divide-white/[0.06] pr-1">
+                  <div className="max-h-72 space-y-3 overflow-y-auto divide-y divide-zinc-100 pr-1">
                     {lines.map((line) => {
                       const dishImage = DISH_IMAGES[line.proteinId] || heroImg;
                       const isHalal = line.proteinId !== "pork";
 
                       return (
                         <div key={line.key} className="pt-3 first:pt-0 flex items-start gap-3 text-xs">
-                          <div className="relative h-13 w-13 rounded-xl overflow-hidden border border-white/[0.08] shrink-0">
+                          <div className="relative h-13 w-13 rounded-xl overflow-hidden border border-zinc-200 shrink-0">
                             <img src={dishImage} alt={line.name} className="h-full w-full object-cover" />
                             {isHalal && (
-                              <span className="absolute bottom-0.5 right-0.5 bg-emerald-950/90 text-emerald-400 text-[9px] font-bold px-1 rounded">
+                              <span className="absolute bottom-0.5 right-0.5 bg-emerald-900/90 text-emerald-200 text-[9px] font-bold px-1 rounded">
                                 Halal
                               </span>
                             )}
                           </div>
 
                           <div className="flex-1 min-w-0 space-y-0.5">
-                            <div className="flex justify-between font-medium text-zinc-100">
+                            <div className="flex justify-between font-medium text-zinc-900">
                               <span className="truncate pr-1">
                                 {line.qty}× {line.name}
                               </span>
-                              <span className="text-amber-300 font-mono font-semibold shrink-0">
+                              <span className="text-amber-800 font-mono font-semibold shrink-0">
                                 {formatMoney(line.unitPrice * line.qty)}
                               </span>
                             </div>
-                            <p className="text-[11px] text-zinc-400">
+                            <p className="text-[11px] text-zinc-500">
                               {line.aloo ? "• Royal Dum Aloo (Free)" : "• No Aloo"} ·{" "}
                               {line.extraSpicy ? "🌶️ Spicy" : "🌿 Mild"}
                             </p>
-                            {line.notes && <p className="text-[10px] text-amber-400/80 italic truncate">{line.notes}</p>}
+                            {line.notes && <p className="text-[10px] text-amber-800 italic truncate">{line.notes}</p>}
                           </div>
                         </div>
                       );
@@ -1121,20 +1118,20 @@ function CheckoutPage() {
                   </div>
 
                   {/* Promo Code Input Field */}
-                  <div className="pt-2 border-t border-white/[0.06] space-y-2">
+                  <div className="pt-2 border-t border-zinc-100 space-y-2">
                     {appliedPromo ? (
-                      <div className="flex items-center justify-between rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-2.5 text-xs text-emerald-300">
+                      <div className="flex items-center justify-between rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-800">
                         <div className="flex items-center gap-2">
-                          <Tag className="h-3.5 w-3.5 text-emerald-400" />
+                          <Tag className="h-3.5 w-3.5 text-emerald-600" />
                           <div>
                             <span className="font-bold uppercase font-mono">{appliedPromo.code}</span>
-                            <span className="text-[10px] block text-emerald-400/80">{appliedPromo.label}</span>
+                            <span className="text-[10px] block text-emerald-700">{appliedPromo.label}</span>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={handleRemovePromo}
-                          className="text-[10px] text-emerald-400 hover:text-white px-2 py-0.5 rounded bg-black/40 cursor-pointer"
+                          className="text-[10px] text-zinc-500 hover:text-zinc-900 px-2 py-0.5 rounded bg-zinc-200/80 cursor-pointer"
                         >
                           ✕
                         </button>
@@ -1145,12 +1142,12 @@ function CheckoutPage() {
                           placeholder="Promo code (e.g. SPICEKING)"
                           value={promoInput}
                           onChange={(e) => setPromoInput(e.target.value)}
-                          className="bg-zinc-900/80 border-white/[0.1] text-zinc-100 text-xs rounded-xl uppercase font-mono"
+                          className="bg-zinc-50 border-zinc-200 text-zinc-900 text-xs rounded-xl uppercase font-mono focus:bg-white"
                         />
                         <Button
                           type="submit"
                           disabled={!promoInput.trim()}
-                          className="rounded-xl bg-amber-400 text-zinc-950 hover:bg-amber-300 text-xs font-bold px-3 shrink-0 cursor-pointer"
+                          className="rounded-xl bg-amber-500 text-zinc-950 hover:bg-amber-400 text-xs font-bold px-3 shrink-0 cursor-pointer"
                         >
                           Apply
                         </Button>
@@ -1159,39 +1156,38 @@ function CheckoutPage() {
                   </div>
 
                   {/* Itemized Calculation Summary */}
-                  <div className="space-y-2 border-t border-white/[0.06] pt-3 text-xs">
-                    <div className="flex justify-between text-zinc-300">
+                  <div className="space-y-2 border-t border-zinc-100 pt-3 text-xs">
+                    <div className="flex justify-between text-zinc-700">
                       <span>Subtotal ({count} {count === 1 ? "Tray" : "Trays"}):</span>
                       <span className="font-mono">{formatMoney(calculations.subtotal)}</span>
                     </div>
 
                     {calculations.discountAmount > 0 && (
-                      <div className="flex justify-between text-emerald-400 font-semibold">
+                      <div className="flex justify-between text-emerald-700 font-semibold">
                         <span>Promo Discount ({appliedPromo?.code}):</span>
                         <span className="font-mono">−{formatMoney(calculations.discountAmount)}</span>
                       </div>
                     )}
 
-
-                    <div className="flex justify-between text-zinc-400">
+                    <div className="flex justify-between text-zinc-500">
                       <span>Fulfilment ({fulfilmentType === "pickup" ? "Pickup" : "Delivery"}):</span>
                       <span className="font-mono">{calculations.deliveryCost === 0 ? "Free ($0.00)" : formatMoney(calculations.deliveryCost)}</span>
                     </div>
 
-                    <div className="flex justify-between border-t border-white/[0.08] pt-3 font-display text-lg font-bold text-zinc-100">
+                    <div className="flex justify-between border-t border-zinc-200 pt-3 font-display text-lg font-bold text-zinc-900">
                       <span>Grand Total:</span>
-                      <span className="text-amber-300 font-mono text-xl">{formatMoney(calculations.grandTotal)}</span>
+                      <span className="text-amber-700 font-mono text-xl">{formatMoney(calculations.grandTotal)}</span>
                     </div>
                   </div>
 
                   {/* Fulfilment Schedule Indicator */}
-                  <div className="rounded-xl bg-zinc-900/60 border border-white/[0.06] p-3 text-xs text-zinc-300 space-y-1">
-                    <p className="flex items-center gap-1.5 text-amber-400 font-semibold text-[11px]">
+                  <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-3 text-xs text-zinc-700 space-y-1">
+                    <p className="flex items-center gap-1.5 text-amber-800 font-semibold text-[11px]">
                       <Clock className="h-3.5 w-3.5" /> Scheduled For:
                     </p>
-                    <p className="text-xs pl-5 text-zinc-200">
+                    <p className="text-xs pl-5 text-zinc-800">
                       <strong>{selectedDate}</strong> at{" "}
-                      <strong className="text-amber-300">{fulfilmentTime}</strong>
+                      <strong className="text-amber-800">{fulfilmentTime}</strong>
                     </p>
                   </div>
 
@@ -1201,7 +1197,7 @@ function CheckoutPage() {
                       href={whatsappBookingUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 p-2.5 text-xs font-semibold text-emerald-400 transition-all shadow-sm"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 p-2.5 text-xs font-semibold text-emerald-800 transition-all shadow-xs"
                     >
                       <MessageSquare className="h-4 w-4" />
                       <span>WhatsApp Direct Booking</span>
@@ -1209,16 +1205,16 @@ function CheckoutPage() {
 
                     <a
                       href={`tel:${BUSINESS.phone}`}
-                      className="flex items-center justify-center gap-1.5 rounded-xl border border-white/[0.08] bg-zinc-900/60 hover:bg-zinc-800 p-2 text-xs font-medium text-zinc-300 transition-all"
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 p-2 text-xs font-medium text-zinc-800 transition-all"
                     >
-                      <Phone className="h-3.5 w-3.5 text-amber-400" />
+                      <Phone className="h-3.5 w-3.5 text-amber-700" />
                       <span>Kitchen Hotline: {BUSINESS.phone}</span>
                     </a>
                   </div>
 
                   {/* Halal & Fresh Dum Assurance Seal */}
-                  <div className="flex items-center gap-2 rounded-xl bg-zinc-900/40 border border-white/[0.06] p-2.5 text-[11px] text-zinc-400">
-                    <Shield className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <div className="flex items-center gap-2 rounded-xl bg-amber-50/60 border border-amber-200/60 p-2.5 text-[11px] text-zinc-600">
+                    <Shield className="h-4 w-4 text-emerald-700 shrink-0" />
                     <span>100% Zabiha Halal • Slow-cooked wood & coal Dum</span>
                   </div>
                 </>
