@@ -57,7 +57,7 @@ import {
 export const Route = createFileRoute("/admin/menu")({
   head: () => ({
     meta: [
-      { title: "Menu Management & Tray Pricing — JAKLOUD Spice King" },
+      { title: "Menu Management & Tray Pricing — JAKloud J Paradize" },
       {
         name: "description",
         content: "Manage Biryani menu categories, tray sizes, availability, photos and live pricing.",
@@ -437,12 +437,12 @@ function MenuManagementPage() {
           <Link to="/admin" className="flex items-center gap-3">
             <img
               src={logoImg}
-              alt="JAKLOUD"
+              alt="JAKloud"
               className="h-10 w-10 rounded-full border border-gold/50 bg-cream p-0.5 object-cover"
             />
             <div>
               <span className="font-display text-lg font-bold tracking-wider text-cream">
-                JAKLOUD
+                JAKloud
               </span>
               <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold">
                 Menu & Tray Catalog

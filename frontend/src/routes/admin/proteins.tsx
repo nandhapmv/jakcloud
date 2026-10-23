@@ -56,7 +56,7 @@ import {
 export const Route = createFileRoute("/admin/proteins")({
   head: () => ({
     meta: [
-      { title: "Protein & Halal Cut Management — JAKLOUD Spice King" },
+      { title: "Protein & Halal Cut Management — JAKloud J Paradize" },
       {
         name: "description",
         content: "Manage meat cuts, Halal certifications, portion weights, batch stock, and live pricing adjustments.",
@@ -473,12 +473,12 @@ function ProteinManagementPage() {
           <Link to="/admin" className="flex items-center gap-3">
             <img
               src={logoImg}
-              alt="JAKLOUD"
+              alt="JAKloud"
               className="h-10 w-10 rounded-full border border-gold/50 bg-cream p-0.5 object-cover"
             />
             <div>
               <span className="font-display text-lg font-bold tracking-wider text-cream">
-                JAKLOUD
+                JAKloud
               </span>
               <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold">
                 Protein & Halal Roster

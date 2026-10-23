@@ -1,6 +1,6 @@
 <?php
 /**
- * JAKLOUD Spice King Dum Biryani
+ * JAKLOUD J Paradize Dum Biryani
  * Production MySQL Database API Router
  * Handles all /api/* requests directly on Hostinger
  */
@@ -213,7 +213,7 @@ if ($resource === 'auth' && $id === 'login' && $method === 'POST') {
 
     $isMaster = (
         ($email === 'admin@jakloud.com' || $email === 'chef@jakloud.com' || $email === 'sales@jakloud.com') &&
-        ($pass === 'spiceking2026' || $pass === 'admin' || empty($pass))
+        ($pass === 'jparadize2026' || $pass === 'spiceking2026' || $pass === 'admin' || empty($pass))
     );
 
     if ($adminUser || $isMaster) {
@@ -230,7 +230,7 @@ if ($resource === 'auth' && $id === 'login' && $method === 'POST') {
     }
 
     http_response_code(401);
-    echo json_encode(['error' => 'Invalid email or password. Please use admin@jakloud.com / spiceking2026.']);
+    echo json_encode(['error' => 'Invalid email or password. Please use admin@jakloud.com / jparadize2026.']);
     exit;
 }
 

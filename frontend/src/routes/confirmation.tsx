@@ -51,13 +51,13 @@ import {
 export const Route = createFileRoute("/confirmation")({
   head: () => ({
     meta: [
-      { title: "Order Confirmed — JAKLOUD Spice King Dum Biryani" },
+      { title: "Order Confirmed — JAKloud J Paradize Dum Biryani" },
       {
         name: "description",
         content:
           "Thank you for your royal Dum Biryani Handi booking! View your order timeline, delivery schedule, Google Maps directions, and chef contacts in Springfield, MO.",
       },
-      { property: "og:title", content: "Order Confirmed — JAKLOUD Dum Biryani" },
+      { property: "og:title", content: "Order Confirmed — JAKloud Dum Biryani" },
       {
         property: "og:description",
         content: "Royal Handi Dum booking confirmed with Master Chef Kartheek in Springfield, MO.",
@@ -163,7 +163,7 @@ export function OrderConfirmationPage() {
       ],
       pricing: {
         subtotal: 368.97,
-        promoCode: "SPICEKING",
+        promoCode: "JPARADIZE",
         promoDiscount: 36.90,
         tax: 0,
         deliveryFee: 10.0,
@@ -184,12 +184,12 @@ export function OrderConfirmationPage() {
   };
 
   const handleShareOrder = async () => {
-    const shareText = `👑 My JAKLOUD Dum Biryani Handi Order (${orderData.orderId}) is confirmed for ${orderData.fulfilmentDate} at ${orderData.fulfilmentTime}! Slow-cooked royal biryani in Springfield, MO.`;
+    const shareText = `👑 My JAKloud Dum Biryani Handi Order (${orderData.orderId}) is confirmed for ${orderData.fulfilmentDate} at ${orderData.fulfilmentTime}! Slow-cooked royal biryani in Springfield, MO.`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "JAKLOUD Dum Biryani Order",
+          title: "JAKloud Dum Biryani Order",
           text: shareText,
           url: window.location.href,
         });

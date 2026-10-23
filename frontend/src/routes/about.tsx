@@ -6,16 +6,16 @@ import handiImg from "@/assets/dum-handi.jpg";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "Our Story — JAKLOUD Spice King" },
+      { title: "Our Story — JAKloud J Paradize" },
       {
         name: "description",
         content:
-          "Spice King is a JAKLOUD brand founded by Kartheek A. and Jeanette C., bringing Hyderabad-inspired dum biryani to Springfield, Missouri.",
+          "J Paradize is a JAKloud brand founded by Kartheek A. and Jeanette C., bringing Hyderabad-inspired dum biryani to Springfield, Missouri.",
       },
       { property: "og:title", content: "Two Backgrounds. One Shared Table." },
       {
         property: "og:description",
-        content: "Hyderabad soul, Missouri hospitality — the story behind Spice King Dum Biryani.",
+        content: "Hyderabad soul, Missouri hospitality — the story behind J Paradize Dum Biryani.",
       },
       { property: "og:image", content: "/logo.png" },
     ],
@@ -30,7 +30,7 @@ function AboutPage() {
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-start sm:items-center gap-5 text-left">
           <img
             src={logoImg}
-            alt="JAKLOUD Spice King heritage seal"
+            alt="JAKloud J Paradize heritage seal"
             className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-full border border-amber-500/30 object-cover shadow-md"
             width={96}
             height={96}
@@ -41,7 +41,7 @@ function AboutPage() {
               Two Backgrounds. One Shared Table.
             </h1>
             <p className="max-w-2xl text-xs sm:text-sm text-zinc-600 font-normal leading-relaxed">
-              Spice King is a JAKLOUD culinary brand founded by Kartheek A. and Jeanette C. in Springfield, Missouri.
+              J Paradize is a JAKloud culinary brand founded by Kartheek A. and Jeanette C. in Springfield, Missouri.
             </p>
           </div>
         </div>
@@ -51,12 +51,12 @@ function AboutPage() {
         <section className="grid gap-6 md:grid-cols-2 items-center">
           <div className="space-y-3 text-xs sm:text-sm leading-relaxed text-zinc-700 font-normal">
             <p>
-              Kartheek comes from Hyderabad, a city whose centuries-old food culture shaped the foundation of the Spice King
+              Kartheek comes from Hyderabad, a city whose centuries-old food culture shaped the foundation of the J Paradize
               recipe. He brings deep appreciation for authentic dum preparation, layered slow-roasted spices, and the belief that handcrafted biryani turns every meal into an occasion.
             </p>
             <p>
               Jeanette was raised in Missouri and has always been drawn to creativity, connection, and the ways people come
-              together through shared experiences. She brings that warmth to Spice King, bridging two cultures through food, hospitality, and a welcoming table.
+              together through shared experiences. She brings that warmth to J Paradize, bridging two cultures through food, hospitality, and a welcoming table.
             </p>
             <p>
               Together, we share biryani that is fragrant, generous, and made with intention. By combining Hyderabad-inspired
@@ -77,7 +77,7 @@ function AboutPage() {
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm hover:border-amber-500/40 hover:shadow-md transition-all space-y-2">
             <h2 className="font-display text-lg font-semibold text-amber-800">Our Vision</h2>
             <p className="text-xs sm:text-sm text-zinc-600 font-normal leading-relaxed">
-              To make authentic, Hyderabad-inspired dum biryani a beloved staple of Springfield's culinary landscape, building a trusted JAKLOUD brand celebrated for pure flavors, nourishment, and hospitality.
+              To make authentic, Hyderabad-inspired dum biryani a beloved staple of Springfield's culinary landscape, building a trusted JAKloud brand celebrated for pure flavors, nourishment, and hospitality.
             </p>
           </div>
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm hover:border-amber-500/40 hover:shadow-md transition-all space-y-2">
@@ -94,7 +94,7 @@ function AboutPage() {
             <h2 className="font-display text-xl sm:text-2xl font-semibold text-zinc-900">Ingredients & Storage Guide</h2>
           </div>
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 text-xs text-zinc-600 space-y-3 font-normal leading-relaxed shadow-sm">
-            <p className="font-semibold text-zinc-900">Spice King Dum Biryani (Chicken)</p>
+            <p className="font-semibold text-zinc-900">J Paradize Dum Biryani (Chicken)</p>
             <p>
               Basmati rice, chicken, water, potato (only if aloo is selected), yogurt and sour cream (MILK), onion, egg,
               ghee (MILK), cashew (TREE NUT), milk (MILK), ginger, garlic, green chili, cilantro, mint, dates, dried

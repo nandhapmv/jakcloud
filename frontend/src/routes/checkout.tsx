@@ -50,7 +50,7 @@ import {
   type ProteinId,
 } from "@/lib/menu";
 import { api, type OrderResponse } from "@/lib/api";
-import { jakloudStore, normalizeDateKey } from "@/lib/store";
+import { jakloudStore, normalizeDateKey, useKitchenSettings } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,13 +68,13 @@ import { openRazorpayCheckout } from "@/lib/razorpay";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Booking & Checkout Details — JAKLOUD Spice King Dum Biryani" },
+      { title: "Booking & Checkout Details — JAKloud J Paradize Dum Biryani" },
       {
         name: "description",
         content:
           "Complete your handcrafted Dum Biryani Handi booking. Springfield counter pickup or doorstep delivery with live address verification and time slot scheduling.",
       },
-      { property: "og:title", content: "Checkout Details — JAKLOUD Dum Biryani" },
+      { property: "og:title", content: "Checkout Details — JAKloud Dum Biryani" },
       {
         property: "og:description",
         content: "Reserve your royal slow-cooked Dum Biryani Handi with Springfield pickup or delivery.",
@@ -95,6 +95,7 @@ const DISH_IMAGES: Record<string, string> = {
 };
 
 const VALID_PROMOS: Record<string, { discountPercent: number; discountFixed: number; label: string }> = {
+  JPARADIZE: { discountPercent: 10, discountFixed: 0, label: "10% Royal Welcome Discount" },
   SPICEKING: { discountPercent: 10, discountFixed: 0, label: "10% Royal Welcome Discount" },
   ROYAL10: { discountPercent: 10, discountFixed: 0, label: "10% Off Royal Dum Feasts" },
   HALALFEAST: { discountPercent: 0, discountFixed: 15, label: "$15 Off Halal Family Order" },
@@ -104,7 +105,11 @@ const VALID_PROMOS: Record<string, { discountPercent: number; discountFixed: num
 
 function CheckoutPage() {
   const { lines, subtotal, clear, count, setQty, removeLine } = useCart();
+  const { settings } = useKitchenSettings();
   const navigate = useNavigate();
+
+  const configuredDeliveryFee = settings?.deliveryFee !== undefined ? Number(settings.deliveryFee) : DELIVERY_FEE;
+  const freeThreshold = settings?.freeDeliveryTrayThreshold !== undefined ? Number(settings.freeDeliveryTrayThreshold) : 5;
 
   // Date Calculation & Picker
   const defaultDateObj = nextAvailableDate();
@@ -197,7 +202,7 @@ function CheckoutPage() {
 
     const discountedSubtotal = Math.max(0, subtotal - discountAmount);
     const tax = 0;
-    const deliveryCost = fulfilmentType === "delivery" ? (count >= 5 ? 0 : DELIVERY_FEE) : 0;
+    const deliveryCost = fulfilmentType === "delivery" ? (count >= freeThreshold ? 0 : configuredDeliveryFee) : 0;
     const grandTotal = discountedSubtotal + deliveryCost;
 
     return {
@@ -208,7 +213,7 @@ function CheckoutPage() {
       deliveryCost,
       grandTotal,
     };
-  }, [subtotal, appliedPromo, fulfilmentType, count]);
+  }, [subtotal, appliedPromo, fulfilmentType, count, freeThreshold, configuredDeliveryFee]);
 
   // Promo Code Handlers
   const handleApplyPromo = (e: React.FormEvent) => {
@@ -234,7 +239,7 @@ function CheckoutPage() {
 
   // Direct WhatsApp Message URL
   const whatsappBookingUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
-    `👑 *JAKLOUD SPICE KING DUM BIRYANI BOOKING*\n\n` +
+    `👑 *JAKloud J PARADIZE DUM BIRYANI BOOKING*\n\n` +
       `*Customer:* ${name || "VIP Patron"}\n` +
       `*Phone:* ${phone || "417-897-9754"}\n` +
       `*Fulfilment:* ${fulfilmentType.toUpperCase()} on ${selectedDate} at ${fulfilmentTime}\n` +
@@ -737,7 +742,9 @@ function CheckoutPage() {
                         <div>
                           <p className="font-semibold text-sm text-zinc-900">Doorstep Delivery</p>
                           <p className="text-[11px] text-amber-800 font-medium">
-                            {count >= 5 ? "FREE (5+ Trays)" : `$${DELIVERY_FEE}.00 Flat Rate`}
+                            {count >= freeThreshold
+                              ? `FREE (${freeThreshold}+ Trays)`
+                              : `$${configuredDeliveryFee.toFixed(2)} Flat Rate`}
                           </p>
                         </div>
                       </div>
@@ -1139,7 +1146,7 @@ function CheckoutPage() {
                     ) : (
                       <form onSubmit={handleApplyPromo} className="flex gap-1.5">
                         <Input
-                          placeholder="Promo code (e.g. SPICEKING)"
+                          placeholder="Promo code (e.g. JPARADIZE)"
                           value={promoInput}
                           onChange={(e) => setPromoInput(e.target.value)}
                           className="bg-zinc-50 border-zinc-200 text-zinc-900 text-xs rounded-xl uppercase font-mono focus:bg-white"

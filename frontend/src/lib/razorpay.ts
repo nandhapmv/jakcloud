@@ -101,7 +101,7 @@ export async function openRazorpayCheckout({
       key: orderData.keyId || "rzp_test_SwedUUn1KgRMs0",
       amount: orderData.amount,
       currency: orderData.currency || "USD",
-      name: "JAKLOUD Spice King Dum Biryani",
+      name: "JAKloud J Paradize Dum Biryani",
       description,
       image: "/logo.png",
       order_id: orderData.orderId,

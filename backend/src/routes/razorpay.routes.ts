@@ -32,7 +32,7 @@ razorpayRouter.post("/create-order", async (req, res) => {
       currency: currency.toUpperCase(),
       receipt: receipt || `rcpt_${Date.now()}`,
       notes: {
-        business: "JAKLOUD Spice King Dum Biryani",
+        business: "JAKloud J Paradize Dum Biryani",
         city: "Springfield, MO",
         ...notes,
       },

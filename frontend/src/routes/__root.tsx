@@ -82,9 +82,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "viewport",
         content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
       },
-      { name: "author", content: "JAKLOUD Spice King" },
+      { name: "author", content: "JAKloud J Paradize" },
       { name: "theme-color", content: "#fbf9f5" },
-      { property: "og:site_name", content: "JAKLOUD Spice King" },
+      { property: "og:site_name", content: "JAKloud J Paradize" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -127,7 +127,7 @@ function RootComponent() {
   const isAdminDashboard = pathname === "/admin" || pathname === "/admin/";
 
   const whatsappUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
-    "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKLOUD.",
+    "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKloud.",
   )}`;
 
   // Always scroll to top on any page navigation

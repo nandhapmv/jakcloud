@@ -5,7 +5,7 @@ export const healthRouter = Router();
 healthRouter.get("/", (_req, res) => {
   res.json({
     status: "ok",
-    service: "JAKLOUD Spice King API",
+    service: "JAKloud J Paradize API",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),

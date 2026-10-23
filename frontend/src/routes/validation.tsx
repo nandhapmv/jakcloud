@@ -52,13 +52,13 @@ import { useKitchenSettings, useDynamicOrders } from "@/lib/store";
 export const Route = createFileRoute("/validation")({
   head: () => ({
     meta: [
-      { title: "Booking Validation & Daily Dum Capacity — JAKLOUD Spice King Dum Biryani" },
+      { title: "Booking Validation & Daily Dum Capacity — JAKloud J Paradize Dum Biryani" },
       {
         name: "description",
         content:
           "Check real-time Dum Biryani Handi booking eligibility, 24-hour advance preparation requirements, today's 2:00 PM cutoff status, and daily 25-tray limit availability in Springfield, MO.",
       },
-      { property: "og:title", content: "Booking Validation — JAKLOUD Dum Biryani" },
+      { property: "og:title", content: "Booking Validation — JAKloud Dum Biryani" },
       {
         property: "og:description",
         content: "Real-time 24-hour advance booking verification and 25-handi capacity radar.",

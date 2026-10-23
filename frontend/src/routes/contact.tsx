@@ -14,14 +14,14 @@ import { sanitizeName, formatUsPhone, isValidName, isValidUsPhone } from "@/lib/
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact & Hours — JAKLOUD Spice King" },
+      { title: "Contact & Hours — JAKloud J Paradize" },
       {
         name: "description",
         content:
           "Call or text 417-897-9754, email sales@jakloud.com, or visit 3625 S Bedford Ave., Springfield, MO 65809. Order hours 7:00 AM – 2:00 PM.",
       },
-      { property: "og:title", content: "Contact JAKLOUD Spice King" },
-      { property: "og:description", content: "Hours, pickup address and delivery area for Spice King Dum Biryani." },
+      { property: "og:title", content: "Contact JAKloud J Paradize" },
+      { property: "og:description", content: "Hours, pickup address and delivery area for J Paradize Dum Biryani." },
     ],
   }),
   component: ContactPage,
@@ -83,7 +83,7 @@ function ContactPage() {
       <section className="relative border-b border-zinc-200 bg-white px-4 sm:px-6 lg:px-8 py-8 sm:py-10 text-left shadow-sm">
         <div className="mx-auto max-w-7xl space-y-1">
           <span className="text-xs uppercase tracking-wider text-amber-800 font-semibold">Customer Support & Inquiries</span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-semibold text-zinc-900">Talk to Spice King</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-semibold text-zinc-900">Talk to J Paradize</h1>
           <p className="max-w-2xl text-xs sm:text-sm text-zinc-600 font-normal leading-relaxed">
             Email, phone, text, or drop us a message below. We respond promptly during kitchen hours (7:00 AM to 2:00 PM).
           </p>
@@ -102,7 +102,7 @@ function ContactPage() {
               <Mail className="h-4 w-4 shrink-0 text-amber-600" /> <span>{BUSINESS.email}</span>
             </a>
             <a
-              href="https://wa.me/14178979754?text=Hello%20Master%20Chef%20Kartheek!%20I%20have%20an%20inquiry%20regarding%20JAKLOUD%20Dum%20Biryani."
+              href="https://wa.me/14178979754?text=Hello%20Master%20Chef%20Kartheek!%20I%20have%20an%20inquiry%20regarding%20JAKloud%20Dum%20Biryani."
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2.5 text-emerald-700 hover:underline font-medium"
@@ -147,7 +147,7 @@ function ContactPage() {
               <CheckCircle className="mx-auto h-8 w-8 text-amber-600" />
               <h3 className="font-display text-base font-semibold text-zinc-900">Message Received!</h3>
               <p className="text-xs text-zinc-600 font-normal">
-                Thank you for reaching out to JAKLOUD Spice King. Master Chef Kartheek will reply to your email shortly.
+                Thank you for reaching out to JAKloud J Paradize. Master Chef Kartheek will reply to your email shortly.
               </p>
               <Button
                 variant="outline"

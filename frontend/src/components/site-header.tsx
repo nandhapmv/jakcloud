@@ -55,7 +55,7 @@ export function SiteHeader() {
   }, [pathname]);
 
   const whatsappUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
-    "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKLOUD.",
+    "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKloud.",
   )}`;
 
   const cutoffLabel =
@@ -103,7 +103,7 @@ export function SiteHeader() {
               <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-amber-400/30 to-amber-500/30 blur-sm opacity-70 group-hover:opacity-100 transition-opacity" />
               <img
                 src={logoImg}
-                alt="JAKLOUD Spice King Dum Biryani"
+                alt="JAKloud J Paradize Dum Biryani"
                 className="relative h-10 w-10 rounded-full border border-amber-500/40 bg-white p-0.5 object-cover group-hover:scale-105 transition-all shadow-sm"
                 width={40}
                 height={40}
@@ -113,17 +113,17 @@ export function SiteHeader() {
             {/* Desktop Brand text */}
             <div className="hidden lg:block min-w-0 leading-tight">
               <span className="block font-display text-lg tracking-wider text-zinc-900 font-extrabold group-hover:text-amber-700 transition-all">
-                JAKLOUD
+                JAKloud
               </span>
               <span className="block text-[10px] font-bold text-amber-700 tracking-[0.22em] uppercase font-sans">
-                SPICE KING · DUM BIRYANI
+                J PARADIZE · DUM BIRYANI
               </span>
             </div>
 
             {/* Mobile Brand text */}
             <div className="block lg:hidden min-w-0 leading-tight">
               <span className="block text-xs sm:text-base font-bold tracking-tight text-zinc-900 group-hover:text-amber-700 transition-colors truncate">
-                JAKLOUD Spice King
+                JAKloud J Paradize
               </span>
               <span className="block text-[8.5px] sm:text-[9px] font-semibold text-zinc-500 tracking-wider uppercase truncate">
                 ARTISANAL DUM BIRYANI
@@ -241,17 +241,6 @@ export function SiteHeader() {
         {/* Mobile Navigation Drawer / Dropdown Panel */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-zinc-200 bg-white/98 backdrop-blur-2xl px-4 py-4 space-y-3.5 animate-in slide-in-from-top-2 duration-200 shadow-xl max-h-[calc(100vh-60px)] overflow-y-auto">
-            {/* Quick Kitchen Status Banner */}
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900">
-              <span className="flex items-center gap-1.5 font-medium">
-                <Sparkles className="h-3 w-3 text-amber-600 shrink-0" />
-                Limited to {dailyLimit} Handi Trays Daily
-              </span>
-              <span className="text-[10px] text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                100% Halal
-              </span>
-            </div>
-
             {/* Navigation Links Grid */}
             <nav className="grid grid-cols-1 gap-1">
               {MOBILE_NAV.map((item) => {

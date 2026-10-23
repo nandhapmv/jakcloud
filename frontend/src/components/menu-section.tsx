@@ -386,9 +386,6 @@ export function MenuSection() {
                       <span className="flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-zinc-950 text-[10px] font-bold">1</span>
                       <span>Choose Royal Dum Aloo</span>
                     </label>
-                    <span className="text-[10px] text-emerald-700 font-semibold px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200">
-                      100% Free ($0.00)
-                    </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">

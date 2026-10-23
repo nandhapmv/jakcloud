@@ -80,7 +80,7 @@ import {
 export const Route = createFileRoute("/admin/reports")({
   head: () => ({
     meta: [
-      { title: "Financial Reports & Analytics — JAKLOUD Spice King" },
+      { title: "Financial Reports & Analytics — JAKloud J Paradize" },
       {
         name: "description",
         content: "Executive restaurant analytics, monthly sales revenue, capacity limits, protein share, and exportable reports.",
@@ -329,12 +329,12 @@ function ReportsAnalyticsPage() {
           <Link to="/admin" className="flex items-center gap-3">
             <img
               src={logoImg}
-              alt="JAKLOUD"
+              alt="JAKloud"
               className="h-10 w-10 rounded-full border border-gold/50 bg-cream p-0.5 object-cover"
             />
             <div>
               <span className="font-display text-lg font-bold tracking-wider text-cream">
-                JAKLOUD
+                JAKloud
               </span>
               <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold">
                 Financial Reports & Analytics

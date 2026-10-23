@@ -7,7 +7,7 @@ const nitroServerPath = path.resolve(__dirname, "frontend/.output/server/index.m
 const backendDistPath = path.resolve(__dirname, "backend/dist/server.js");
 
 if (fs.existsSync(nitroServerPath)) {
-  console.log("🚀 Starting JAKLOUD Production Server from Nitro output...");
+  console.log("🚀 Starting JAKloud Production Server from Nitro output...");
   await import("./frontend/.output/server/index.mjs");
 } else if (fs.existsSync(backendDistPath)) {
   console.log("🚀 Fallback: Starting backend API server...");
@@ -17,9 +17,9 @@ if (fs.existsSync(nitroServerPath)) {
   const port = process.env.PORT || 3000;
   const server = http.createServer((_req, res) => {
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-    res.end("<h1>JAKLOUD Spice King Dum Biryani</h1><p>Building application... Please refresh in a moment.</p>");
+    res.end("<h1>JAKloud J Paradize Dum Biryani</h1><p>Building application... Please refresh in a moment.</p>");
   });
   server.listen(port, () => {
-    console.log(`JAKLOUD temporary server listening on port ${port}`);
+    console.log(`JAKloud temporary server listening on port ${port}`);
   });
 }

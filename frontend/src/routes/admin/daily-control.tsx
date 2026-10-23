@@ -49,7 +49,7 @@ import {
 export const Route = createFileRoute("/admin/daily-control")({
   head: () => ({
     meta: [
-      { title: "Daily Order & Dum Capacity Control — JAKLOUD Spice King" },
+      { title: "Daily Order & Dum Capacity Control — JAKloud J Paradize" },
       {
         name: "description",
         content: "Control daily 25-tray capacity limits, live ordering switches, close today's queue, and automated rollover.",
@@ -242,12 +242,12 @@ function DailyOrderControlPage() {
           <Link to="/admin" className="flex items-center gap-3">
             <img
               src={logoImg}
-              alt="JAKLOUD"
+              alt="JAKloud"
               className="h-10 w-10 rounded-full border border-gold/50 bg-cream p-0.5 object-cover"
             />
             <div>
               <span className="font-display text-lg font-bold tracking-wider text-cream">
-                JAKLOUD
+                JAKloud
               </span>
               <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold">
                 Daily Order & Capacity Control
@@ -797,7 +797,7 @@ function DailyOrderControlPage() {
 
               <div className="text-center space-y-1.5">
                 <span className="text-[0.65rem] uppercase tracking-widest text-gold font-semibold">
-                  JAKLOUD Spice King Dum Biryani
+                  JAKloud J Paradize Dum Biryani
                 </span>
                 <h4 className="font-display text-xl font-bold text-cream">
                   {bannerTitle}

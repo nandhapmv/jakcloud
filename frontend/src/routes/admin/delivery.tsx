@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 import { useAuth } from "@/lib/auth";
 import { formatMoney, BUSINESS } from "@/lib/menu";
+import { useKitchenSettings } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -49,7 +50,7 @@ import {
 export const Route = createFileRoute("/admin/delivery")({
   head: () => ({
     meta: [
-      { title: "Delivery Management & Zone Dispatch — JAKLOUD Spice King" },
+      { title: "Delivery Management & Zone Dispatch — JAKloud J Paradize" },
       {
         name: "description",
         content: "Configure delivery fees, radius slider, pickup switches, editable zones, and Google Maps radius.",
@@ -121,14 +122,21 @@ const INITIAL_ZONES: DeliveryZone[] = [
 function DeliveryManagementPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { settings, updateSettings } = useKitchenSettings();
 
-  // Master Fulfilment Controls with localStorage persistence
+  // Master Fulfilment Controls with database and localStorage persistence
   const [pickupEnabled, setPickupEnabled] = useState(true);
   const [deliveryEnabled, setDeliveryEnabled] = useState(true);
   const [baseDeliveryFee, setBaseDeliveryFee] = useState<string>(() => {
-    if (typeof window !== "undefined") return localStorage.getItem("jakloud_deliv_fee") || "10.00";
-    return "10.00";
+    return (settings?.deliveryFee !== undefined ? Number(settings.deliveryFee) : 10.0).toFixed(2);
   });
+  const [isSavingDb, setIsSavingDb] = useState(false);
+
+  useEffect(() => {
+    if (settings?.deliveryFee !== undefined) {
+      setBaseDeliveryFee(Number(settings.deliveryFee).toFixed(2));
+    }
+  }, [settings?.deliveryFee]);
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState<string>("250.00");
   const [freeDeliveryEnabled, setFreeDeliveryEnabled] = useState(true);
   const [deliveryRadius, setDeliveryRadius] = useState<number[]>(() => {
@@ -207,9 +215,51 @@ function DeliveryManagementPage() {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
+  // Save Delivery Fee directly to MySQL database and store
+  const handleSaveDeliveryFeeToDb = async (overrideFee?: number) => {
+    const feeToSave = overrideFee !== undefined ? overrideFee : Math.max(0, parseFloat(baseDeliveryFee) || 0);
+    setIsSavingDb(true);
+    try {
+      updateSettings({ deliveryFee: feeToSave });
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deliveryFee: feeToSave }),
+      });
+      if (!res.ok) throw new Error("Backend settings update failed");
+      setBaseDeliveryFee(feeToSave.toFixed(2));
+      toast.success(
+        feeToSave === 0
+          ? "🎉 Free Delivery ($0.00) saved to database successfully!"
+          : `✅ Delivery fee updated to $${feeToSave.toFixed(2)} in database!`
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save delivery fee to database.");
+    } finally {
+      setIsSavingDb(false);
+    }
+  };
+
   // Handle Save All Settings
-  const handleSaveAllSettings = () => {
-    toast.success("Delivery dispatch configuration & zones successfully saved!");
+  const handleSaveAllSettings = async () => {
+    const feeToSave = Math.max(0, parseFloat(baseDeliveryFee) || 0);
+    try {
+      updateSettings({
+        deliveryFee: feeToSave,
+        deliveryRadiusMiles: deliveryRadius[0] || 10,
+      });
+      await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deliveryFee: feeToSave,
+          deliveryRadiusMiles: deliveryRadius[0] || 10,
+        }),
+      });
+      toast.success("✅ Delivery configuration & fees saved to MySQL database!");
+    } catch {
+      toast.success("Delivery dispatch configuration & zones successfully saved!");
+    }
   };
 
   // Open Create Zone Modal
@@ -371,12 +421,12 @@ function DeliveryManagementPage() {
           <Link to="/admin" className="flex items-center gap-3">
             <img
               src={logoImg}
-              alt="JAKLOUD"
+              alt="JAKloud"
               className="h-10 w-10 rounded-full border border-gold/50 bg-cream p-0.5 object-cover"
             />
             <div>
               <span className="font-display text-lg font-bold tracking-wider text-cream">
-                JAKLOUD
+                JAKloud
               </span>
               <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold">
                 Delivery & Zone Command
@@ -532,7 +582,7 @@ function DeliveryManagementPage() {
                     <Compass className="h-4 w-4 text-gold" /> Maximum Delivery Radius
                   </Label>
                   <p className="text-[0.65rem] text-cream/60">
-                    Radius extending from JAKLOUD central kitchen (3625 S Bedford Ave)
+                    Radius extending from JAKloud central kitchen (3625 S Bedford Ave)
                   </p>
                 </div>
                 <div className="text-right">
@@ -567,19 +617,75 @@ function DeliveryManagementPage() {
 
             {/* Delivery Charge Configuration Inputs */}
             <div className="grid gap-3 sm:grid-cols-3 text-xs">
-              <div className="rounded-xl border border-gold/15 bg-black/40 p-3 space-y-1">
-                <Label htmlFor="base-fee" className="text-xs text-gold font-semibold">
-                  Base Delivery Charge ($)
-                </Label>
+              <div className="rounded-xl border border-gold/15 bg-black/40 p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="base-fee" className="text-xs text-gold font-semibold">
+                    Base Delivery Charge ($)
+                  </Label>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold border ${
+                    Number(baseDeliveryFee) === 0
+                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                      : "bg-amber-500/20 text-amber-400 border-amber-500/40"
+                  }`}>
+                    {Number(baseDeliveryFee) === 0 ? "FREE ($0.00)" : `$${Number(baseDeliveryFee).toFixed(2)}`}
+                  </span>
+                </div>
                 <Input
                   id="base-fee"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={baseDeliveryFee}
                   onChange={(e) => setBaseDeliveryFee(e.target.value)}
                   className="rounded-xl border-gold/25 bg-black/60 font-mono font-bold text-cream text-xs"
                 />
-                <span className="text-[0.65rem] text-cream/50">Covers baseline 0-5 miles</span>
+                {/* Quick Presets */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => handleSaveDeliveryFeeToDb(0)}
+                    className={`px-2 py-0.5 text-[10px] rounded font-bold border transition-all cursor-pointer ${
+                      Number(baseDeliveryFee) === 0
+                        ? "bg-emerald-500 text-zinc-950 border-emerald-400 shadow-sm"
+                        : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                    }`}
+                  >
+                    🎉 Free ($0)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSaveDeliveryFeeToDb(5)}
+                    className="px-2 py-0.5 text-[10px] rounded font-medium border border-gold/20 bg-black/40 text-cream hover:bg-gold/10 cursor-pointer"
+                  >
+                    $5
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSaveDeliveryFeeToDb(10)}
+                    className="px-2 py-0.5 text-[10px] rounded font-medium border border-gold/20 bg-black/40 text-cream hover:bg-gold/10 cursor-pointer"
+                  >
+                    $10
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSaveDeliveryFeeToDb(15)}
+                    className="px-2 py-0.5 text-[10px] rounded font-medium border border-gold/20 bg-black/40 text-cream hover:bg-gold/10 cursor-pointer"
+                  >
+                    $15
+                  </button>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={isSavingDb}
+                  onClick={() => handleSaveDeliveryFeeToDb()}
+                  className="w-full mt-1.5 h-7 text-[10.5px] bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold hover:brightness-110 cursor-pointer"
+                >
+                  {isSavingDb ? "Saving to Database..." : "💾 Save Delivery Fee to Database"}
+                </Button>
+                <span className="block text-[0.65rem] text-cream/50 pt-0.5">
+                  Synchronized with MySQL database & customer checkout
+                </span>
               </div>
 
               <div className="rounded-xl border border-gold/15 bg-black/40 p-3 space-y-1">
@@ -717,7 +823,7 @@ function DeliveryManagementPage() {
                 </div>
                 <div>
                   <h4 className="font-display text-sm font-bold text-cream">
-                    JAKLOUD Central Handi Kitchen
+                    JAKloud Central Handi Kitchen
                   </h4>
                   <p className="text-[0.7rem] text-gold font-mono">
                     3625 S Bedford Ave, Springfield, MO

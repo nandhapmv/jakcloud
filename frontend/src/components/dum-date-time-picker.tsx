@@ -67,7 +67,7 @@ export function DumDateTimePicker({
   // Dynamic Kitchen Settings from reactive store
   const { settings } = useKitchenSettings();
   const { orders } = useDynamicOrders();
-  const dailyLimit = settings.dailyTrayLimit || 10;
+  const dailyLimit = settings.dailyTrayLimit || 25;
   const cutoffHour = settings.orderCutoffHour || 15; // 3:00 PM (15:00) default
   const horizonDays = settings.bookingHorizonDays || 7; // 7 days (1 week) default
 

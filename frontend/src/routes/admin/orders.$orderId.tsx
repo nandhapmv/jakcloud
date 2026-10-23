@@ -50,7 +50,7 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/admin/orders/$orderId")({
   head: () => ({
     meta: [
-      { title: "Order Details & Dum Dispatch — JAKLOUD Spice King" },
+      { title: "Order Details & Dum Dispatch — JAKloud J Paradize" },
       {
         name: "description",
         content: "Complete customer info, Google Maps routing, portion specs, timeline and status update panel.",
@@ -303,7 +303,7 @@ function OrderDetailsPage() {
           <Link to="/admin" className="flex items-center gap-3">
             <img
               src={logoImg}
-              alt="JAKLOUD"
+              alt="JAKloud"
               className="h-10 w-10 rounded-full border border-gold/50 bg-cream p-0.5 object-cover"
             />
             <div>
@@ -554,7 +554,7 @@ function OrderDetailsPage() {
                   <p className="text-xs text-cream/60">
                     {order.fulfilmentType === "delivery"
                       ? "10-Mile Springfield Delivery Zone Verified"
-                      : "JAKLOUD Central Handi Kitchen Pickup Spot"}
+                      : "JAKloud Central Handi Kitchen Pickup Spot"}
                   </p>
                 </div>
                 <Button

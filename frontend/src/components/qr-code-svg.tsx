@@ -16,7 +16,7 @@ export function QrCodeSvg({ size = 200, className = "" }: QrCodeSvgProps) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`rounded-xl ${className}`}
-      aria-label="JAKLOUD Handi Order & Loyalty QR Code"
+      aria-label="JAKloud Handi Order & Loyalty QR Code"
     >
       <rect width="160" height="160" fill="white" rx="8" />
 

@@ -60,20 +60,31 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
+interface OrdersSearchParams {
+  status?: string;
+  fulfilment?: string;
+  date?: string;
+}
+
 export const Route = createFileRoute("/admin/orders")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): OrdersSearchParams => {
     return {
-      status: typeof search.status === "string" ? search.status : undefined,
-      fulfilment: typeof search.fulfilment === "string" ? search.fulfilment : typeof search.type === "string" ? (search.type as string) : undefined,
-      date: typeof search.date === "string" ? search.date : undefined,
+      status: typeof search["status"] === "string" ? (search["status"] as string) : undefined,
+      fulfilment:
+        typeof search["fulfilment"] === "string"
+          ? (search["fulfilment"] as string)
+          : typeof search["type"] === "string"
+            ? (search["type"] as string)
+            : undefined,
+      date: typeof search["date"] === "string" ? (search["date"] as string) : undefined,
     };
   },
   head: () => ({
     meta: [
-      { title: "Order Management & Kitchen Queue — JAKLOUD Spice King" },
+      { title: "Order Management & Kitchen Queue — JAKloud J Paradize" },
       {
         name: "description",
-        content: "Comprehensive order management table and live kitchen queue for JAKLOUD Spice King.",
+        content: "Comprehensive order management table and live kitchen queue for JAKloud J Paradize.",
       },
     ],
   }),
@@ -455,12 +466,12 @@ export function OrderManagementPage() {
           <Link to="/admin" className="flex items-center gap-3">
             <img
               src={logoImg}
-              alt="JAKLOUD"
+              alt="JAKloud"
               className="h-10 w-10 rounded-full border border-gold/50 bg-cream p-0.5 object-cover"
             />
             <div>
               <span className="font-display text-lg font-bold tracking-wider text-cream">
-                JAKLOUD
+                JAKloud
               </span>
               <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold">
                 Live Kitchen Dispatch Queue

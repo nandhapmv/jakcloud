@@ -47,13 +47,13 @@ import {
 export const Route = createFileRoute("/biryani")({
   head: () => ({
     meta: [
-      { title: "Dum Biryani Handi Selection — JAKLOUD Spice King" },
+      { title: "Dum Biryani Handi Selection — JAKloud J Paradize" },
       {
         name: "description",
         content:
           "Explore handcrafted Dum Biryani Handi Trays in Springfield, MO. 100% Zabiha Halal Chicken, Hyderabadi Mutton, Prime Beef, Paneer, Prawn, and Signature Pork.",
       },
-      { property: "og:title", content: "Dum Biryani Handi Selection — JAKLOUD" },
+      { property: "og:title", content: "Dum Biryani Handi Selection — JAKloud" },
       {
         property: "og:description",
         content: "Authentic Dum Pukht biryani cooked fresh daily with 1.6–1.8 kg protein and aged basmati.",

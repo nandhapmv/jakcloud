@@ -33,13 +33,13 @@ import {
 export const Route = createFileRoute("/delivery")({
   head: () => ({
     meta: [
-      { title: "Pickup & Delivery — JAKLOUD Spice King Dum Biryani" },
+      { title: "Pickup & Delivery — JAKloud J Paradize Dum Biryani" },
       {
         name: "description",
         content:
           "Choose between Springfield Counter Pickup (3625 S Bedford Ave) or Express Doorstep Delivery within 10 miles. Freshly hot-sealed Dum Biryani handi trays.",
       },
-      { property: "og:title", content: "Pickup or Delivery — JAKLOUD Dum Biryani" },
+      { property: "og:title", content: "Pickup or Delivery — JAKloud Dum Biryani" },
       {
         property: "og:description",
         content: "Hot pickup counter on Bedford Ave or $10 Springfield doorstep delivery within 10 miles.",
@@ -474,7 +474,7 @@ export function PickupDeliveryPage() {
                   <Store className="h-4 w-4" />
                 </div>
                 <div className="mt-1.5 rounded-lg bg-white border border-zinc-200 px-2.5 py-0.5 text-center shadow-xs">
-                  <p className="text-[0.7rem] font-semibold text-zinc-900">JAKLOUD Kitchen</p>
+                  <p className="text-[0.7rem] font-semibold text-zinc-900">JAKloud Kitchen</p>
                   <p className="text-[0.6rem] text-zinc-500">3625 S Bedford Ave</p>
                 </div>
               </div>

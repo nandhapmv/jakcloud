@@ -25,14 +25,15 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "spiceking-cart-v1";
+const STORAGE_KEY = "jakloud-jparadize-cart-v1";
+const LEGACY_STORAGE_KEY = "spiceking-cart-v1";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
       if (raw) setLines(JSON.parse(raw) as CartLine[]);
     } catch {
       /* ignore */

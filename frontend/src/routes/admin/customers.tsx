@@ -68,7 +68,7 @@ import {
 export const Route = createFileRoute("/admin/customers")({
   head: () => ({
     meta: [
-      { title: "Patron & Customer Management — JAKLOUD Spice King" },
+      { title: "Patron & Customer Management — JAKloud J Paradize" },
       {
         name: "description",
         content: "Manage VIP patrons, customer loyalty profiles, lifetime spending, and order history timelines.",
@@ -141,6 +141,7 @@ function CustomerManagementPage() {
 
         if (existingIdx >= 0) {
           const c = updated[existingIdx];
+          if (!c) return;
           const hasOrder = c.orderHistory?.some((h) => h.orderNumber === ord.orderNumber);
           if (!hasOrder) {
             changed = true;
@@ -376,12 +377,12 @@ function CustomerManagementPage() {
           <Link to="/admin" className="flex items-center gap-3">
             <img
               src={logoImg}
-              alt="JAKLOUD"
+              alt="JAKloud"
               className="h-10 w-10 rounded-full border border-gold/50 bg-cream p-0.5 object-cover"
             />
             <div>
               <span className="font-display text-lg font-bold tracking-wider text-cream">
-                JAKLOUD
+                JAKloud
               </span>
               <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold">
                 Patron & Customer CRM
@@ -975,7 +976,8 @@ function CustomerManagementPage() {
                           {hist.fulfilmentType} • {hist.paymentStatus}
                         </span>
                         <Link
-                          to={`/admin/orders/${hist.orderNumber}`}
+                          to="/admin/orders/$orderId"
+                          params={{ orderId: hist.orderNumber }}
                           className="text-gold font-medium hover:underline"
                         >
                           View Full Order Details →
@@ -1004,7 +1006,7 @@ function CustomerManagementPage() {
               Register New Diner / VIP Patron
             </DialogTitle>
             <DialogDescription className="text-xs text-cream/60">
-              Add a new customer profile to the JAKLOUD Springfield patron directory.
+              Add a new customer profile to the JAKloud Springfield patron directory.
             </DialogDescription>
           </DialogHeader>
 

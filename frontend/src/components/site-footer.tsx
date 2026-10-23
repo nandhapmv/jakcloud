@@ -20,7 +20,7 @@ import { BUSINESS } from "@/lib/menu";
 
 export function SiteFooter() {
   const whatsappUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
-    "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKLOUD.",
+    "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKloud.",
   )}`;
 
   return (
@@ -32,7 +32,7 @@ export function SiteFooter() {
           <Link to="/" className="flex items-center gap-3">
             <img
               src={logoImg}
-              alt="JAKLOUD Spice King seal"
+              alt="JAKloud J Paradize seal"
               className="h-10 w-10 rounded-full border border-amber-500/40 bg-white p-0.5 object-cover shadow-sm"
               loading="lazy"
               width={40}
@@ -40,10 +40,10 @@ export function SiteFooter() {
             />
             <div>
               <span className="font-display text-lg font-semibold text-zinc-900 block">
-                JAKLOUD
+                JAKloud
               </span>
               <span className="block text-[10px] font-bold text-amber-700">
-                Spice King Dum Biryani
+                J Paradize Dum Biryani
               </span>
             </div>
           </Link>
@@ -163,7 +163,7 @@ export function SiteFooter() {
 
       {/* Bottom Bar */}
       <div className="border-t border-zinc-200 bg-zinc-100 py-4 px-6 text-center text-[11px] text-zinc-500 font-normal">
-        <p>© {new Date().getFullYear()} JAKLOUD Spice King Dum Biryani. All rights reserved. Springfield, Missouri.</p>
+        <p>© {new Date().getFullYear()} JAKloud J Paradize Dum Biryani. All rights reserved. Springfield, Missouri.</p>
       </div>
     </footer>
   );

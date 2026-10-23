@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { MENU_ITEMS, CATEGORIES, type MenuItem } from "../models/menu.model.js";
 import { config } from "../config/index.js";
 import { getPool, isDatabaseConnected } from "../config/database.js";
+import { getKitchenSettings } from "../models/settings.model.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -135,15 +136,16 @@ export async function getMenu(_req: Request, res: Response) {
     }
   }
 
+  const currentSettings = getKitchenSettings();
   return res.json({
     business: {
       name: config.business.name,
       phone: config.business.phone,
       email: config.business.email,
       address: config.business.address,
-      cutoffHour: config.business.cutoffHour,
-      deliveryFee: config.business.deliveryFee,
-      alooCharge: config.business.alooCharge,
+      cutoffHour: currentSettings.orderCutoffHour ?? config.business.cutoffHour,
+      deliveryFee: currentSettings.deliveryFee ?? config.business.deliveryFee,
+      alooCharge: currentSettings.alooCharge ?? config.business.alooCharge,
     },
     categories: CATEGORIES,
     items: activeMenuItems,

@@ -123,6 +123,12 @@ export async function saveKitchenSettings(updates: Partial<KitchenSettings>): Pr
   if (sanitizedUpdates.bookingHorizonDays !== undefined) {
     sanitizedUpdates.bookingHorizonDays = Number(sanitizedUpdates.bookingHorizonDays);
   }
+  if (sanitizedUpdates.deliveryFee !== undefined) {
+    const fee = Number(sanitizedUpdates.deliveryFee);
+    if (!isNaN(fee) && fee >= 0) {
+      sanitizedUpdates.deliveryFee = fee;
+    }
+  }
 
   activeSettings = { ...activeSettings, ...sanitizedUpdates };
 

@@ -43,7 +43,7 @@ app.use("/api", apiRouter);
 // Root route
 app.get("/", (_req, res) => {
   res.json({
-    message: "JAKLOUD Spice King Dum Biryani API",
+    message: "JAKloud J Paradize Dum Biryani API",
     documentation: "/api/health, /api/db/status, /api/db/init, /api/menu, /api/orders, /api/contact",
     status: "online",
   });
@@ -63,6 +63,6 @@ initDatabase()
   });
 
 app.listen(port, () => {
-  console.log(`🚀 JAKLOUD Spice King Backend running on http://localhost:${port}`);
+  console.log(`🚀 JAKloud J Paradize Backend running on http://localhost:${port}`);
   console.log(`📍 Environment: ${config.nodeEnv}`);
 });

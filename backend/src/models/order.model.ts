@@ -2,8 +2,8 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { MENU_ITEMS, type ProteinId } from "./menu.model.js";
-import { config } from "../config/index.js";
 import { getPool, isDatabaseConnected } from "../config/database.js";
+import { getKitchenSettings } from "./settings.model.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -158,7 +158,8 @@ export function calculateOrderTotals(
 
   const subtotal = Math.round(orderItems.reduce((sum, item) => sum + item.lineTotal, 0) * 100) / 100;
   const tax = 0;
-  const deliveryFee = fulfilmentType === "delivery" ? config.business.deliveryFee : 0;
+  const settings = getKitchenSettings();
+  const deliveryFee = fulfilmentType === "delivery" ? (settings?.deliveryFee ?? 10.0) : 0;
   const total = Math.round((subtotal + deliveryFee) * 100) / 100;
 
   return {

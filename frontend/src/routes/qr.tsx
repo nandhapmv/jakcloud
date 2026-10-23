@@ -45,13 +45,13 @@ import { MobileAppView } from "@/components/mobile-app-view";
 export const Route = createFileRoute("/qr")({
   head: () => ({
     meta: [
-      { title: "Welcome to JAKLOUD — QR Code Mobile Ordering" },
+      { title: "Welcome to JAKloud — QR Code Mobile Ordering" },
       {
         name: "description",
         content:
-          "Scan confirmed! Welcome to JAKLOUD Spice King Dum Biryani. Order your handcrafted Dum Biryani Handi tray for Springfield pickup or doorstep delivery.",
+          "Scan confirmed! Welcome to JAKloud J Paradize Dum Biryani. Order your handcrafted Dum Biryani Handi tray for Springfield pickup or doorstep delivery.",
       },
-      { property: "og:title", content: "JAKLOUD QR Mobile Ordering Hub" },
+      { property: "og:title", content: "JAKloud QR Mobile Ordering Hub" },
       { property: "og:description", content: "Order handcrafted royal dum biryani handi trays direct from your phone." },
       { property: "og:image", content: "/logo.png" },
     ],
@@ -71,20 +71,20 @@ export function QrWelcomePage() {
 
   // Quick Order WhatsApp URL
   const whatsappUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
-    `Hello Master Chef Kartheek! I just scanned the JAKLOUD QR Stand (${serviceType === "table" ? tableNumber : serviceType.toUpperCase()}). I would like to order a handcrafted Dum Biryani Handi tray.`,
+    `Hello Master Chef Kartheek! I just scanned the JAKloud QR Stand (${serviceType === "table" ? tableNumber : serviceType.toUpperCase()}). I would like to order a handcrafted Dum Biryani Handi tray.`,
   )}`;
 
   // SMS Text to Order URL
   const smsUrl = `sms:14178979754?&body=${encodeURIComponent(
-    `Hello JAKLOUD! I scanned the QR Code (${serviceType === "table" ? tableNumber : serviceType.toUpperCase()}) and want to order a Dum Biryani Handi Tray.`,
+    `Hello JAKloud! I scanned the QR Code (${serviceType === "table" ? tableNumber : serviceType.toUpperCase()}) and want to order a Dum Biryani Handi Tray.`,
   )}`;
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "JAKLOUD – Spice King Dum Biryani",
-          text: "Check out JAKLOUD Dum Biryani Handi Trays made to order in Springfield, MO!",
+          title: "JAKloud – J Paradize Dum Biryani",
+          text: "Check out JAKloud Dum Biryani Handi Trays made to order in Springfield, MO!",
           url: window.location.href,
         });
       } catch (err) {
@@ -177,7 +177,7 @@ export function QrWelcomePage() {
                 <span className="text-zinc-600 font-mono">Live Session</span>
               </p>
               <h2 className="font-display text-sm font-bold text-zinc-900">
-                Connected to JAKLOUD Kitchen
+                Connected to JAKloud Kitchen
               </h2>
             </div>
           </div>
@@ -206,7 +206,7 @@ export function QrWelcomePage() {
             <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-amber-400 via-amber-200 to-amber-500 opacity-50 blur-md" />
             <img
               src={logoImg}
-              alt="JAKLOUD Spice King Dum Biryani Crest"
+              alt="JAKloud J Paradize Dum Biryani Crest"
               className="relative h-full w-full rounded-full border-2 border-amber-500 bg-white p-1 object-cover shadow-md"
               width={112}
               height={112}
@@ -220,7 +220,7 @@ export function QrWelcomePage() {
             </div>
 
             <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-wide text-zinc-900">
-              JAKLOUD – Spice King
+              JAKloud – J Paradize
             </h1>
 
             <p className="font-display text-xs uppercase tracking-[0.25em] text-amber-700 font-semibold">
@@ -466,7 +466,7 @@ export function QrWelcomePage() {
         <div className="rounded-3xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-sm space-y-3">
           <div className="flex items-center gap-2 text-zinc-900 font-display text-sm font-bold">
             <Shield className="h-4 w-4 text-emerald-600" />
-            <span>The JAKLOUD Quality Guarantee</span>
+            <span>The JAKloud Quality Guarantee</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-[0.68rem] text-zinc-700">
@@ -500,7 +500,7 @@ export function QrWelcomePage() {
 
           <button
             onClick={() => {
-              toast.info("Guest Wi-Fi: 'JAKLOUD-GUEST' • Password: 'spicekingbiryani'");
+              toast.info("Guest Wi-Fi: 'JAKloud-GUEST' • Password: 'jparadizebiryani'");
             }}
             className="flex items-center gap-1 text-amber-700 hover:underline cursor-pointer font-medium"
           >

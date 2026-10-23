@@ -39,13 +39,13 @@ import {
 export const Route = createFileRoute("/proteins")({
   head: () => ({
     meta: [
-      { title: "Protein Selection — JAKLOUD Spice King Dum Biryani" },
+      { title: "Protein Selection — JAKloud J Paradize Dum Biryani" },
       {
         name: "description",
         content:
           "Select your signature protein cut for Made To Order Dum Biryani. 100% Zabiha Halal Chicken, Mutton, and Beef, plus Springfield Signature Pork.",
       },
-      { property: "og:title", content: "Premium Protein Selection — JAKLOUD Dum Biryani" },
+      { property: "og:title", content: "Premium Protein Selection — JAKloud Dum Biryani" },
       {
         property: "og:description",
         content: "Handcrafted biryani handi trays with 1.6–1.8 kg marinated protein. Zabiha Halal certified.",
@@ -223,7 +223,7 @@ export function ProteinSelectionPage() {
   };
 
   const whatsappUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
-    `Hello Master Chef Kartheek! I would like to order ${trayQty} Tray(s) of ${currentProtein.name} (${spiceLevel.toUpperCase()}${addAloo ? " +Aloo" : ""}) from JAKLOUD. Total: $${totalPrice.toFixed(2)}.`,
+    `Hello Master Chef Kartheek! I would like to order ${trayQty} Tray(s) of ${currentProtein.name} (${spiceLevel.toUpperCase()}${addAloo ? " +Aloo" : ""}) from JAKloud. Total: $${totalPrice.toFixed(2)}.`,
   )}`;
 
   return (

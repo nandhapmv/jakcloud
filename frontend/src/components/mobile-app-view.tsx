@@ -219,6 +219,20 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   const [modalNotes, setModalNotes] = useState("");
   const [modalQty, setModalQty] = useState(1);
 
+  // Initial Tray Quantity Selector Modal ("How Many Trays Do You Need?")
+  const [traySelectorOpen, setTraySelectorOpen] = useState(true);
+  const [selectedTrayQty, setSelectedTrayQty] = useState(1);
+  const [tempTrayQty, setTempTrayQty] = useState(1);
+
+  const handleConfirmTraySelection = (qty: number) => {
+    setSelectedTrayQty(qty);
+    setTempTrayQty(qty);
+    setTraySelectorOpen(false);
+    toast.success(
+      `Selected ${qty} ${qty > 1 ? "Trays" : "Tray"}! Choose your biryani below.`
+    );
+  };
+
   // Location Selector Modal
   const [locationModalOpen, setLocationModalOpen] = useState(false);
 
@@ -255,7 +269,8 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
 
   // Calculate live financial totals
   const currentAlooFee = settings?.alooCharge ?? ALOO_CHARGE;
-  const currentDeliveryFee = fulfilmentMode === "delivery" ? (settings?.deliveryFee ?? DELIVERY_FEE) : 0;
+  const configuredDeliveryFee = settings?.deliveryFee !== undefined ? Number(settings.deliveryFee) : DELIVERY_FEE;
+  const currentDeliveryFee = fulfilmentMode === "delivery" ? configuredDeliveryFee : 0;
   const taxRate = 0;
   const calculatedTax = 0;
   const grandTotal = subtotal + currentDeliveryFee;
@@ -405,13 +420,31 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
     }
   };
 
+  // Quick add from protein card using selected tray quantity
+  const handleQuickAddProtein = (dish: any) => {
+    const qtyToAdd = selectedTrayQty || 1;
+    const unitPrice = dish.price;
+    addLine({
+      proteinId: dish.id,
+      name: dish.name,
+      aloo: true,
+      extraSpicy: true,
+      notes: "",
+      qty: qtyToAdd,
+      unitPrice,
+    });
+    toast.success(
+      `Added ${qtyToAdd}× ${dish.name} (${qtyToAdd} ${qtyToAdd > 1 ? "Trays" : "Tray"}) to Cart! 🥘`
+    );
+  };
+
   // Open full customizer dialog
   const handleOpenCustomizer = (dish: any) => {
     setSelectedDishModal(dish);
     setModalAloo(true); // Default to adding the free royal aloo
     setModalExtraSpicy(true); // Default to authentic spicy
     setModalNotes("");
-    setModalQty(1);
+    setModalQty(selectedTrayQty || 1);
   };
 
   // Confirm customization modal
@@ -453,7 +486,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       .join("\n");
 
     const message = [
-      `👑 JAKLOUD SPICE KING DUM BIRYANI 👑`,
+      `👑 JAKloud J PARADIZE DUM BIRYANI 👑`,
       `Artisanal Handi Tray Booking`,
       `────────────────────────`,
       `Order #: ${order.orderNumber}`,
@@ -470,7 +503,9 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       itemsSummary,
       `────────────────────────`,
       `Subtotal: ${formatMoney(order.subtotal)}`,
-      order.deliveryFee > 0 ? `Delivery Fee: ${formatMoney(order.deliveryFee)}` : `Delivery: FREE Pickup`,
+      order.fulfilmentType === "delivery"
+        ? (order.deliveryFee > 0 ? `Delivery Fee: ${formatMoney(order.deliveryFee)}` : `Delivery: FREE`)
+        : `Kitchen Pickup: FREE`,
       `TOTAL AMOUNT: ${formatMoney(order.total)}`,
       `Payment: ${order.paymentMethod}`,
       `────────────────────────`,
@@ -612,26 +647,37 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   };
 
   return (
-    <div className="min-h-screen w-full max-w-full bg-[#fbf9f5] text-zinc-900 font-sans selection:bg-amber-500/20 selection:text-amber-800 pb-20 overflow-x-hidden">
+    <div className="min-h-screen w-full max-w-full bg-[#fbf9f5] text-zinc-900 font-sans selection:bg-amber-500/20 selection:text-amber-800 pb-32 overflow-x-hidden">
       {/* ========================================================================= */}
       {/* TAB CONTENT: HOME TAB                                                     */}
       {/* ========================================================================= */}
       {activeTab === "home" && (
         <main className="w-full max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 sm:px-6 pt-2 space-y-3 animate-in fade-in duration-200 overflow-x-hidden">
-          {/* Section Title with Limited Badge */}
-          <div className="pt-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm sm:text-base font-semibold text-zinc-900 font-display">
-                Select Biryani Handi Tray
-              </h1>
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-300 px-2 py-0.5 text-[10px] font-semibold text-amber-800 shrink-0">
-                <Sparkles className="h-2.5 w-2.5 text-amber-600" />
-                <span>Limited</span>
-              </span>
+          {/* Selected Tray Allocation Bar */}
+          <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-100/40 to-orange-500/10 border border-amber-300/80 p-3 shadow-xs flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-zinc-950 flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+                {selectedTrayQty}
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs sm:text-sm font-bold text-zinc-900 font-display block">
+                  {selectedTrayQty} {selectedTrayQty === 1 ? "Tray" : "Trays"} Selected
+                </span>
+                <p className="text-[10.5px] text-zinc-500 truncate mt-0.5">
+                  Pick your biryani below to add to your order
+                </p>
+              </div>
             </div>
-            <p className="text-[11px] text-zinc-500 mt-0.5">
-              Slow-cooked royal Dum Pukht in sealed handis
-            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setTempTrayQty(selectedTrayQty);
+                setTraySelectorOpen(true);
+              }}
+              className="shrink-0 rounded-xl bg-white border border-amber-300 px-3 py-1 text-xs font-bold text-amber-800 hover:bg-amber-50 shadow-xs cursor-pointer transition-colors"
+            >
+              Change
+            </button>
           </div>
 
           {/* 4. Direct Biryani Trays List */}
@@ -754,11 +800,11 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                     ) : totalCartCount === 0 ? (
                       <button
                         type="button"
-                        onClick={() => handleOpenCustomizer(dish)}
+                        onClick={() => handleQuickAddProtein(dish)}
                         className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold px-3.5 py-1.5 text-xs shadow-sm hover:brightness-105 active:scale-95 transition-all ml-auto cursor-pointer"
                       >
                         <Plus className="h-3.5 w-3.5" />
-                        <span>Add Tray</span>
+                        <span>Add {selectedTrayQty > 1 ? `${selectedTrayQty} Trays` : "Tray"}</span>
                       </button>
                     ) : (
                       <div className="flex items-center rounded-xl border border-amber-300 bg-amber-50/50 p-0.5 ml-auto shadow-sm">
@@ -1076,7 +1122,9 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                       }`}
                     >
                       <Truck className="h-3.5 w-3.5" />
-                      <span>Delivery (+${DELIVERY_FEE})</span>
+                      <span>
+                        Delivery ({configuredDeliveryFee <= 0 ? "Free" : `+${formatMoney(configuredDeliveryFee)}`})
+                      </span>
                     </button>
                   </div>
 
@@ -1238,7 +1286,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                     <div className="flex justify-between text-zinc-600 font-normal">
                       <span>Fulfilment ({fulfilmentMode === "pickup" ? "Kitchen Pickup" : "Doorstep Delivery"})</span>
                       <span className="font-mono text-zinc-900 font-medium">
-                        {fulfilmentMode === "pickup" ? "FREE" : formatMoney(currentDeliveryFee)}
+                        {fulfilmentMode === "pickup" || currentDeliveryFee <= 0 ? "FREE" : formatMoney(currentDeliveryFee)}
                       </span>
                     </div>
 
@@ -1596,7 +1644,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
               <User className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900">JAKLOUD Guest Account</h3>
+              <h3 className="text-sm font-semibold text-zinc-900">JAKloud Guest Account</h3>
               <p className="text-xs text-zinc-500 font-normal">Springfield Dum Biryani Club</p>
             </div>
           </div>
@@ -1661,7 +1709,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
       {/* ========================================================================= */}
       {/* Floating Order Summary pill above bottom nav when items in cart */}
       {count > 0 && activeTab !== "cart" && checkoutStep !== "payment" && checkoutStep !== "success" && (
-        <aside aria-label="Order summary" className="fixed bottom-14 inset-x-0 z-40 px-3 flex justify-center pointer-events-none">
+        <aside aria-label="Order summary" className="fixed bottom-[4.5rem] inset-x-0 z-40 px-3 flex justify-center pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="w-full max-w-md pointer-events-auto">
             <button
               type="button"
@@ -1753,7 +1801,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
 
             {/* 4. WhatsApp Direct Order */}
             <a
-              href="https://wa.me/14178979754?text=Hello%20Master%20Chef%20Kartheek!%20I%20would%20like%20to%20order%20a%20fresh%20handcrafted%20Dum%20Biryani%20Handi%20tray%20from%20JAKLOUD."
+              href="https://wa.me/14178979754?text=Hello%20Master%20Chef%20Kartheek!%20I%20would%20like%20to%20order%20a%20fresh%20handcrafted%20Dum%20Biryani%20Handi%20tray%20from%20JAKloud."
               target="_blank"
               rel="noreferrer"
               className="flex flex-col items-center justify-center py-1 px-3 text-[10px] font-medium transition-all cursor-pointer text-emerald-700 hover:text-emerald-800"
@@ -1781,38 +1829,35 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
         open={Boolean(selectedDishModal)}
         onOpenChange={(open) => !open && setSelectedDishModal(null)}
       >
-        <DialogContent className="max-w-md w-[92vw] sm:w-full rounded-3xl bg-white border border-amber-200/80 text-zinc-900 p-0 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+        <DialogContent className="max-w-md w-[92vw] sm:w-full rounded-2xl sm:rounded-3xl bg-white border border-amber-200/80 text-zinc-900 p-0 shadow-2xl overflow-hidden max-h-[88vh] flex flex-col my-auto">
           {selectedDishModal && (
             <>
-              {/* Modal Header with Dish Image & Royal Tag */}
-              <div className="relative bg-gradient-to-br from-amber-500/10 via-amber-50 to-orange-50/40 p-4 sm:p-5 border-b border-amber-100">
-                <div className="flex items-center gap-3.5">
+              {/* Modal Header with Dish Image & Royal Tag (pr-12 prevents close button collision) */}
+              <div className="relative bg-gradient-to-br from-amber-500/10 via-amber-50 to-orange-50/40 px-3.5 py-3 sm:px-5 sm:py-3.5 pr-12 border-b border-amber-100/90 shrink-0">
+                <div className="flex items-center gap-3">
                   <div className="relative shrink-0">
                     <img
                       src={DISH_IMAGES[selectedDishModal.id] || chickenImg}
                       alt={selectedDishModal.name}
-                      className="h-16 w-16 sm:h-18 sm:w-18 rounded-2xl object-cover border-2 border-amber-400/80 shadow-md"
+                      className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl object-cover border-2 border-amber-400/80 shadow-xs"
                     />
-                    <div className="absolute -bottom-1 -right-1 bg-emerald-600 text-white rounded-full p-0.5 shadow">
-                      <Sparkles className="h-3 w-3" />
+                    <div className="absolute -bottom-1 -right-1 bg-amber-600 text-white rounded-full p-0.5 shadow-xs">
+                      <Sparkles className="h-2.5 w-2.5" />
                     </div>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-[10px] font-bold text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-full border border-amber-300">
-                        Handcrafted Dum Handi
-                      </span>
-                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300">
-                        100% Halal
+                    <div className="inline-flex items-center gap-1 mb-1">
+                      <span className="text-[9.5px] font-bold text-amber-900 bg-amber-100/90 px-2 py-0.5 rounded-full border border-amber-300">
+                        👑 Royal Dum Handi
                       </span>
                     </div>
-                    <DialogTitle className="text-base sm:text-lg font-bold text-zinc-900 font-serif leading-tight">
+                    <DialogTitle className="text-sm sm:text-base font-bold text-zinc-900 font-serif leading-tight truncate">
                       {selectedDishModal.name}
                     </DialogTitle>
-                    <DialogDescription className="text-xs text-zinc-600 mt-1 flex items-center gap-2">
+                    <DialogDescription className="text-[11px] text-zinc-600 mt-0.5 flex items-center gap-1.5 flex-wrap">
                       <span>Serves 4–5 Diners</span>
-                      <span>•</span>
-                      <span className="font-mono font-bold text-amber-900 bg-amber-100/70 px-1.5 py-0.5 rounded">
+                      <span className="text-zinc-300">•</span>
+                      <span className="font-mono font-bold text-amber-950 bg-amber-200/80 px-1.5 py-0.2 rounded text-[11px]">
                         {formatMoney(selectedDishModal.price)} / Tray
                       </span>
                     </DialogDescription>
@@ -1821,49 +1866,46 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
               </div>
 
               {/* Scrollable Customization Body */}
-              <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1">
+              <div className="px-3.5 py-3 sm:px-5 sm:py-4 space-y-3.5 overflow-y-auto flex-1 overscroll-contain">
                 {/* 1. ROYAL DUM ALOO SELECTION */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-zinc-900 flex items-center gap-1.5">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-zinc-950 text-[11px] font-extrabold shadow-sm">
+                      <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-zinc-950 text-[10px] font-extrabold shadow-xs">
                         1
                       </span>
                       <span>Royal Dum Aloo Selection</span>
                     </label>
-                    <span className="text-[10px] font-bold text-emerald-800 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-300 shadow-xs">
-                      100% FREE ($0.00)
-                    </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     {/* With Aloo */}
                     <button
                       type="button"
                       onClick={() => setModalAloo(true)}
-                      className={`relative p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      className={`relative p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                         modalAloo
-                          ? "bg-gradient-to-br from-amber-50 to-orange-50/60 border-amber-500 ring-2 ring-amber-400/60 shadow-sm"
-                          : "bg-white border-zinc-200/90 text-zinc-600 hover:border-amber-300 hover:bg-zinc-50"
+                          ? "bg-amber-50/90 border-amber-500 ring-1 ring-amber-400 shadow-xs"
+                          : "bg-white border-zinc-200 text-zinc-600 hover:border-amber-300 hover:bg-zinc-50"
                       }`}
                     >
                       <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-zinc-900 flex items-center gap-1">
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <span className="text-[11px] sm:text-xs font-bold text-zinc-900 flex items-center gap-1 truncate">
                             <span>🥔</span>
                             <span>With Royal Aloo</span>
                           </span>
                           {modalAloo && (
-                            <div className="h-4 w-4 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center">
-                              <Check className="h-3 w-3 stroke-[3]" />
+                            <div className="h-3.5 w-3.5 shrink-0 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center">
+                              <Check className="h-2.5 w-2.5 stroke-[3]" />
                             </div>
                           )}
                         </div>
-                        <p className="text-[10px] text-zinc-500 leading-snug">
-                          Tender slow-dum saffron baby potato
+                        <p className="text-[9.5px] text-zinc-500 leading-snug">
+                          Tender slow-dum baby potato
                         </p>
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-700 mt-2 bg-emerald-50/80 px-1.5 py-0.5 rounded self-start border border-emerald-200">
+                      <span className="text-[9px] sm:text-[9.5px] font-bold text-emerald-800 mt-1.5 bg-emerald-50 px-1.5 py-0.5 rounded self-start border border-emerald-200">
                         FREE ($0.00) Included
                       </span>
                     </button>
@@ -1872,29 +1914,29 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                     <button
                       type="button"
                       onClick={() => setModalAloo(false)}
-                      className={`relative p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      className={`relative p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                         !modalAloo
-                          ? "bg-gradient-to-br from-amber-50 to-orange-50/60 border-amber-500 ring-2 ring-amber-400/60 shadow-sm"
-                          : "bg-white border-zinc-200/90 text-zinc-600 hover:border-amber-300 hover:bg-zinc-50"
+                          ? "bg-amber-50/90 border-amber-500 ring-1 ring-amber-400 shadow-xs"
+                          : "bg-white border-zinc-200 text-zinc-600 hover:border-amber-300 hover:bg-zinc-50"
                       }`}
                     >
                       <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-zinc-900 flex items-center gap-1">
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <span className="text-[11px] sm:text-xs font-bold text-zinc-900 flex items-center gap-1 truncate">
                             <span>🍚</span>
                             <span>Without Aloo</span>
                           </span>
                           {!modalAloo && (
-                            <div className="h-4 w-4 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center">
-                              <Check className="h-3 w-3 stroke-[3]" />
+                            <div className="h-3.5 w-3.5 shrink-0 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center">
+                              <Check className="h-2.5 w-2.5 stroke-[3]" />
                             </div>
                           )}
                         </div>
-                        <p className="text-[10px] text-zinc-500 leading-snug">
-                          Pure tender marinated meat & basmati rice only
+                        <p className="text-[9.5px] text-zinc-500 leading-snug">
+                          Pure meat & basmati rice only
                         </p>
                       </div>
-                      <span className="text-[10px] font-medium text-zinc-500 mt-2 self-start">
+                      <span className="text-[9px] sm:text-[9.5px] font-medium text-zinc-500 mt-1.5 bg-zinc-100 px-1.5 py-0.5 rounded self-start">
                         Standard Portion
                       </span>
                     </button>
@@ -1902,47 +1944,47 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                 </div>
 
                 {/* 2. DUM SPICE LEVEL */}
-                <div className="space-y-2 pt-2 border-t border-zinc-100">
+                <div className="space-y-1.5 pt-2 border-t border-zinc-100">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-zinc-900 flex items-center gap-1.5">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-zinc-950 text-[11px] font-extrabold shadow-sm">
+                      <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-zinc-950 text-[10px] font-extrabold shadow-xs">
                         2
                       </span>
                       <span>Choose Dum Spice Level</span>
                     </label>
-                    <span className="text-[10px] font-semibold text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded-full">
+                    <span className="text-[9.5px] font-semibold text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded-full">
                       Custom Dum Heat
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     {/* Option 1: Authentic Spicy */}
                     <button
                       type="button"
                       onClick={() => setModalExtraSpicy(true)}
-                      className={`relative p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      className={`relative p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                         modalExtraSpicy
-                          ? "bg-gradient-to-br from-rose-50 to-amber-50/60 border-rose-500 ring-2 ring-rose-400/60 shadow-sm"
-                          : "bg-white border-zinc-200/90 text-zinc-600 hover:border-rose-300 hover:bg-zinc-50"
+                          ? "bg-rose-50/90 border-rose-500 ring-1 ring-rose-400 shadow-xs"
+                          : "bg-white border-zinc-200 text-zinc-600 hover:border-rose-300 hover:bg-zinc-50"
                       }`}
                     >
                       <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-zinc-900 flex items-center gap-1">
-                            <Flame className="h-3.5 w-3.5 text-rose-600" />
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <span className="text-[11px] sm:text-xs font-bold text-zinc-900 flex items-center gap-1 truncate">
+                            <Flame className="h-3.5 w-3.5 text-rose-600 shrink-0" />
                             <span>Authentic Spicy</span>
                           </span>
                           {modalExtraSpicy && (
-                            <div className="h-4 w-4 rounded-full bg-rose-600 text-white flex items-center justify-center">
-                              <Check className="h-3 w-3 stroke-[3]" />
+                            <div className="h-3.5 w-3.5 shrink-0 rounded-full bg-rose-600 text-white flex items-center justify-center">
+                              <Check className="h-2.5 w-2.5 stroke-[3]" />
                             </div>
                           )}
                         </div>
-                        <p className="text-[10px] text-zinc-500 leading-snug">
-                          Hyderabadi kick with Guntur chillies & black pepper
+                        <p className="text-[9.5px] text-zinc-500 leading-snug">
+                          Hyderabadi dum spice
                         </p>
                       </div>
-                      <span className="text-[10px] font-bold text-rose-700 mt-2 bg-rose-100/80 px-1.5 py-0.5 rounded self-start border border-rose-200">
+                      <span className="text-[9px] sm:text-[9.5px] font-bold text-rose-700 mt-1.5 bg-rose-100/80 px-1.5 py-0.5 rounded self-start border border-rose-200">
                         Chef Recommended 🔥
                       </span>
                     </button>
@@ -1951,29 +1993,29 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                     <button
                       type="button"
                       onClick={() => setModalExtraSpicy(false)}
-                      className={`relative p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      className={`relative p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                         !modalExtraSpicy
-                          ? "bg-gradient-to-br from-emerald-50 to-teal-50/60 border-emerald-500 ring-2 ring-emerald-400/60 shadow-sm"
-                          : "bg-white border-zinc-200/90 text-zinc-600 hover:border-emerald-300 hover:bg-zinc-50"
+                          ? "bg-emerald-50/90 border-emerald-500 ring-1 ring-emerald-400 shadow-xs"
+                          : "bg-white border-zinc-200 text-zinc-600 hover:border-emerald-300 hover:bg-zinc-50"
                       }`}
                     >
                       <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-zinc-900 flex items-center gap-1">
-                            <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <span className="text-[11px] sm:text-xs font-bold text-zinc-900 flex items-center gap-1 truncate">
+                            <Sparkles className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                             <span>Royal Mild</span>
                           </span>
                           {!modalExtraSpicy && (
-                            <div className="h-4 w-4 rounded-full bg-emerald-600 text-white flex items-center justify-center">
-                              <Check className="h-3 w-3 stroke-[3]" />
+                            <div className="h-3.5 w-3.5 shrink-0 rounded-full bg-emerald-600 text-white flex items-center justify-center">
+                              <Check className="h-2.5 w-2.5 stroke-[3]" />
                             </div>
                           )}
                         </div>
-                        <p className="text-[10px] text-zinc-500 leading-snug">
-                          Gentle saffron & cardamom aromatics (Kid-friendly)
+                        <p className="text-[9.5px] text-zinc-500 leading-snug">
+                          Gentle saffron & cardamom
                         </p>
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-700 mt-2 bg-emerald-100/80 px-1.5 py-0.5 rounded self-start border border-emerald-200">
+                      <span className="text-[9px] sm:text-[9.5px] font-bold text-emerald-800 mt-1.5 bg-emerald-100/80 px-1.5 py-0.5 rounded self-start border border-emerald-200">
                         Mellow Aroma 🌿
                       </span>
                     </button>
@@ -1981,36 +2023,36 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                 </div>
 
                 {/* 3. QUANTITY & CHEF SPECIAL NOTES */}
-                <div className="space-y-3 pt-2 border-t border-zinc-100">
+                <div className="space-y-2 pt-2 border-t border-zinc-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <label className="text-xs font-bold text-zinc-900 block">Number of Handi Trays</label>
                       <span className="text-[10px] text-zinc-500 font-normal">Each tray serves 4–5 adults</span>
                     </div>
-                    <div className="flex items-center rounded-xl border border-amber-300 bg-amber-50/70 p-0.5 shadow-sm">
+                    <div className="flex items-center rounded-xl border border-amber-300 bg-amber-50/70 p-0.5 shadow-xs">
                       <button
                         type="button"
                         onClick={() => setModalQty(Math.max(1, modalQty - 1))}
                         disabled={modalQty <= 1}
-                        className="h-8 w-8 flex items-center justify-center text-zinc-700 hover:text-zinc-950 hover:bg-white rounded-lg transition-colors active:scale-95 disabled:opacity-40 cursor-pointer"
+                        className="h-7 w-7 flex items-center justify-center text-zinc-700 hover:text-zinc-950 hover:bg-white rounded-lg transition-colors active:scale-95 disabled:opacity-30 cursor-pointer"
                       >
-                        <Minus className="h-3.5 w-3.5" />
+                        <Minus className="h-3 w-3" />
                       </button>
-                      <span className="w-8 text-center text-xs font-extrabold text-amber-900 font-mono">
+                      <span className="w-7 text-center text-xs font-extrabold text-amber-950 font-mono">
                         {modalQty}
                       </span>
                       <button
                         type="button"
                         onClick={() => setModalQty(modalQty + 1)}
-                        className="h-8 w-8 flex items-center justify-center text-amber-800 hover:text-amber-950 hover:bg-white rounded-lg transition-colors active:scale-95 cursor-pointer"
+                        className="h-7 w-7 flex items-center justify-center text-amber-900 hover:text-amber-950 hover:bg-white rounded-lg transition-colors active:scale-95 cursor-pointer"
                       >
-                        <Plus className="h-3.5 w-3.5" />
+                        <Plus className="h-3 w-3" />
                       </button>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-700 mb-1">
+                    <label className="block text-[10px] font-medium text-zinc-700 mb-1">
                       Chef Kitchen Note (Optional)
                     </label>
                     <input
@@ -2018,26 +2060,26 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                       value={modalNotes}
                       onChange={(e) => setModalNotes(e.target.value)}
                       placeholder="e.g. Extra raita on side, less oil..."
-                      className="w-full rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
+                      className="w-full rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-1.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Modal Sticky Bottom CTA */}
-              <div className="p-4 sm:p-5 border-t border-zinc-100 bg-zinc-50/70">
+              <div className="p-3 sm:p-4 border-t border-zinc-200/80 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.05)] shrink-0">
                 <button
                   type="button"
                   onClick={handleAddFromModal}
-                  className="w-full rounded-2xl bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:brightness-105 active:scale-[0.98] text-zinc-950 font-bold py-3.5 px-4 text-xs sm:text-sm shadow-md shadow-amber-900/10 flex items-center justify-between transition-all cursor-pointer border border-amber-400/50"
+                  className="w-full rounded-xl bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:brightness-105 active:scale-[0.98] text-zinc-950 font-bold py-2.5 sm:py-3 px-3.5 text-xs sm:text-sm shadow-md shadow-amber-900/10 flex items-center justify-between transition-all cursor-pointer border border-amber-400/50"
                 >
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1.5 font-bold">
                     <Plus className="h-4 w-4" />
                     <span>
-                      Add {modalQty} {modalQty > 1 ? "Trays" : "Tray"} to Handi Order
+                      Add {modalQty} {modalQty > 1 ? "Trays" : "Tray"} to Order
                     </span>
                   </span>
-                  <span className="font-mono text-sm font-extrabold bg-zinc-950 text-amber-300 px-2.5 py-0.5 rounded-xl">
+                  <span className="font-mono text-xs sm:text-sm font-extrabold bg-zinc-950 text-amber-300 px-2.5 py-1 rounded-lg">
                     {formatMoney(
                       (modalAloo && currentAlooFee > 0
                         ? (selectedDishModal.priceWithAloo || selectedDishModal.price + currentAlooFee)
@@ -2058,7 +2100,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
         <DialogContent className="max-w-sm sm:max-w-md rounded-2xl bg-white border border-zinc-200 text-zinc-900 p-4 sm:p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold text-zinc-900">
-              JAKLOUD Kitchen Outlet
+              JAKloud Kitchen Outlet
             </DialogTitle>
             <DialogDescription className="text-xs text-zinc-500 font-normal">
               Springfield, MO Artisanal Kitchen
@@ -2096,6 +2138,107 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
               className="w-full rounded-xl bg-amber-500 text-zinc-950 font-bold py-2.5 text-xs hover:bg-amber-600 transition-all cursor-pointer shadow-sm"
             >
               Confirm Outlet
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* ========================================================================= */}
+      {/* 5. HOW MANY TRAYS DO YOU NEED? POPUP MODAL                                */}
+      {/* ========================================================================= */}
+      <Dialog open={traySelectorOpen} onOpenChange={setTraySelectorOpen}>
+        <DialogContent
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          className="max-w-md w-[92vw] sm:w-full rounded-3xl bg-white border border-amber-200/90 text-zinc-900 p-0 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col [&>button:last-child]:hidden"
+        >
+          {/* Header (No Close Button) */}
+          <div className="relative bg-gradient-to-br from-amber-500/15 via-amber-50 to-orange-50/50 p-5 border-b border-amber-200/80">
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-zinc-950 flex items-center justify-center text-xl shadow-md shrink-0">
+                🥘
+              </div>
+              <div className="min-w-0 flex-1">
+                <DialogTitle className="text-base sm:text-lg font-bold text-zinc-900 font-display">
+                  How Many Trays Do You Need?
+                </DialogTitle>
+                <DialogDescription className="text-xs text-zinc-500 mt-0.5">
+                  Select your tray count to proceed to biryani selection
+                </DialogDescription>
+              </div>
+            </div>
+          </div>
+
+          {/* Tray Preset Options - Clicking directly proceeds to Next Page */}
+          <div className="p-4 sm:p-5 space-y-2.5 overflow-y-auto flex-1">
+            {[
+              { qty: 1, name: "1 Tray" },
+              { qty: 2, name: "2 Trays" },
+              { qty: 3, name: "3 Trays" },
+              { qty: 4, name: "4 Trays" },
+              { qty: 5, name: "5+ Trays" },
+            ].map((tier) => (
+              <div
+                key={tier.qty}
+                onClick={() => handleConfirmTraySelection(tier.qty)}
+                className="w-full text-left p-3.5 rounded-2xl border border-zinc-200/90 hover:border-amber-500 hover:bg-amber-50/80 shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99] group"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="h-10 w-10 rounded-xl bg-amber-500 text-zinc-950 group-hover:brightness-105 flex items-center justify-center font-bold text-base shadow-xs shrink-0 transition-all">
+                    {tier.qty}
+                  </div>
+                  <span className="text-sm sm:text-base font-bold text-zinc-900 group-hover:text-amber-900 font-display transition-colors">
+                    {tier.name}
+                  </span>
+                </div>
+
+                <div className="shrink-0 flex items-center gap-1 text-xs font-bold text-amber-800 bg-amber-100/80 group-hover:bg-amber-500 group-hover:text-zinc-950 rounded-xl px-3 py-1.5 transition-all shadow-xs">
+                  <span>Select</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </div>
+              </div>
+            ))}
+
+            {/* Custom Quantity Stepper */}
+            <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-3.5 flex items-center justify-between mt-3">
+              <span className="text-xs sm:text-sm font-bold text-zinc-900">Custom Count</span>
+              <div className="flex items-center rounded-xl border border-amber-300 bg-white p-0.5 shadow-xs">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTempTrayQty(Math.max(1, tempTrayQty - 1));
+                  }}
+                  disabled={tempTrayQty <= 1}
+                  className="h-8 w-8 flex items-center justify-center text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 rounded-lg transition-colors disabled:opacity-40 cursor-pointer"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+                <span className="w-8 text-center text-xs sm:text-sm font-mono font-extrabold text-amber-900">
+                  {tempTrayQty}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTempTrayQty(tempTrayQty + 1);
+                  }}
+                  className="h-8 w-8 flex items-center justify-center text-amber-800 hover:text-amber-950 hover:bg-zinc-100 rounded-lg transition-colors cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Confirm Custom Quantity CTA */}
+          <div className="p-4 sm:p-5 border-t border-zinc-100 bg-zinc-50/80">
+            <button
+              type="button"
+              onClick={() => handleConfirmTraySelection(tempTrayQty)}
+              className="w-full rounded-2xl bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:brightness-105 active:scale-[0.98] text-zinc-950 font-bold py-3.5 px-4 text-xs sm:text-sm shadow-md shadow-amber-900/10 flex items-center justify-center gap-2 cursor-pointer transition-all border border-amber-400/50"
+            >
+              <span>Continue with {tempTrayQty} {tempTrayQty === 1 ? "Tray" : "Trays"}</span>
+              <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </DialogContent>

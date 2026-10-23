@@ -32,13 +32,13 @@ import { MobileAppView } from "@/components/mobile-app-view";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "JAKLOUD – Spice King Dum Biryani | Made To Order Handi Trays" },
+      { title: "JAKloud – J Paradize Dum Biryani | Made To Order Handi Trays" },
       {
         name: "description",
         content:
           "Springfield's authentic slow-cooked royal Dum Pukht biryani handi trays made to order. 100% Zabiha Halal chicken, mutton, beef or pork. Limited to 25 handi trays daily.",
       },
-      { property: "og:title", content: "JAKLOUD – Spice King Dum Biryani (Made To Order)" },
+      { property: "og:title", content: "JAKloud – J Paradize Dum Biryani (Made To Order)" },
       {
         property: "og:description",
         content: "Authentic royal dum biryani handi trays serving 4–5 adults. Made fresh to order in Springfield, Missouri.",
@@ -53,7 +53,7 @@ function HomePage() {
   const nextDate = formatDate(nextAvailableDate());
 
   const whatsappUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
-    "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKLOUD.",
+    "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKloud.",
   )}`;
 
   const reviews = [
@@ -74,7 +74,7 @@ function HomePage() {
     {
       name: "Marcus Vance",
       role: "Executive Catering Host",
-      text: "JAKLOUD’s made-to-order concept is a game changer. Knowing it was slow-cooked specifically for our family gathering rather than sitting in a buffet makes a massive difference in quality.",
+      text: "JAKloud’s made-to-order concept is a game changer. Knowing it was slow-cooked specifically for our family gathering rather than sitting in a buffet makes a massive difference in quality.",
       rating: 5,
       dish: "Royal Feast Trays",
     },
@@ -333,7 +333,7 @@ function HomePage() {
             <span>Uncompromising Quality Standard</span>
           </div>
           <h2 className="font-display text-2xl sm:text-3xl font-semibold text-zinc-900">
-            The Pillars of JAKLOUD Dum Pukht
+            The Pillars of JAKloud Dum Pukht
           </h2>
           <p className="text-xs sm:text-sm text-zinc-600 font-normal leading-relaxed">
             Every handi tray is crafted in Springfield with centuries-old Nizami culinary techniques, pristine

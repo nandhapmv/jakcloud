@@ -41,6 +41,8 @@ import dumHandiImg from "@/assets/dum-handi.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/lib/cart";
+import { useKitchenSettings } from "@/lib/store";
+import { MobileAppView } from "@/components/mobile-app-view";
 import {
   BUSINESS,
   DELIVERY_FEE,
@@ -54,13 +56,13 @@ import {
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Your Handi Cart — JAKLOUD Spice King Dum Biryani" },
+      { title: "Your Handi Cart — JAKloud J Paradize Dum Biryani" },
       {
         name: "description",
         content:
           "Review your handcrafted Dum Biryani Handi order. Customize tray quantities, add promo codes, and proceed to Springfield pickup or delivery checkout.",
       },
-      { property: "og:title", content: "Handi Cart — JAKLOUD Dum Biryani" },
+      { property: "og:title", content: "Handi Cart — JAKloud Dum Biryani" },
       { property: "og:description", content: "Review your royal Dum Biryani order before checkout." },
       { property: "og:image", content: "/logo.png" },
     ],
@@ -78,6 +80,7 @@ const DISH_IMAGES: Record<string, string> = {
 };
 
 const VALID_PROMOS: Record<string, { discountPercent: number; discountFixed: number; label: string }> = {
+  JPARADIZE: { discountPercent: 10, discountFixed: 0, label: "10% Royal Welcome Discount" },
   SPICEKING: { discountPercent: 10, discountFixed: 0, label: "10% Royal Welcome Discount" },
   ROYAL10: { discountPercent: 10, discountFixed: 0, label: "10% Off Royal Dum Feasts" },
   HALALFEAST: { discountPercent: 0, discountFixed: 15, label: "$15 Off Halal Family Order" },
@@ -86,8 +89,12 @@ const VALID_PROMOS: Record<string, { discountPercent: number; discountFixed: num
 
 export function CartPage() {
   const { lines, setQty, removeLine, clear, subtotal, count, addLine } = useCart();
+  const { settings } = useKitchenSettings();
   const navigate = useNavigate();
   const nextDate = formatDate(nextAvailableDate());
+
+  const configuredDeliveryFee = settings?.deliveryFee !== undefined ? Number(settings.deliveryFee) : DELIVERY_FEE;
+  const freeThreshold = settings?.freeDeliveryTrayThreshold !== undefined ? Number(settings.freeDeliveryTrayThreshold) : 5;
 
   // Fulfilment Choice
   const [fulfilmentType, setFulfilmentType] = useState<"pickup" | "delivery">("pickup");
@@ -133,7 +140,7 @@ export function CartPage() {
 
     const discountedSubtotal = Math.max(0, subtotal - discountAmount);
     const tax = 0;
-    const deliveryCost = fulfilmentType === "delivery" ? (count >= 5 ? 0 : DELIVERY_FEE) : 0;
+    const deliveryCost = fulfilmentType === "delivery" ? (count >= freeThreshold ? 0 : configuredDeliveryFee) : 0;
     const grandTotal = discountedSubtotal + deliveryCost;
 
     return {
@@ -144,10 +151,10 @@ export function CartPage() {
       deliveryCost,
       grandTotal,
     };
-  }, [subtotal, appliedPromo, fulfilmentType, count]);
+  }, [subtotal, appliedPromo, fulfilmentType, count, freeThreshold, configuredDeliveryFee]);
 
   const whatsappCheckoutUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
-    `Hello Master Chef Kartheek! I would like to place my JAKLOUD order:\n\n` +
+    `Hello Master Chef Kartheek! I would like to place my JAKloud order:\n\n` +
       lines.map((l) => `• ${l.qty}x ${l.name} (${l.aloo ? "+Aloo" : "Plain"}${l.extraSpicy ? ", Extra Spicy" : ""}) - $${(l.unitPrice * l.qty).toFixed(2)}`).join("\n") +
       `\n\nFulfilment: ${fulfilmentType.toUpperCase()}\nDate: ${nextDate}\nTotal: $${calculations.grandTotal.toFixed(2)}` +
       (appliedPromo ? `\nPromo: ${appliedPromo.code}` : ""),
@@ -178,7 +185,14 @@ export function CartPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 relative overflow-hidden pb-32 sm:pb-36">
+    <>
+      {/* Mobile-First App Design (Cart Screen Active) */}
+      <div className="block lg:hidden w-full max-w-full overflow-x-hidden">
+        <MobileAppView initialTab="cart" />
+      </div>
+
+      {/* Desktop Rich Brand Experience */}
+      <div className="hidden lg:block min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 relative overflow-hidden pb-32 sm:pb-36">
       {/* ------------------------------------------------------------- */}
       {/* 1. HERO HEADER                                                */}
       {/* ------------------------------------------------------------- */}
@@ -449,7 +463,7 @@ export function CartPage() {
                     <Tag className="h-4 w-4 text-amber-600" />
                     <h3 className="text-xs sm:text-sm font-semibold text-zinc-900">Have a Promo Code?</h3>
                   </div>
-                  <span className="text-xs text-zinc-500 font-mono font-medium">Try: SPICEKING</span>
+                  <span className="text-xs text-zinc-500 font-mono font-medium">Try: JPARADIZE</span>
                 </div>
 
                 {appliedPromo ? (
@@ -524,7 +538,7 @@ export function CartPage() {
                     <div className="flex items-center gap-2">
                       <Truck className="h-4 w-4 text-amber-600" />
                       <span className="text-xs font-semibold text-zinc-900">
-                        Doorstep Delivery ({count >= 5 ? "FREE" : `$${DELIVERY_FEE}`})
+                        Doorstep Delivery ({count >= freeThreshold ? "FREE" : `$${configuredDeliveryFee.toFixed(2)}`})
                       </span>
                     </div>
                     <p className="text-[10px] text-zinc-500 mt-1 font-normal">Within 10 miles of 65809</p>
@@ -632,33 +646,12 @@ export function CartPage() {
                     <span>Call Hotline: {BUSINESS.phone}</span>
                   </a>
                 </div>
-
-                {/* Batch Guarantee Stamp */}
-                <div className="flex items-center gap-2 rounded-lg bg-zinc-50 border border-zinc-200 p-2 text-[10px] text-zinc-600 font-normal">
-                  <Shield className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                  <span>100% Zabiha Halal • Handcrafted in Springfield, MO</span>
-                </div>
               </div>
             </div>
           </div>
         )}
       </main>
-
-      {/* Floating Sticky Checkout Bar for Mobile Screens */}
-      {count > 0 && (
-        <div className="lg:hidden fixed bottom-4 inset-x-4 z-40 animate-in slide-in-from-bottom-5 duration-300">
-          <Button
-            onClick={() => navigate({ to: "/checkout" })}
-            className="w-full rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold text-xs sm:text-sm py-4 shadow-2xl flex items-center justify-between px-4 hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer border border-amber-300/40"
-          >
-            <span className="flex items-center gap-2">
-              <ShoppingBag className="h-4 w-4" />
-              <span>Checkout ({count} {count === 1 ? "Tray" : "Trays"})</span>
-            </span>
-            <span className="font-mono text-zinc-950 font-black">{formatMoney(calculations.grandTotal)} →</span>
-          </Button>
-        </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 }

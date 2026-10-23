@@ -23,10 +23,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
     meta: [
-      { title: "Kitchen Command Portal — JAKLOUD Spice King" },
+      { title: "Kitchen Command Portal — JAKloud J Paradize" },
       {
         name: "description",
-        content: "Secure kitchen and restaurant management portal for JAKLOUD Spice King Dum Biryani.",
+        content: "Secure kitchen and restaurant management portal for JAKloud J Paradize Dum Biryani.",
       },
     ],
   }),
@@ -72,7 +72,7 @@ function AdminLoginPage() {
 
   const handleQuickFill = () => {
     setEmail("admin@jakloud.com");
-    setPassword("spiceking2026");
+    setPassword("jparadize2026");
     toast.info("Master Chef credentials autofilled.");
   };
 
@@ -106,7 +106,7 @@ function AdminLoginPage() {
               <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-gold via-saffron to-amber-600 opacity-40 blur-md animate-pulse" />
               <img
                 src={logoImg}
-                alt="JAKLOUD Spice King Heritage Seal"
+                alt="JAKloud J Paradize Heritage Seal"
                 className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-full border-2 border-gold/60 bg-black p-0.5 object-cover mx-auto shadow-xl"
                 width={80}
                 height={80}
@@ -115,7 +115,7 @@ function AdminLoginPage() {
 
             <div className="mt-4 flex items-center justify-center gap-1.5 text-[0.68rem] font-bold uppercase tracking-widest text-gold">
               <Flame className="h-3.5 w-3.5 text-saffron fill-saffron/20" />
-              <span>JAKLOUD · ROYAL SPICE KING</span>
+              <span>JAKloud · J PARADIZE</span>
             </div>
 
             <h1 className="mt-1.5 font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-cream">

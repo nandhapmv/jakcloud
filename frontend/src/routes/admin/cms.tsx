@@ -63,7 +63,7 @@ import {
 export const Route = createFileRoute("/admin/cms")({
   head: () => ({
     meta: [
-      { title: "Website Content Management (CMS) — JAKLOUD Spice King" },
+      { title: "Website Content Management (CMS) — JAKloud J Paradize" },
       {
         name: "description",
         content: "Manage Hero banner, about section, gallery images, contacts, WhatsApp, QR codes, social links and footer.",
@@ -93,8 +93,8 @@ function CmsManagementPage() {
 
   // 1. Hero Banner State with localStorage persistence
   const [heroHeadline, setHeroHeadline] = useState(() => {
-    if (typeof window !== "undefined") return localStorage.getItem("jakloud_cms_headline") || "JAKLOUD – Spice King Dum Biryani";
-    return "JAKLOUD – Spice King Dum Biryani";
+    if (typeof window !== "undefined") return localStorage.getItem("jakloud_cms_headline") || "JAKloud – J Paradize Dum Biryani";
+    return "JAKloud – J Paradize Dum Biryani";
   });
   const [heroTagline, setHeroTagline] = useState(() => {
     if (typeof window !== "undefined") return localStorage.getItem("jakloud_cms_tagline") || "Springfield's authentic slow-cooked Dum Biryani Handi trays. Prepared with saffron aged basmati, whole spices, and sealed with traditional dough.";
@@ -110,7 +110,7 @@ function CmsManagementPage() {
   // 2. About Section State
   const [aboutTitle, setAboutTitle] = useState("The Royal Craft of Slow Dum Cooking");
   const [aboutStory, setAboutStory] = useState(
-    "At JAKLOUD, Master Chef Kartheek honors the centuries-old Nizami tradition of Dum Pukht. Every single handi is slow-cooked over low flame for 4 hours with fragrant basmati, pure desi ghee, and house-ground spice blends.",
+    "At JAKloud, Master Chef Kartheek honors the centuries-old Nizami tradition of Dum Pukht. Every single handi is slow-cooked over low flame for 4 hours with fragrant basmati, pure desi ghee, and house-ground spice blends.",
   );
   const [aboutImage, setAboutImage] = useState(dumHandiImg);
   const [aboutMetric1Label, setAboutMetric1Label] = useState("Daily Capacity Limit");
@@ -162,16 +162,16 @@ function CmsManagementPage() {
 
   // 6. Social Media Links State
   const [instagram, setInstagram] = useState("https://instagram.com/jakloud_biryani");
-  const [facebook, setFacebook] = useState("https://facebook.com/jakloudspiceking");
-  const [youtube, setYoutube] = useState("https://youtube.com/@jakloudspiceking");
+  const [facebook, setFacebook] = useState("https://facebook.com/jakloudjparadize");
+  const [youtube, setYoutube] = useState("https://youtube.com/@jakloudjparadize");
   const [tiktok, setTiktok] = useState("https://tiktok.com/@jakloud_dum");
 
   // 7. Footer Content State
   const [footerTagline, setFooterTagline] = useState(
-    "JAKLOUD — Authentic slow-cooked Dum Biryani handi trays in Springfield, Missouri. Made fresh daily in limited batches.",
+    "JAKloud — Authentic slow-cooked Dum Biryani handi trays in Springfield, Missouri. Made fresh daily in limited batches.",
   );
   const [footerCopyright, setFooterCopyright] = useState(
-    "© 2026 JAKLOUD – Spice King Dum Biryani. All rights reserved.",
+    "© 2026 JAKloud – J Paradize Dum Biryani. All rights reserved.",
   );
   const [footerDisclaimer, setFooterDisclaimer] = useState(
     "Halal Certified Poultry & Meats. Dedicated separate vessels strictly maintained for special cuts.",
@@ -231,12 +231,12 @@ function CmsManagementPage() {
           <Link to="/admin" className="flex items-center gap-3">
             <img
               src={logoImg}
-              alt="JAKLOUD"
+              alt="JAKloud"
               className="h-10 w-10 rounded-full border border-gold/50 bg-cream p-0.5 object-cover"
             />
             <div>
               <span className="font-display text-lg font-bold tracking-wider text-cream">
-                JAKLOUD
+                JAKloud
               </span>
               <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold">
                 Website Content Management (CMS)
@@ -717,7 +717,7 @@ function CmsManagementPage() {
                       <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border-4 border-gold shadow-2xl shrink-0">
                         <QrCode className="h-28 w-28 text-black" />
                         <span className="text-[0.6rem] font-bold text-black uppercase tracking-widest mt-1">
-                          JAKLOUD DUM
+                          JAKloud DUM
                         </span>
                       </div>
 

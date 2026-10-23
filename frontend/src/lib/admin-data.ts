@@ -822,7 +822,7 @@ export const MOCK_CUSTOMERS: CustomerRecord[] = [
     avatarText: "text-rose-300",
     spicePreference: "Extra Spicy Royal",
     dietaryNotes: "Extra mirchi salan & fried mint leaves",
-    adminNotes: "Discovered JAKLOUD through Instagram reels.",
+    adminNotes: "Discovered JAKloud through Instagram reels.",
     address: "1830 E Battlefield Rd",
     city: "Springfield",
     zipCode: "65804",

@@ -29,18 +29,19 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/lib/cart";
+import { useKitchenSettings } from "@/lib/store";
 import { BUSINESS, formatDate, nextAvailableDate, formatMoney, ALOO_CHARGE, type ProteinId } from "@/lib/menu";
 
 export const Route = createFileRoute("/trays")({
   head: () => ({
     meta: [
-      { title: "Tray Selection & Catering — JAKLOUD Spice King Dum Biryani" },
+      { title: "Tray Selection & Catering — JAKloud J Paradize Dum Biryani" },
       {
         name: "description",
         content:
           "Select handcrafted Dum Biryani Handi Trays made to order in Springfield, MO. 1 Tray, 2 Trays, 3 Trays, Family Feast, and Mega Party Trays with generous portions.",
       },
-      { property: "og:title", content: "Royal Tray Selection — JAKLOUD Dum Biryani" },
+      { property: "og:title", content: "Royal Tray Selection — JAKloud Dum Biryani" },
       { property: "og:description", content: "Choose your Dum Biryani handi tray size for Springfield pickup or delivery." },
       { property: "og:image", content: "/logo.png" },
     ],
@@ -157,8 +158,12 @@ const PROTEIN_OPTIONS: { id: ProteinId; name: string; extraPrice: number; halal:
 
 export function TraySelectionPage() {
   const { addLine } = useCart();
+  const { settings } = useKitchenSettings();
   const navigate = useNavigate();
   const nextDate = formatDate(nextAvailableDate());
+
+  const configuredDeliveryFee = settings?.deliveryFee !== undefined ? Number(settings.deliveryFee) : 10;
+  const freeThreshold = settings?.freeDeliveryTrayThreshold !== undefined ? Number(settings.freeDeliveryTrayThreshold) : 5;
 
   const [selectedTierId, setSelectedTierId] = useState<string>("3-trays");
   const selectedTier = useMemo(
@@ -189,7 +194,7 @@ export function TraySelectionPage() {
     const addonSalan = extraSalan ? 4.99 : 0;
     const addonRaita = extraRaita ? 3.99 : 0;
     const addonDessert = extraDessert ? 6.99 * selectedTier.qty : 0;
-    const deliveryCost = orderType === "delivery" ? (selectedTier.qty >= 5 ? 0 : 10) : 0;
+    const deliveryCost = orderType === "delivery" ? (selectedTier.qty >= freeThreshold ? 0 : configuredDeliveryFee) : 0;
 
     const subtotal =
       base + proteinUpgrade + alooCost + addonCashews + addonSalan + addonRaita + addonDessert;

@@ -43,13 +43,13 @@ import { useDynamicMenu } from "@/lib/store";
 export const Route = createFileRoute("/customize")({
   head: () => ({
     meta: [
-      { title: "Customize Your Order — JAKLOUD Spice King Dum Biryani" },
+      { title: "Customize Your Order — JAKloud J Paradize Dum Biryani" },
       {
         name: "description",
         content:
           "Customize your handcrafted Dum Biryani Handi tray. Select proteins, baby aloo, spice levels, gourmet add-ons, and delivery notes.",
       },
-      { property: "og:title", content: "Customize Handi Order — JAKLOUD Dum Biryani" },
+      { property: "og:title", content: "Customize Handi Order — JAKloud Dum Biryani" },
       {
         property: "og:description",
         content: "Build your perfect royal Dum Biryani feast made to order in Springfield, MO.",

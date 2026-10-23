@@ -108,10 +108,10 @@ type NavSection =
 export const Route = createFileRoute("/admin/")({
   head: () => ({
     meta: [
-      { title: "Restaurant Command & Analytics — JAKLOUD Spice King" },
+      { title: "Restaurant Command & Analytics — JAKloud J Paradize" },
       {
         name: "description",
-        content: "Executive restaurant management dashboard for JAKLOUD Spice King Dum Biryani.",
+        content: "Executive restaurant management dashboard for JAKloud J Paradize Dum Biryani.",
       },
     ],
   }),
@@ -152,11 +152,13 @@ function AdminOverviewPage() {
   const [dailyLimitInput, setDailyLimitInput] = useState<number>(settings.dailyTrayLimit || 25);
   const [kitchenOpenInput, setKitchenOpenInput] = useState<boolean>(settings.isKitchenOpen);
   const [cutoffHourInput, setCutoffHourInput] = useState<number>(settings.orderCutoffHour || 15);
+  const [deliveryFeeInput, setDeliveryFeeInput] = useState<number>(settings.deliveryFee !== undefined ? Number(settings.deliveryFee) : 10);
 
   useEffect(() => {
     if (settings.dailyTrayLimit) setDailyLimitInput(settings.dailyTrayLimit);
     setKitchenOpenInput(settings.isKitchenOpen);
     if (settings.orderCutoffHour) setCutoffHourInput(settings.orderCutoffHour);
+    if (settings.deliveryFee !== undefined) setDeliveryFeeInput(Number(settings.deliveryFee));
   }, [settings]);
 
   // Dashboard Overview Date-wise Filter State
@@ -627,7 +629,7 @@ function AdminOverviewPage() {
         <div className="text-center space-y-3">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-gold border-t-transparent" />
           <p className="font-display text-sm tracking-widest uppercase text-gold">
-            Loading JAKLOUD Command Center...
+            Loading JAKloud Command Center...
           </p>
         </div>
       </div>
@@ -655,17 +657,17 @@ function AdminOverviewPage() {
               <div className="absolute -inset-1 rounded-full bg-gold/30 blur-sm" />
               <img
                 src={logoImg}
-                alt="JAKLOUD Spice King"
+                alt="JAKloud J Paradize"
                 className="relative h-11 w-11 rounded-full border border-gold/60 bg-cream p-0.5 object-cover shadow-[0_0_15px_rgba(212,160,23,0.35)]"
               />
             </div>
             {!sidebarCollapsed && (
               <div className="min-w-0 animate-in fade-in-50">
                 <span className="font-sans text-base font-bold tracking-wider text-cream truncate block leading-tight">
-                  JAKLOUD
+                  JAKloud
                 </span>
                 <span className="block text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-gold truncate">
-                  Spice King · Admin
+                  J Paradize · Admin
                 </span>
               </div>
             )}
@@ -2708,6 +2710,67 @@ function AdminOverviewPage() {
                     />
                   </div>
 
+                  <div className="space-y-2 border-t border-gold/15 pt-4">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="admin-delivery-fee" className="text-xs text-gold font-semibold">
+                        Delivery Charge ($)
+                      </Label>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold border ${
+                          deliveryFeeInput === 0
+                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                            : "bg-amber-500/20 text-amber-400 border-amber-500/40"
+                        }`}
+                      >
+                        {deliveryFeeInput === 0 ? "🎉 FREE ($0.00)" : `💵 $${deliveryFeeInput.toFixed(2)}`}
+                      </span>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-cream/40 font-mono text-xs">$</span>
+                      <input
+                        id="admin-delivery-fee"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={deliveryFeeInput}
+                        onChange={(e) => setDeliveryFeeInput(Math.max(0, parseFloat(e.target.value) || 0))}
+                        className="w-full h-10 rounded-xl border border-gold/25 bg-black/50 pl-7 pr-3 text-xs text-cream font-mono font-bold focus:outline-none focus:border-gold"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryFeeInput(0)}
+                        className={`px-2.5 py-1 text-[11px] rounded-lg font-bold border transition-all cursor-pointer ${
+                          deliveryFeeInput === 0
+                            ? "bg-emerald-500 text-zinc-950 border-emerald-400 shadow-sm"
+                            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                        }`}
+                      >
+                        🎉 Free ($0)
+                      </button>
+                      {[5, 10, 12, 15].map((fee) => (
+                        <button
+                          key={fee}
+                          type="button"
+                          onClick={() => setDeliveryFeeInput(fee)}
+                          className={`px-2.5 py-1 text-[11px] rounded-lg font-mono font-medium border transition-all cursor-pointer ${
+                            deliveryFeeInput === fee
+                              ? "bg-gold text-zinc-950 border-gold font-bold shadow-sm"
+                              : "border-gold/20 bg-black/40 text-cream hover:bg-gold/10"
+                          }`}
+                        >
+                          ${fee}.00
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[0.65rem] text-cream/60">
+                      Set to 0 for Free Delivery, or enter custom fee. Stored in MySQL and dynamically reflected in customer app.
+                    </p>
+                  </div>
+
                   <Button
                     onClick={async () => {
                       const hour12 = cutoffHourInput > 12 ? cutoffHourInput - 12 : cutoffHourInput === 0 ? 12 : cutoffHourInput;
@@ -2719,6 +2782,7 @@ function AdminOverviewPage() {
                         isKitchenOpen: kitchenOpenInput,
                         orderCutoffHour: cutoffHourInput,
                         orderCutoffTime: `${cutoffHourInput}:00`,
+                        deliveryFee: deliveryFeeInput,
                         strictCutoffEnforced: true,
                       };
 
@@ -2734,7 +2798,11 @@ function AdminOverviewPage() {
                         console.warn("Settings sync warning:", err);
                       }
 
-                      toast.success(`✅ Saved to MySQL Database: Daily Cutoff set to ${cutoffLabel} & limit set to ${dailyLimitInput} trays!`);
+                      toast.success(
+                        `✅ Saved to MySQL Database: Daily Cutoff set to ${cutoffLabel}, limit set to ${dailyLimitInput} trays & Delivery Fee set to ${
+                          deliveryFeeInput === 0 ? "FREE ($0.00)" : `$${deliveryFeeInput.toFixed(2)}`
+                        }!`
+                      );
                     }}
                     className="w-full bg-gradient-to-r from-chili via-saffron to-gold text-white hover:brightness-110 font-bold text-xs h-10 shadow-lg shadow-chili/30 cursor-pointer"
                   >

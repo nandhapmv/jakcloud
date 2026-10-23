@@ -126,7 +126,7 @@ export interface CustomerRecord {
   phone: string;
   totalOrders: number;
   totalSpend: number;
-  vipTier: "Standard" | "Royal Patron" | "Spice King VIP" | "Black Card";
+  vipTier: "Standard" | "Royal Patron" | "J Paradize VIP" | "Black Card";
   lastOrderDate: string;
   address?: string | undefined;
   staffNotes?: string | undefined;
@@ -982,7 +982,7 @@ export const jakloudStore = {
           const totalSpend = Math.round((c.totalSpend + order.total) * 100) / 100;
           let vipTier: CustomerRecord["vipTier"] = c.vipTier;
           if (totalSpend >= 2000 || totalOrders >= 8) vipTier = "Black Card";
-          else if (totalSpend >= 1000 || totalOrders >= 5) vipTier = "Spice King VIP";
+          else if (totalSpend >= 1000 || totalOrders >= 5) vipTier = "J Paradize VIP";
           else if (totalSpend >= 300 || totalOrders >= 2) vipTier = "Royal Patron";
 
           return {
@@ -1067,7 +1067,7 @@ export const jakloudStore = {
 
     // Limit set by admin for this specific date, or global dailyTrayLimit, fallback 10
     const dateLimit = targetKey && settings.dateLimits ? settings.dateLimits[targetKey] : undefined;
-    const limit = dateLimit !== undefined ? Number(dateLimit) : Number(settings.dailyTrayLimit) || 10;
+    const limit = dateLimit !== undefined ? Number(dateLimit) : Number(settings.dailyTrayLimit) || 25;
 
     const orders = this.getOrders();
     const matchingOrders = orders.filter((o) => {

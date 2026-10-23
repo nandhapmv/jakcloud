@@ -140,7 +140,7 @@ export const api = {
       const res = await fetch(`${API_BASE_URL}/api/health`);
       return await handleResponse<{ status: string; service: string; timestamp: string }>(res);
     } catch {
-      return { status: "ok", service: "JAKLOUD Spice King Backend", timestamp: new Date().toISOString() };
+      return { status: "ok", service: "JAKloud J Paradize Backend", timestamp: new Date().toISOString() };
     }
   },
 
@@ -157,7 +157,7 @@ export const api = {
       const cleanEmail = credentials.email.trim().toLowerCase();
       if (
         (cleanEmail === "admin@jakloud.com" || cleanEmail === "chef@jakloud.com" || cleanEmail === "sales@jakloud.com") &&
-        (credentials.password === "spiceking2026" || credentials.password === "admin" || !credentials.password)
+        (credentials.password === "jparadize2026" || credentials.password === "spiceking2026" || credentials.password === "admin" || !credentials.password)
       ) {
         return {
           message: "Login successful (Executive Master Chef Access)",
@@ -194,7 +194,7 @@ export const api = {
 
       return {
         business: {
-          name: "JAKLOUD – Spice King Dum Biryani",
+          name: "JAKloud – J Paradize Dum Biryani",
           phone: BUSINESS.phone,
           email: BUSINESS.email,
           address: BUSINESS.address,

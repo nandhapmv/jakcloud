@@ -16,7 +16,7 @@ export const config = {
     name: process.env.DB_NAME || "u573776957_Jackloud",
   },
   business: {
-    name: "JAKLOUD Spice King Dum Biryani",
+    name: "JAKloud J Paradize Dum Biryani",
     phone: "417-897-9754",
     email: "sales@jakloud.com",
     address: "3625 S Bedford Ave., Springfield, MO 65809",
