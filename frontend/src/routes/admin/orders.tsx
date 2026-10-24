@@ -32,6 +32,8 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
+  Archive,
+  Store,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,6 +43,7 @@ import {
   useDynamicOrders,
   useDynamicMenu,
   useKitchenSettings,
+  normalizeDateKey,
   type DynamicOrder,
   type OrderStatus,
   type OrderItemDetail,
@@ -48,6 +51,7 @@ import {
 import { formatMoney, BUSINESS, formatDate, nextAvailableDate } from "@/lib/menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -104,11 +108,43 @@ export function OrderManagementPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
 
-  // Search & Filters (initialized from URL search parameters if provided)
+  // Today & Tomorrow keys for capacity and queue filtering
+  const todayKey = useMemo(() => normalizeDateKey(new Date()), []);
+  const tomorrowKey = useMemo(() => {
+    const tmrw = new Date();
+    tmrw.setDate(tmrw.getDate() + 1);
+    return normalizeDateKey(tmrw);
+  }, []);
+
+  const todayDateFormatted = useMemo(() => {
+    return new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  }, []);
+
+  const tomorrowDateFormatted = useMemo(() => {
+    const tmrw = new Date();
+    tmrw.setDate(tmrw.getDate() + 1);
+    return tmrw.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  }, []);
+
+  const activeDailyLimit = useMemo(() => {
+    if (settings?.dateLimits && settings.dateLimits[todayKey]) {
+      return Number(settings.dateLimits[todayKey]);
+    }
+    return Number(settings.dailyTrayLimit) || 10;
+  }, [settings, todayKey]);
+
+  const tomorrowLimit = useMemo(() => {
+    if (settings?.dateLimits && settings.dateLimits[tomorrowKey]) {
+      return Number(settings.dateLimits[tomorrowKey]);
+    }
+    return Number(settings.dailyTrayLimit) || 10;
+  }, [settings, tomorrowKey]);
+
+  // Search & Filters (Default to "today" so past orders are kept hidden by default)
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(() => searchParams.status || "all");
   const [fulfilmentFilter, setFulfilmentFilter] = useState<string>(() => searchParams.fulfilment || "all");
-  const [dateFilter, setDateFilter] = useState<string>(() => searchParams.date || "all");
+  const [dateFilter, setDateFilter] = useState<string>(() => searchParams.date || "today");
   const [customDateInput, setCustomDateInput] = useState<string>("");
   const [selectedDishFilter, setSelectedDishFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "total" | "status">("date");
@@ -282,55 +318,40 @@ export function OrderManagementPage() {
         
         // Dish Filter
         if (selectedDishFilter !== "all") {
-          const hasDish = order.items.some((it) => it.name.trim().toLowerCase() === selectedDishFilter.toLowerCase());
-          if (!hasDish) return false;
+          const dishTarget = selectedDishFilter.toLowerCase();
+          const matchDish = order.items.some((i) => {
+            const iName = i.name.toLowerCase();
+            const iProt = (i.proteinId || "").toLowerCase();
+            return iName.includes(dishTarget) || iProt.includes(dishTarget);
+          });
+          if (!matchDish) return false;
         }
 
-        // Date Filter
+        // Date Filter (Strictly matches fulfilmentDate first, fallback createdAt)
+        const orderDateKey = normalizeDateKey(order.fulfilmentDate) || normalizeDateKey(order.createdAt);
+
         if (dateFilter === "today") {
-          const todayStr = new Date().toDateString();
-          const todayIso = new Date().toISOString().slice(0, 10);
-          const isToday =
-            order.fulfilmentDate.toLowerCase().includes("today") ||
-            order.fulfilmentDate.includes(todayIso) ||
-            new Date(order.createdAt).toDateString() === todayStr ||
-            new Date(order.createdAt).toISOString().slice(0, 10) === todayIso;
-          if (!isToday) return false;
+          if (orderDateKey !== todayKey) return false;
         } else if (dateFilter === "tomorrow") {
-          const tomorrow = new Date();
-          tomorrow.setDate(tomorrow.getDate() + 1);
-          const tomorrowStr = tomorrow.toDateString();
-          const tomorrowIso = tomorrow.toISOString().slice(0, 10);
-          const isTomorrow =
-            order.fulfilmentDate.toLowerCase().includes("tomorrow") ||
-            order.fulfilmentDate.includes(tomorrowIso) ||
-            new Date(order.createdAt).toDateString() === tomorrowStr;
-          if (!isTomorrow) return false;
+          if (orderDateKey !== tomorrowKey) return false;
+        } else if (dateFilter === "upcoming") {
+          if (orderDateKey <= todayKey) return false;
+        } else if (dateFilter === "past") {
+          const isPast = orderDateKey < todayKey || order.status === "completed" || order.status === "cancelled";
+          if (!isPast) return false;
         } else if (dateFilter === "yesterday") {
           const yesterday = new Date();
           yesterday.setDate(yesterday.getDate() - 1);
-          const yesterdayStr = yesterday.toDateString();
-          const yesterdayIso = yesterday.toISOString().slice(0, 10);
-          const isYesterday =
-            new Date(order.createdAt).toDateString() === yesterdayStr ||
-            new Date(order.createdAt).toISOString().slice(0, 10) === yesterdayIso ||
-            order.fulfilmentDate.includes(yesterdayIso);
-          if (!isYesterday) return false;
+          if (orderDateKey !== normalizeDateKey(yesterday)) return false;
         } else if (dateFilter === "last7") {
           const sevenDaysAgo = new Date();
           sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
           const orderTime = new Date(order.createdAt).getTime();
           if (orderTime < sevenDaysAgo.getTime()) return false;
         } else if (dateFilter === "custom" && customDateInput) {
-          const orderIso = new Date(order.createdAt).toISOString().slice(0, 10);
-          const orderFulfil = (order.fulfilmentDate || "").toLowerCase();
-          const matches = orderIso === customDateInput || orderFulfil.includes(customDateInput);
-          if (!matches) return false;
+          if (orderDateKey !== customDateInput) return false;
         } else if (dateFilter !== "all" && dateFilter !== "custom") {
-          const orderIso = new Date(order.createdAt).toISOString().slice(0, 10);
-          const orderFulfil = (order.fulfilmentDate || "").toLowerCase();
-          const matches = orderIso === dateFilter || orderFulfil.includes(dateFilter.toLowerCase());
-          if (!matches) return false;
+          if (orderDateKey !== dateFilter) return false;
         }
 
         if (searchQuery.trim()) {
@@ -409,8 +430,189 @@ export function OrderManagementPage() {
     return Object.values(summary).sort((a, b) => b.totalTrays - a.totalTrays);
   }, [filteredOrders]);
 
-  const totalFilteredTrays = useMemo(() => {
-    return filteredOrders.reduce((sum, o) => sum + o.items.reduce((s, it) => s + it.qty, 0), 0);
+  // Timeline stats for quick day tabs
+  const timelineStats = useMemo(() => {
+    let todayTrays = 0;
+    let todayOrdersCount = 0;
+    let tomorrowTrays = 0;
+    let tomorrowOrdersCount = 0;
+    let upcomingTrays = 0;
+    let upcomingOrdersCount = 0;
+    let pastTrays = 0;
+    let pastOrdersCount = 0;
+
+    orders.forEach((o) => {
+      const dateKey = normalizeDateKey(o.fulfilmentDate) || normalizeDateKey(o.createdAt);
+      const isPast = dateKey < todayKey || o.status === "completed" || o.status === "cancelled";
+      const qty = o.status !== "cancelled" ? (o.items || []).reduce((s, it) => s + (Number(it.qty) || 1), 0) : 0;
+
+      if (dateKey === todayKey && o.status !== "cancelled") {
+        todayTrays += qty;
+        todayOrdersCount += 1;
+      } else if (dateKey === tomorrowKey && o.status !== "cancelled") {
+        tomorrowTrays += qty;
+        tomorrowOrdersCount += 1;
+      } else if (dateKey > todayKey && o.status !== "cancelled") {
+        upcomingTrays += qty;
+        upcomingOrdersCount += 1;
+      }
+
+      if (isPast) {
+        pastTrays += qty;
+        pastOrdersCount += 1;
+      }
+    });
+
+    return {
+      todayTrays,
+      todayOrdersCount,
+      tomorrowTrays,
+      tomorrowOrdersCount,
+      upcomingTrays,
+      upcomingOrdersCount,
+      pastTrays,
+      pastOrdersCount,
+    };
+  }, [orders, todayKey, tomorrowKey]);
+
+  // Master Kitchen Preparation & Customization Board
+  const kitchenMatrix = useMemo(() => {
+    let totalTrays = 0;
+    let totalAloo = 0;
+    let totalNoAloo = 0;
+    let totalExtraSpicy = 0;
+    let totalRegularSpicy = 0;
+    let totalPickup = 0;
+    let totalDelivery = 0;
+
+    const proteins: Record<string, {
+      id: string;
+      name: string;
+      proteinId: string;
+      trays: number;
+      aloo: number;
+      noAloo: number;
+      extraSpicy: number;
+      regularSpicy: number;
+      orders: number;
+      meatRateKg: number;
+      riceRateKg: number;
+      icon: string;
+      color: string;
+      badgeColor: string;
+      desc: string;
+    }> = {
+      chicken: {
+        id: "chicken",
+        name: "Royal Chicken Dum Biryani",
+        proteinId: "chicken",
+        trays: 0,
+        aloo: 0,
+        noAloo: 0,
+        extraSpicy: 0,
+        regularSpicy: 0,
+        orders: 0,
+        meatRateKg: 1.6,
+        riceRateKg: 1.0,
+        icon: "🍗",
+        color: "border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-[#181008] to-black/60",
+        badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+        desc: "Bone-in chicken thighs",
+      },
+      mutton: {
+        id: "mutton",
+        name: "Hyderabadi Shahi Mutton Dum Biryani",
+        proteinId: "mutton",
+        trays: 0,
+        aloo: 0,
+        noAloo: 0,
+        extraSpicy: 0,
+        regularSpicy: 0,
+        orders: 0,
+        meatRateKg: 1.8,
+        riceRateKg: 1.0,
+        icon: "🐐",
+        color: "border-saffron/30 bg-gradient-to-br from-saffron/15 via-[#181008] to-black/60",
+        badgeColor: "bg-saffron/20 text-saffron border-saffron/40",
+        desc: "Halal baby goat cuts",
+      },
+      beef: {
+        id: "beef",
+        name: "Slow-Braised Spiced Beef Dum Biryani",
+        proteinId: "beef",
+        trays: 0,
+        aloo: 0,
+        noAloo: 0,
+        extraSpicy: 0,
+        regularSpicy: 0,
+        orders: 0,
+        meatRateKg: 1.7,
+        riceRateKg: 1.0,
+        icon: "🥩",
+        color: "border-rose-500/30 bg-gradient-to-br from-rose-500/15 via-[#181008] to-black/60",
+        badgeColor: "bg-rose-500/20 text-rose-300 border-rose-500/40",
+        desc: "Halal choice beef cuts",
+      },
+      pork: {
+        id: "pork",
+        name: "Ozarks Smoked Pork Dum Biryani",
+        proteinId: "pork",
+        trays: 0,
+        aloo: 0,
+        noAloo: 0,
+        extraSpicy: 0,
+        regularSpicy: 0,
+        orders: 0,
+        meatRateKg: 1.6,
+        riceRateKg: 1.0,
+        icon: "🥓",
+        color: "border-purple-500/30 bg-gradient-to-br from-purple-500/15 via-[#181008] to-black/60",
+        badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/40",
+        desc: "Isolated prep vessel",
+      },
+    };
+
+    filteredOrders.forEach((o) => {
+      if (o.status === "cancelled") return;
+      if (o.fulfilmentType === "pickup") totalPickup += 1;
+      else if (o.fulfilmentType === "delivery") totalDelivery += 1;
+
+      (o.items || []).forEach((it) => {
+        const qty = Number(it.qty) || 1;
+        totalTrays += qty;
+
+        if (it.aloo) totalAloo += qty;
+        else totalNoAloo += qty;
+
+        if (it.extraSpicy) totalExtraSpicy += qty;
+        else totalRegularSpicy += qty;
+
+        const pId = (it.proteinId || it.dishId || it.name || "").toLowerCase();
+        let targetKey: "chicken" | "mutton" | "beef" | "pork" = "chicken";
+        if (pId.includes("mutton") || pId.includes("goat")) targetKey = "mutton";
+        else if (pId.includes("beef")) targetKey = "beef";
+        else if (pId.includes("pork")) targetKey = "pork";
+
+        proteins[targetKey].trays += qty;
+        proteins[targetKey].orders += 1;
+        if (it.aloo) proteins[targetKey].aloo += qty;
+        else proteins[targetKey].noAloo += qty;
+
+        if (it.extraSpicy) proteins[targetKey].extraSpicy += qty;
+        else proteins[targetKey].regularSpicy += qty;
+      });
+    });
+
+    return {
+      totalTrays,
+      totalAloo,
+      totalNoAloo,
+      totalExtraSpicy,
+      totalRegularSpicy,
+      totalPickup,
+      totalDelivery,
+      proteinList: [proteins.chicken, proteins.mutton, proteins.beef, proteins.pork],
+    };
   }, [filteredOrders]);
 
   // Counts for status tabs
@@ -569,93 +771,324 @@ export function OrderManagementPage() {
           </div>
         </div>
 
-        {/* Item-Wise Handi Prep Breakdown (e item ki enni orders vochhai) */}
-        <div className="rounded-2xl border border-gold/25 bg-[#120c08]/90 p-5 backdrop-blur-xl shadow-xl space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gold/15 pb-3">
-            <div className="flex items-center gap-2">
-              <Flame className="h-4 w-4 text-chili animate-pulse" />
-              <h3 className="font-display text-base font-bold text-cream">
-                Kitchen Prep & Handi Breakdown
-              </h3>
-              <span className="rounded-full bg-gold/20 border border-gold/30 px-2.5 py-0.5 text-xs font-bold text-gold font-mono">
-                {totalFilteredTrays} Total Trays Required
+        {/* 1. TIMELINE & CAPACITY SELECTOR BAR */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {/* 1A. TODAY */}
+          <div
+            onClick={() => {
+              setDateFilter("today");
+              setCustomDateInput("");
+            }}
+            className={`relative overflow-hidden rounded-2xl border p-4 transition-all cursor-pointer group ${
+              dateFilter === "today"
+                ? "border-gold bg-gradient-to-br from-gold/20 via-[#181008] to-black/90 shadow-lg shadow-gold/20 ring-1 ring-gold"
+                : "border-gold/20 bg-[#120c08]/85 hover:border-gold/50 hover:bg-gold/5"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[0.68rem] font-bold uppercase tracking-wider text-gold flex items-center gap-1.5">
+                <Flame className="h-3.5 w-3.5 text-chili animate-pulse" />
+                Today ({todayDateFormatted})
+              </span>
+              <span className={`rounded-full px-2 py-0.5 text-[0.62rem] font-bold ${
+                dateFilter === "today" ? "bg-gold text-black" : "bg-gold/15 text-gold border border-gold/30"
+              }`}>
+                Live Today
               </span>
             </div>
+
+            <div className="mt-2.5 flex items-baseline justify-between">
+              <div className="font-display text-2xl font-bold text-cream">
+                {timelineStats.todayTrays}{" "}
+                <span className="text-xs font-sans text-cream/60">/ {activeDailyLimit} Trays</span>
+              </div>
+              <span className="font-mono text-xs font-semibold text-emerald-400">
+                {Math.max(0, activeDailyLimit - timelineStats.todayTrays)} Free
+              </span>
+            </div>
+
+            <div className="mt-2">
+              <Progress
+                value={activeDailyLimit > 0 ? Math.min(100, Math.round((timelineStats.todayTrays / activeDailyLimit) * 100)) : 0}
+                className="h-1.5 bg-black/60 border border-gold/20"
+              />
+            </div>
+
+            <p className="mt-2 text-[0.68rem] text-cream/60 flex items-center justify-between">
+              <span>{timelineStats.todayOrdersCount} order{timelineStats.todayOrdersCount === 1 ? "" : "s"} scheduled</span>
+              <span className="text-gold font-medium">Click to View →</span>
+            </p>
+          </div>
+
+          {/* 1B. TOMORROW */}
+          <div
+            onClick={() => {
+              setDateFilter("tomorrow");
+              setCustomDateInput("");
+            }}
+            className={`relative overflow-hidden rounded-2xl border p-4 transition-all cursor-pointer group ${
+              dateFilter === "tomorrow"
+                ? "border-saffron bg-gradient-to-br from-saffron/20 via-[#181008] to-black/90 shadow-lg shadow-saffron/20 ring-1 ring-saffron"
+                : "border-gold/20 bg-[#120c08]/85 hover:border-saffron/50 hover:bg-saffron/5"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[0.68rem] font-bold uppercase tracking-wider text-saffron flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-saffron" />
+                Tomorrow ({tomorrowDateFormatted})
+              </span>
+              <span className={`rounded-full px-2 py-0.5 text-[0.62rem] font-bold ${
+                dateFilter === "tomorrow" ? "bg-saffron text-black" : "bg-saffron/15 text-saffron border border-saffron/30"
+              }`}>
+                Advance
+              </span>
+            </div>
+
+            <div className="mt-2.5 flex items-baseline justify-between">
+              <div className="font-display text-2xl font-bold text-cream">
+                {timelineStats.tomorrowTrays}{" "}
+                <span className="text-xs font-sans text-cream/60">/ {tomorrowLimit} Trays</span>
+              </div>
+              <span className="font-mono text-xs font-semibold text-emerald-400">
+                {Math.max(0, tomorrowLimit - timelineStats.tomorrowTrays)} Free
+              </span>
+            </div>
+
+            <div className="mt-2">
+              <Progress
+                value={tomorrowLimit > 0 ? Math.min(100, Math.round((timelineStats.tomorrowTrays / tomorrowLimit) * 100)) : 0}
+                className="h-1.5 bg-black/60 border border-saffron/20"
+              />
+            </div>
+
+            <p className="mt-2 text-[0.68rem] text-cream/60 flex items-center justify-between">
+              <span>{timelineStats.tomorrowOrdersCount} order{timelineStats.tomorrowOrdersCount === 1 ? "" : "s"} booked</span>
+              <span className="text-saffron font-medium">Click to View →</span>
+            </p>
+          </div>
+
+          {/* 1C. UPCOMING 7 DAYS */}
+          <div
+            onClick={() => {
+              setDateFilter("upcoming");
+              setCustomDateInput("");
+            }}
+            className={`relative overflow-hidden rounded-2xl border p-4 transition-all cursor-pointer group ${
+              dateFilter === "upcoming"
+                ? "border-sky-500 bg-gradient-to-br from-sky-500/20 via-[#181008] to-black/90 shadow-lg shadow-sky-500/20 ring-1 ring-sky-500"
+                : "border-gold/20 bg-[#120c08]/85 hover:border-sky-500/50 hover:bg-sky-500/5"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[0.68rem] font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-sky-400" />
+                Upcoming 7 Days
+              </span>
+              <span className={`rounded-full px-2 py-0.5 text-[0.62rem] font-bold ${
+                dateFilter === "upcoming" ? "bg-sky-500 text-black" : "bg-sky-500/15 text-sky-300 border border-sky-500/30"
+              }`}>
+                Horizon
+              </span>
+            </div>
+
+            <div className="mt-2.5 flex items-baseline justify-between">
+              <div className="font-display text-2xl font-bold text-cream">
+                {timelineStats.upcomingTrays}{" "}
+                <span className="text-xs font-sans text-cream/60">Trays Booked</span>
+              </div>
+            </div>
+
+            <p className="mt-4 text-[0.68rem] text-cream/60 flex items-center justify-between">
+              <span>{timelineStats.upcomingOrdersCount} advance pre-orders</span>
+              <span className="text-sky-400 font-medium">Click to View →</span>
+            </p>
+          </div>
+
+          {/* 1D. PAST ARCHIVE */}
+          <div
+            onClick={() => {
+              setDateFilter("past");
+              setCustomDateInput("");
+            }}
+            className={`relative overflow-hidden rounded-2xl border p-4 transition-all cursor-pointer group ${
+              dateFilter === "past"
+                ? "border-zinc-400 bg-gradient-to-br from-zinc-700/30 via-[#181008] to-black/90 shadow-lg shadow-zinc-500/20 ring-1 ring-zinc-400"
+                : "border-gold/20 bg-[#120c08]/85 hover:border-zinc-500/50 hover:bg-zinc-800/20"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[0.68rem] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                <Archive className="h-3.5 w-3.5 text-zinc-400" />
+                Past Orders Archive
+              </span>
+              <span className={`rounded-full px-2 py-0.5 text-[0.62rem] font-bold ${
+                dateFilter === "past" ? "bg-zinc-300 text-black" : "bg-zinc-800 text-zinc-400 border border-zinc-700"
+              }`}>
+                Hidden
+              </span>
+            </div>
+
+            <div className="mt-2.5 flex items-baseline justify-between">
+              <div className="font-display text-2xl font-bold text-cream">
+                {timelineStats.pastOrdersCount}{" "}
+                <span className="text-xs font-sans text-cream/60">Past Orders</span>
+              </div>
+            </div>
+
+            <p className="mt-4 text-[0.68rem] text-cream/50 flex items-center justify-between">
+              <span>Archived records</span>
+              <span className="text-zinc-300 font-medium">View Archive →</span>
+            </p>
+          </div>
+        </div>
+
+        {/* 2. MASTER KITCHEN PREPARATION BOARD */}
+        <div className="rounded-2xl border border-gold/25 bg-[#120c08]/95 p-5 backdrop-blur-xl shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gold/15 pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <Flame className="h-4 w-4 text-chili animate-pulse" />
+                <h3 className="font-display text-base font-bold text-cream">
+                  Master Kitchen Preparation & Customization Board
+                </h3>
+                <span className="rounded-full bg-gold/20 border border-gold/30 px-2.5 py-0.5 text-xs font-bold text-gold font-mono">
+                  {kitchenMatrix.totalTrays} Total Handis Required
+                </span>
+              </div>
+              <p className="text-[0.72rem] text-cream/60 mt-0.5">
+                Live ingredient and protein breakdown calculated from database orders
+              </p>
+            </div>
+
             {selectedDishFilter !== "all" && (
               <button
                 onClick={() => setSelectedDishFilter("all")}
-                className="text-xs text-saffron hover:underline flex items-center gap-1 font-medium cursor-pointer"
+                className="text-xs text-saffron hover:underline flex items-center gap-1 font-semibold cursor-pointer"
               >
-                Clear Dish Filter (Show All Dishes) ✕
+                Show All Meats ✕
               </button>
             )}
           </div>
 
-          {itemWisePrepSummary.length === 0 ? (
-            <div className="py-4 text-center text-xs text-cream/50">
-              No biryani handis scheduled or required for this selected timeframe.
+          {/* 2A. QUICK-GLANCE CUSTOMIZATION SUMMARY STRIP */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 text-xs font-medium">
+            <div className="rounded-xl border border-gold/20 bg-black/50 p-2.5 text-center">
+              <span className="text-[0.65rem] text-gold uppercase tracking-wider block font-semibold">Total Handis</span>
+              <span className="font-display text-xl font-bold text-cream">{kitchenMatrix.totalTrays}</span>
+              <span className="text-[0.62rem] text-cream/50 block">Dum Trays</span>
             </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pt-1">
-              {itemWisePrepSummary.map((item) => (
+
+            <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 p-2.5 text-center">
+              <span className="text-[0.65rem] text-amber-300 uppercase tracking-wider block font-semibold">🥔 With Aloo</span>
+              <span className="font-display text-xl font-bold text-amber-200">{kitchenMatrix.totalAloo}</span>
+              <span className="text-[0.62rem] text-amber-300/60 block">Trays</span>
+            </div>
+
+            <div className="rounded-xl border border-white/15 bg-white/5 p-2.5 text-center">
+              <span className="text-[0.65rem] text-cream/70 uppercase tracking-wider block font-semibold">🚫 No Aloo</span>
+              <span className="font-display text-xl font-bold text-cream">{kitchenMatrix.totalNoAloo}</span>
+              <span className="text-[0.62rem] text-cream/50 block">Trays</span>
+            </div>
+
+            <div className="rounded-xl border border-rose-500/25 bg-rose-500/10 p-2.5 text-center">
+              <span className="text-[0.65rem] text-rose-300 uppercase tracking-wider block font-semibold">🌶️ Extra Spicy</span>
+              <span className="font-display text-xl font-bold text-rose-200">{kitchenMatrix.totalExtraSpicy}</span>
+              <span className="text-[0.62rem] text-rose-300/60 block">Trays</span>
+            </div>
+
+            <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-2.5 text-center">
+              <span className="text-[0.65rem] text-emerald-300 uppercase tracking-wider block font-semibold">✨ Regular</span>
+              <span className="font-display text-xl font-bold text-emerald-200">{kitchenMatrix.totalRegularSpicy}</span>
+              <span className="text-[0.62rem] text-emerald-300/60 block">Trays</span>
+            </div>
+
+            <div className="rounded-xl border border-sky-500/25 bg-sky-500/10 p-2.5 text-center">
+              <span className="text-[0.65rem] text-sky-300 uppercase tracking-wider block font-semibold">Dispatch Mode</span>
+              <span className="font-mono text-sm font-bold text-cream block mt-1">
+                🛍️ {kitchenMatrix.totalPickup} · 🚚 {kitchenMatrix.totalDelivery}
+              </span>
+              <span className="text-[0.62rem] text-sky-300/60 block">Pickup · Delivery</span>
+            </div>
+          </div>
+
+          {/* 2B. 4 CORE SIGNATURE PROTEIN CARDS (CHICKEN, MUTTON, BEEF, PORK) */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 pt-1">
+            {kitchenMatrix.proteinList.map((prot) => {
+              const isSelected = selectedDishFilter.toLowerCase() === prot.id;
+              return (
                 <div
-                  key={item.name}
-                  onClick={() => {
-                    setSelectedDishFilter(selectedDishFilter === item.name ? "all" : item.name);
-                    setCurrentPage(1);
-                  }}
-                  className={`rounded-2xl border p-4 transition-all cursor-pointer group ${
-                    selectedDishFilter === item.name
-                      ? "border-gold bg-gold/15 shadow-lg shadow-gold/20 scale-[1.02]"
-                      : "border-gold/25 bg-[#140e09]/90 hover:border-gold/60 hover:bg-gold/5"
+                  key={prot.id}
+                  onClick={() => setSelectedDishFilter(isSelected ? "all" : prot.id)}
+                  className={`rounded-2xl border p-4 transition-all cursor-pointer group ${prot.color} ${
+                    isSelected ? "ring-2 ring-gold scale-[1.02] shadow-xl" : "hover:border-gold/60"
                   }`}
-                  title="Click to view only this dish in the orders table below"
+                  title={`Click to filter table by ${prot.name}`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <h4 className="font-display text-sm font-bold text-cream group-hover:text-gold transition-colors line-clamp-1" title={item.name}>
-                      {item.name}
-                    </h4>
-                    <span className="shrink-0 rounded-full bg-gold text-black font-extrabold text-xs px-2.5 py-0.5 shadow-md shadow-gold/30 font-mono">
-                      {item.totalTrays} {item.totalTrays === 1 ? "Tray" : "Trays"}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xl">{prot.icon}</span>
+                      <div>
+                        <h4 className="font-display text-xs font-bold text-cream group-hover:text-gold transition-colors line-clamp-1">
+                          {prot.name}
+                        </h4>
+                        <p className="text-[0.62rem] text-cream/50">{prot.meatType}</p>
+                      </div>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 font-mono font-bold text-xs ${prot.badgeColor}`}>
+                      {prot.trays} {prot.trays === 1 ? "Tray" : "Trays"}
                     </span>
                   </div>
 
-                  <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[0.68rem]">
-                    {item.withAloo > 0 && (
-                      <span className="rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 font-medium">
-                        🥔 {item.withAloo} Aloo
-                      </span>
-                    )}
-                    {item.noAloo > 0 && (
-                      <span className="rounded-md bg-white/10 text-cream/70 border border-white/15 px-1.5 py-0.5">
-                        🚫 {item.noAloo} No Aloo
-                      </span>
-                    )}
-                    {item.extraSpicy > 0 && (
-                      <span className="rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 font-medium">
-                        🌶️ {item.extraSpicy} Extra Spicy
-                      </span>
-                    )}
-                    {item.regularSpicy > 0 && (
-                      <span className="rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5">
-                        ✨ {item.regularSpicy} Regular
-                      </span>
-                    )}
+                  {/* Customization Details: Spicy & Aloo */}
+                  <div className="mt-3 grid grid-cols-2 gap-1.5 text-[0.68rem]">
+                    <div className="rounded-lg bg-black/50 border border-gold/15 p-1.5">
+                      <span className="text-[0.6rem] text-cream/50 uppercase block font-semibold">Aloo Option</span>
+                      <div className="flex items-center justify-between font-mono font-bold mt-0.5">
+                        <span className="text-amber-300">🥔 {prot.aloo}</span>
+                        <span className="text-cream/70">🚫 {prot.noAloo}</span>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg bg-black/50 border border-gold/15 p-1.5">
+                      <span className="text-[0.6rem] text-cream/50 uppercase block font-semibold">Spiciness</span>
+                      <div className="flex items-center justify-between font-mono font-bold mt-0.5">
+                        <span className="text-rose-300">🌶️ {prot.extraSpicy}</span>
+                        <span className="text-emerald-300">✨ {prot.regularSpicy}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-gold/15 flex items-center justify-between text-[0.7rem]">
-                    <span className="text-cream/60">
-                      {item.orderCount} order{item.orderCount === 1 ? "" : "s"}
-                    </span>
-                    <span className="font-mono font-bold text-gold">
-                      {formatMoney(item.totalRevenue)}
-                    </span>
+                  {/* Kitchen Preparation Specs */}
+                  <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[0.65rem] text-cream/60">
+                    <span>Req Meat: <strong className="text-cream">{(prot.trays * prot.meatRateKg).toFixed(1)} kg</strong></span>
+                    <span>Rice: <strong className="text-cream">{(prot.trays * prot.riceRateKg).toFixed(1)} kg</strong></span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
+
+        {/* PAST ARCHIVE ALERT */}
+        {dateFilter === "past" && (
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-200">
+            <div className="flex items-center gap-2">
+              <Archive className="h-4 w-4 text-amber-300 shrink-0" />
+              <span>
+                <strong>Past Orders Archive Mode:</strong> Historical orders are archived and hidden from live kitchen queue by default.
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                setDateFilter("today");
+                setCustomDateInput("");
+              }}
+              className="shrink-0 rounded-xl bg-amber-400 text-black font-bold px-3 py-1 text-xs hover:bg-amber-300 cursor-pointer"
+            >
+              ← Back to Today's Live Queue
+            </button>
+          </div>
+        )}
 
         {/* Status Filter Tabs (Top Bar) */}
         <div className="flex items-center gap-2 overflow-x-auto border-b border-gold/15 pb-3">
@@ -733,9 +1166,11 @@ export function OrderManagementPage() {
               }}
               className="h-10 w-full rounded-xl border border-gold/25 bg-black/40 px-3 text-xs text-cream focus:outline-none focus:border-gold cursor-pointer"
             >
-              <option value="all">All Fulfilment Dates</option>
               <option value="today">Scheduled for Today</option>
               <option value="tomorrow">Scheduled for Tomorrow</option>
+              <option value="upcoming">Upcoming (Next 7 Days)</option>
+              <option value="past">Past Orders Archive</option>
+              <option value="all">All Dates & History</option>
               <option value="yesterday">Yesterday's Orders</option>
               <option value="last7">Past 7 Days</option>
               <option value="custom">Pick Specific Date...</option>
