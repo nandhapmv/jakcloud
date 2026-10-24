@@ -65,6 +65,10 @@ import {
   Store,
   Plus,
   Scale,
+  Receipt,
+  Printer,
+  FileSpreadsheet,
+  Calculator,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DishIngredientsModal } from "@/components/dish-ingredients-modal";
@@ -114,7 +118,8 @@ type NavSection =
   | "orders"
   | "menu"
   | "daily-control"
-  | "delivery";
+  | "delivery"
+  | "accounts";
 
 interface AdminSearchParams {
   tab?: string;
@@ -158,6 +163,7 @@ function AdminOverviewPage() {
     if (s === "menu") return "menu";
     if (s === "orders") return "orders";
     if (s === "delivery") return "delivery";
+    if (s === "accounts") return "accounts";
     return "dashboard";
   });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -217,6 +223,194 @@ function AdminOverviewPage() {
   type DashboardDateFilter = "all" | "today" | "tomorrow" | "yesterday" | "last7" | "this_month" | "custom";
   const [dashDateFilter, setDashDateFilter] = useState<DashboardDateFilter>("today");
   const [customDate, setCustomDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
+
+  // ==========================================
+  // ACCOUNTS & DAILY FINANCIAL LEDGER STATE
+  // ==========================================
+  type AccountsPreset = "all" | "today" | "yesterday" | "last7" | "last30" | "this_month" | "custom";
+  const [accountsPreset, setAccountsPreset] = useState<AccountsPreset>("all");
+  const [accountsFromDate, setAccountsFromDate] = useState<string>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return normalizeDateKey(d);
+  });
+  const [accountsToDate, setAccountsToDate] = useState<string>(() => normalizeDateKey(new Date()));
+  const [accountsDayModal, setAccountsDayModal] = useState<{
+    dateKey: string;
+    displayDate: string;
+    orders: DynamicOrder[];
+    dayTotal: number;
+    traysCount: number;
+  } | null>(null);
+
+  // Filter orders for accounts ledger based on date-to-date range / preset
+  const filteredAccountsOrders = useMemo(() => {
+    return orders.filter((o) => {
+      if (o.status === "cancelled") return false;
+
+      let orderDate = "";
+      if (o.fulfilmentDate && /^\d{4}-\d{2}-\d{2}$/.test(o.fulfilmentDate)) {
+        orderDate = o.fulfilmentDate;
+      } else if (o.createdAt) {
+        try {
+          const d = new Date(o.createdAt);
+          if (!isNaN(d.getTime())) {
+            orderDate = d.toISOString().slice(0, 10);
+          }
+        } catch {}
+      }
+      if (!orderDate) orderDate = todayKey;
+
+      if (accountsPreset === "all") return true;
+
+      if (accountsPreset === "today") {
+        return orderDate === todayKey;
+      }
+
+      if (accountsPreset === "yesterday") {
+        const yst = new Date();
+        yst.setDate(yst.getDate() - 1);
+        return orderDate === normalizeDateKey(yst);
+      }
+
+      if (accountsPreset === "last7") {
+        const past7 = new Date();
+        past7.setDate(past7.getDate() - 7);
+        const past7Key = normalizeDateKey(past7);
+        return orderDate >= past7Key && orderDate <= todayKey;
+      }
+
+      if (accountsPreset === "last30") {
+        const past30 = new Date();
+        past30.setDate(past30.getDate() - 30);
+        const past30Key = normalizeDateKey(past30);
+        return orderDate >= past30Key && orderDate <= todayKey;
+      }
+
+      if (accountsPreset === "this_month") {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startKey = normalizeDateKey(startOfMonth);
+        return orderDate >= startKey && orderDate <= todayKey;
+      }
+
+      if (accountsPreset === "custom") {
+        if (accountsFromDate && orderDate < accountsFromDate) return false;
+        if (accountsToDate && orderDate > accountsToDate) return false;
+        return true;
+      }
+
+      return true;
+    });
+  }, [orders, accountsPreset, accountsFromDate, accountsToDate, todayKey]);
+
+  // Aggregate day-wise collections
+  const dayWiseAccounts = useMemo(() => {
+    const map = new Map<string, {
+      dateKey: string;
+      orderCount: number;
+      traysCount: number;
+      pickupRevenue: number;
+      deliveryRevenue: number;
+      deliveryFees: number;
+      totalRevenue: number;
+      orders: DynamicOrder[];
+    }>();
+
+    filteredAccountsOrders.forEach((o) => {
+      let orderDate = "";
+      if (o.fulfilmentDate && /^\d{4}-\d{2}-\d{2}$/.test(o.fulfilmentDate)) {
+        orderDate = o.fulfilmentDate;
+      } else if (o.createdAt) {
+        try {
+          const d = new Date(o.createdAt);
+          if (!isNaN(d.getTime())) {
+            orderDate = d.toISOString().slice(0, 10);
+          }
+        } catch {}
+      }
+      if (!orderDate) orderDate = todayKey;
+
+      if (!map.has(orderDate)) {
+        map.set(orderDate, {
+          dateKey: orderDate,
+          orderCount: 0,
+          traysCount: 0,
+          pickupRevenue: 0,
+          deliveryRevenue: 0,
+          deliveryFees: 0,
+          totalRevenue: 0,
+          orders: [],
+        });
+      }
+
+      const day = map.get(orderDate)!;
+      day.orderCount += 1;
+      const traysInOrder = (o.items || []).reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
+      day.traysCount += traysInOrder;
+
+      const orderTotal = Number(o.total) || 0;
+      const orderFee = Number(o.deliveryFee) || 0;
+
+      if (o.fulfilmentType === "pickup") {
+        day.pickupRevenue += orderTotal;
+      } else {
+        day.deliveryRevenue += orderTotal;
+        day.deliveryFees += orderFee;
+      }
+
+      day.totalRevenue += orderTotal;
+      day.orders.push(o);
+    });
+
+    return Array.from(map.values()).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  }, [filteredAccountsOrders, todayKey]);
+
+  // Grand totals across selected date range
+  const accountsGrandTotal = useMemo(() => {
+    let revenue = 0;
+    let ordersCount = 0;
+    let traysCount = 0;
+    let pickupRevenue = 0;
+    let deliveryRevenue = 0;
+    let deliveryFees = 0;
+
+    dayWiseAccounts.forEach((d) => {
+      revenue += d.totalRevenue;
+      ordersCount += d.orderCount;
+      traysCount += d.traysCount;
+      pickupRevenue += d.pickupRevenue;
+      deliveryRevenue += d.deliveryRevenue;
+      deliveryFees += d.deliveryFees;
+    });
+
+    const activeDays = dayWiseAccounts.length;
+    const avgDailyRevenue = activeDays > 0 ? revenue / activeDays : 0;
+    const avgTicket = ordersCount > 0 ? revenue / ordersCount : 0;
+
+    return {
+      revenue,
+      ordersCount,
+      traysCount,
+      pickupRevenue,
+      deliveryRevenue,
+      deliveryFees,
+      activeDays,
+      avgDailyRevenue,
+      avgTicket,
+    };
+  }, [dayWiseAccounts]);
+
+  const formatAccountDateLabel = (dateStr: string) => {
+    try {
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+      }
+    } catch {}
+    return dateStr;
+  };
 
   // Today & Tomorrow keys for capacity and queue filtering
   const tomorrowKey = useMemo(() => {
@@ -1402,11 +1596,11 @@ function AdminOverviewPage() {
             })}
           </div>
 
-          {/* Group 2: MANAGEMENT */}
+          {/* Group 2: MANAGEMENT & ACCOUNTS */}
           <div className="space-y-1 pt-2 border-t border-gold/15">
             {!sidebarCollapsed && (
               <p className="px-3 text-[0.62rem] font-semibold uppercase tracking-wider text-gold/60 mb-1">
-                Management
+                Management & Accounts
               </p>
             )}
             {[
@@ -1415,6 +1609,11 @@ function AdminOverviewPage() {
                 label: "Delivery & Routing",
                 icon: Truck,
                 fullRoute: "/admin/delivery",
+              },
+              {
+                id: "accounts",
+                label: "Accounts",
+                icon: Receipt,
               },
             ].map((item) => {
               const Icon = item.icon;
@@ -4101,6 +4300,395 @@ function AdminOverviewPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* TAB 5: ACCOUNTS & DAILY FINANCIAL LEDGER                  */}
+          {/* ========================================================= */}
+          {activeSection === "accounts" && (
+            <div className="space-y-6 animate-in fade-in-50 duration-500">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gold/20 pb-4">
+                <div>
+                  <h2 className="font-display text-2xl text-cream font-bold flex items-center gap-2.5">
+                    <Receipt className="h-6 w-6 text-gold" />
+                    Accounts & Daily Ledger
+                  </h2>
+                  <p className="text-xs text-cream/60 mt-0.5">
+                    Day-wise collection statements, date-to-date filtering, and real-time total revenue summaries
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="bg-gold/15 border border-gold/30 text-gold hover:bg-gold/25 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-md"
+                  >
+                    <Printer className="h-3.5 w-3.5" /> Print / Export Ledger
+                  </Button>
+                </div>
+              </div>
+
+              {/* Date-to-Date Filter Controls */}
+              <div className="rounded-3xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-xl space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  {/* Preset Pills */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[0.68rem] uppercase tracking-wider text-gold font-bold mr-1 flex items-center gap-1">
+                      <Filter className="h-3 w-3" /> Quick Filter:
+                    </span>
+                    {[
+                      { key: "all", label: "All Time" },
+                      { key: "today", label: "Today" },
+                      { key: "yesterday", label: "Yesterday" },
+                      { key: "last7", label: "Last 7 Days" },
+                      { key: "last30", label: "Last 30 Days" },
+                      { key: "this_month", label: "This Month" },
+                      { key: "custom", label: "Custom Range" },
+                    ].map((btn) => (
+                      <button
+                        key={btn.key}
+                        type="button"
+                        onClick={() => setAccountsPreset(btn.key as any)}
+                        className={`px-3 py-1.5 text-xs rounded-xl font-medium border transition-all cursor-pointer ${
+                          accountsPreset === btn.key
+                            ? "bg-gold text-black border-gold font-bold shadow-md shadow-gold/20"
+                            : "border-gold/20 bg-black/40 text-cream/80 hover:bg-gold/10 hover:text-gold"
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Date Range Inputs */}
+                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-gold/80 font-semibold font-mono">From:</span>
+                      <input
+                        type="date"
+                        value={accountsFromDate}
+                        onChange={(e) => {
+                          setAccountsFromDate(e.target.value);
+                          setAccountsPreset("custom");
+                        }}
+                        className="h-9 px-2.5 rounded-xl border border-gold/30 bg-black/60 text-xs text-cream font-mono cursor-pointer focus:outline-none focus:border-gold"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-gold/80 font-semibold font-mono">To:</span>
+                      <input
+                        type="date"
+                        value={accountsToDate}
+                        onChange={(e) => {
+                          setAccountsToDate(e.target.value);
+                          setAccountsPreset("custom");
+                        }}
+                        className="h-9 px-2.5 rounded-xl border border-gold/30 bg-black/60 text-xs text-cream font-mono cursor-pointer focus:outline-none focus:border-gold"
+                      />
+                    </div>
+                    {(accountsPreset !== "all" || accountsFromDate !== "") && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAccountsPreset("all");
+                          setAccountsFromDate("");
+                          setAccountsToDate(normalizeDateKey(new Date()));
+                        }}
+                        className="px-2.5 py-1.5 text-[11px] rounded-xl border border-gold/25 bg-gold/10 text-gold hover:bg-gold/20 transition-all cursor-pointer"
+                        title="Reset Date Range"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Summary KPI Cards */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {/* 1. Total Revenue */}
+                <div className="rounded-3xl border border-gold/30 bg-[#120c08]/90 p-5 backdrop-blur-xl shadow-xl relative overflow-hidden group">
+                  <div className="absolute -right-4 -bottom-4 opacity-10 text-gold pointer-events-none group-hover:scale-110 transition-transform">
+                    <DollarSign className="h-28 w-28" />
+                  </div>
+                  <p className="text-[0.68rem] uppercase tracking-wider text-gold font-bold flex items-center justify-between">
+                    <span>Total Amount (Revenue)</span>
+                    <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[0.6rem] text-gold border border-gold/30">
+                      {accountsGrandTotal.activeDays} Days
+                    </span>
+                  </p>
+                  <h3 className="mt-2 font-display text-3xl font-extrabold text-gold font-mono">
+                    {formatMoney(accountsGrandTotal.revenue)}
+                  </h3>
+                  <p className="mt-1 text-[0.7rem] text-cream/60 flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3 text-emerald-400" />
+                    <span>Real database receipts collected</span>
+                  </p>
+                </div>
+
+                {/* 2. Total Orders & Trays */}
+                <div className="rounded-3xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-xl">
+                  <p className="text-[0.68rem] uppercase tracking-wider text-saffron font-bold">
+                    Orders & Handi Trays
+                  </p>
+                  <h3 className="mt-2 font-display text-3xl font-extrabold text-cream font-mono">
+                    {accountsGrandTotal.ordersCount}{" "}
+                    <span className="text-sm font-sans text-cream/60 font-medium">Orders</span>
+                  </h3>
+                  <p className="mt-1 text-[0.7rem] text-gold font-semibold">
+                    🍱 {accountsGrandTotal.traysCount} Handi Trays Sold
+                  </p>
+                </div>
+
+                {/* 3. Fulfilment Split */}
+                <div className="rounded-3xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-xl">
+                  <p className="text-[0.68rem] uppercase tracking-wider text-emerald-400 font-bold">
+                    Fulfilment Collections
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-cream/70">Pickup:</span>
+                      <span className="font-mono font-bold text-cream">
+                        {formatMoney(accountsGrandTotal.pickupRevenue)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-cream/70">Delivery:</span>
+                      <span className="font-mono font-bold text-cream">
+                        {formatMoney(accountsGrandTotal.deliveryRevenue)}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[0.65rem] text-cream/50 border-t border-gold/10 pt-1">
+                    Incl. {formatMoney(accountsGrandTotal.deliveryFees)} delivery fees
+                  </p>
+                </div>
+
+                {/* 4. Daily Average */}
+                <div className="rounded-3xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-xl">
+                  <p className="text-[0.68rem] uppercase tracking-wider text-chili font-bold">
+                    Daily Average
+                  </p>
+                  <h3 className="mt-2 font-display text-2xl font-bold text-cream font-mono">
+                    {formatMoney(accountsGrandTotal.avgDailyRevenue)}{" "}
+                    <span className="text-xs font-sans text-cream/50 font-normal">/ day</span>
+                  </h3>
+                  <p className="mt-1 text-[0.7rem] text-cream/60">
+                    Avg ticket: <span className="text-gold font-mono font-semibold">{formatMoney(accountsGrandTotal.avgTicket)}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Day-Wise Amount Breakdown Table */}
+              <div className="rounded-3xl border border-gold/25 bg-[#120c08]/85 shadow-2xl overflow-hidden backdrop-blur-xl">
+                <div className="px-6 py-4 border-b border-gold/15 bg-black/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="font-display text-base font-bold text-cream flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-gold" /> Day-Wise Collection Statement
+                    </h3>
+                    <p className="text-[0.7rem] text-cream/60">
+                      Chronological day-by-day revenue, tray sales, and fulfillment accounting
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono text-gold/80 font-semibold bg-gold/10 px-3 py-1 rounded-full border border-gold/20">
+                    {dayWiseAccounts.length} Days Recorded
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-gold/15 bg-black/60 text-[0.68rem] uppercase tracking-wider text-gold font-bold">
+                      <tr>
+                        <th className="px-5 py-3.5">Date</th>
+                        <th className="px-4 py-3.5 text-center">Orders</th>
+                        <th className="px-4 py-3.5 text-center">Trays Sold</th>
+                        <th className="px-4 py-3.5 text-right">Pickup ($)</th>
+                        <th className="px-4 py-3.5 text-right">Delivery ($)</th>
+                        <th className="px-4 py-3.5 text-right">Delivery Fees ($)</th>
+                        <th className="px-5 py-3.5 text-right">Day Total Amount ($)</th>
+                        <th className="px-4 py-3.5 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gold/10">
+                      {dayWiseAccounts.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="px-5 py-12 text-center">
+                            <Receipt className="mx-auto h-8 w-8 text-gold/30 mb-2" />
+                            <p className="text-sm font-semibold text-cream">No account transactions in selected date range</p>
+                            <p className="text-xs text-cream/60 mt-1">
+                              Try selecting "All Time" or adjusting the from/to dates above.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAccountsPreset("all");
+                                setAccountsFromDate("");
+                                setAccountsToDate(normalizeDateKey(new Date()));
+                              }}
+                              className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-gold/30 bg-gold/15 px-3 py-1.5 text-xs text-gold hover:bg-gold/25 font-bold transition-all cursor-pointer"
+                            >
+                              Show All Time Accounts
+                            </button>
+                          </td>
+                        </tr>
+                      ) : (
+                        dayWiseAccounts.map((day) => {
+                          const isToday = day.dateKey === todayKey;
+                          return (
+                            <tr key={day.dateKey} className="hover:bg-gold/5 transition-colors">
+                              <td className="px-5 py-4">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-cream text-xs font-mono">
+                                    {formatAccountDateLabel(day.dateKey)}
+                                  </span>
+                                  {isToday && (
+                                    <span className="rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 text-[0.62rem] font-bold">
+                                      Today
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-4 py-4 text-center text-xs font-bold text-cream">
+                                {day.orderCount}
+                              </td>
+                              <td className="px-4 py-4 text-center text-xs font-mono font-semibold text-saffron">
+                                {day.traysCount} Trays
+                              </td>
+                              <td className="px-4 py-4 text-right text-xs font-mono text-cream/80">
+                                {formatMoney(day.pickupRevenue)}
+                              </td>
+                              <td className="px-4 py-4 text-right text-xs font-mono text-cream/80">
+                                {formatMoney(day.deliveryRevenue)}
+                              </td>
+                              <td className="px-4 py-4 text-right text-xs font-mono text-cream/60">
+                                {day.deliveryFees > 0 ? formatMoney(day.deliveryFees) : "—"}
+                              </td>
+                              <td className="px-5 py-4 text-right font-display text-base font-extrabold text-gold font-mono">
+                                {formatMoney(day.totalRevenue)}
+                              </td>
+                              <td className="px-4 py-4 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setAccountsDayModal({
+                                      dateKey: day.dateKey,
+                                      displayDate: formatAccountDateLabel(day.dateKey),
+                                      orders: day.orders,
+                                      dayTotal: day.totalRevenue,
+                                      traysCount: day.traysCount,
+                                    })
+                                  }
+                                  className="inline-flex items-center gap-1 text-[11px] text-gold hover:underline font-semibold bg-gold/10 hover:bg-gold/20 px-2.5 py-1 rounded-lg border border-gold/20 transition-all cursor-pointer"
+                                  title="View orders for this date"
+                                >
+                                  View Orders ({day.orderCount})
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+
+                    {/* Table Footer: GRAND TOTAL ROW */}
+                    {dayWiseAccounts.length > 0 && (
+                      <tfoot className="border-t-2 border-gold/30 bg-black/80 font-bold text-xs text-cream">
+                        <tr>
+                          <td className="px-5 py-4 font-display text-sm text-gold uppercase tracking-wider">
+                            Total ({accountsGrandTotal.activeDays} Days)
+                          </td>
+                          <td className="px-4 py-4 text-center font-mono text-sm text-cream font-bold">
+                            {accountsGrandTotal.ordersCount}
+                          </td>
+                          <td className="px-4 py-4 text-center font-mono text-sm text-saffron font-bold">
+                            {accountsGrandTotal.traysCount} Trays
+                          </td>
+                          <td className="px-4 py-4 text-right font-mono text-xs text-cream/90">
+                            {formatMoney(accountsGrandTotal.pickupRevenue)}
+                          </td>
+                          <td className="px-4 py-4 text-right font-mono text-xs text-cream/90">
+                            {formatMoney(accountsGrandTotal.deliveryRevenue)}
+                          </td>
+                          <td className="px-4 py-4 text-right font-mono text-xs text-cream/70">
+                            {formatMoney(accountsGrandTotal.deliveryFees)}
+                          </td>
+                          <td className="px-5 py-4 text-right font-display text-lg font-black text-gold font-mono">
+                            {formatMoney(accountsGrandTotal.revenue)}
+                          </td>
+                          <td className="px-4 py-4 text-center text-[0.65rem] text-gold/70 font-mono uppercase">
+                            Audited
+                          </td>
+                        </tr>
+                      </tfoot>
+                    )}
+                  </table>
+                </div>
+              </div>
+
+              {/* Day Orders Details Modal */}
+              <Dialog
+                open={!!accountsDayModal}
+                onOpenChange={(open) => !open && setAccountsDayModal(null)}
+              >
+                <DialogContent className="border-gold/30 bg-[#140e09] text-cream sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="font-display text-xl text-cream flex items-center justify-between border-b border-gold/15 pb-3">
+                      <div>
+                        <span>Daily Orders Statement</span>
+                        <p className="text-xs font-normal text-gold font-mono mt-0.5">
+                          {accountsDayModal?.displayDate} • {accountsDayModal?.orders.length} Orders
+                        </p>
+                      </div>
+                      <span className="font-mono text-lg text-gold font-bold">
+                        Total: {formatMoney(accountsDayModal?.dayTotal || 0)}
+                      </span>
+                    </DialogTitle>
+                  </DialogHeader>
+
+                  <div className="space-y-3 pt-2">
+                    {accountsDayModal?.orders.map((ord) => (
+                      <div
+                        key={ord.id}
+                        className="rounded-2xl border border-gold/20 bg-black/50 p-4 space-y-2 hover:border-gold/40 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-gold">
+                              {ord.orderNumber}
+                            </span>
+                            <span className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase ${
+                              ord.fulfilmentType === "pickup"
+                                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                            }`}>
+                              {ord.fulfilmentType}
+                            </span>
+                          </div>
+                          <span className="font-mono text-sm font-bold text-cream">
+                            {formatMoney(ord.total)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-xs text-cream/80">
+                          <span className="font-medium text-cream">{ord.customer.name}</span>
+                          <span className="font-mono text-cream/60">{ord.customer.phone}</span>
+                        </div>
+
+                        <div className="text-[0.7rem] text-cream/70 border-t border-gold/10 pt-1.5 space-y-0.5">
+                          {ord.items.map((it, idx) => (
+                            <div key={idx} className="flex justify-between">
+                              <span>{it.qty} × {it.name} {it.aloo ? "(With Aloo)" : ""}</span>
+                              <span className="font-mono">{formatMoney(it.lineTotal)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
 
