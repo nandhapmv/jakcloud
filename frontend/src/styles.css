@@ -160,6 +160,22 @@
   p, span, label, input, button {
     font-family: var(--font-sans);
   }
+
+  /* All website body paragraphs & readable descriptions justified */
+  p {
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+  }
+
+  button p,
+  a p,
+  .text-center,
+  .text-center p,
+  .text-right,
+  .text-right p {
+    text-align: inherit;
+  }
 }
 
 @utility surface-royal {
