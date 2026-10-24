@@ -66,6 +66,9 @@ import { toast } from "sonner";
 
 import logoImg from "@/assets/logo.png";
 import heroImg from "@/assets/hero-biryani.jpg";
+import chickenImg from "@/assets/chicken-biryani.jpg";
+import muttonImg from "@/assets/mutton-biryani.jpg";
+import dumHandiImg from "@/assets/dum-handi.jpg";
 import { useAuth } from "@/lib/auth";
 import {
   api,
@@ -81,6 +84,7 @@ import {
   useDynamicCustomers,
   normalizeDateKey,
   type DynamicOrder,
+  type DynamicMenuItem,
 } from "@/lib/store";
 import {
   INITIAL_NOTIFICATIONS,
@@ -90,6 +94,7 @@ import {
 import { MENU, formatMoney, BUSINESS } from "@/lib/menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -140,7 +145,15 @@ function AdminOverviewPage() {
   const { orders, stats: dynamicStats, updateStatus, deleteOrder, purgeTestOrders, reload } = useDynamicOrders();
   const { settings, updateSettings } = useKitchenSettings();
   const { customers: dynamicCustomers } = useDynamicCustomers();
-  const { items: dynamicMenuItems } = useDynamicMenu();
+  const {
+    items: dynamicMenuItems,
+    isSyncing: menuSyncing,
+    addMenuItem,
+    updateMenuItem,
+    deleteMenuItem,
+    toggleMenuItemAvailability,
+    refreshFromBackend: refreshMenuFromBackend,
+  } = useDynamicMenu();
 
   const [messages, setMessages] = useState<ContactMessageResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -209,6 +222,172 @@ function AdminOverviewPage() {
   const [ordersDateFilter, setOrdersDateFilter] = useState<string>("today");
   const [ordersCustomDate, setOrdersCustomDate] = useState<string>("");
   const [selectedDishFilter, setSelectedDishFilter] = useState<string>("all");
+
+  // Menu & Tray Pricing Management State
+  const [menuSearchQuery, setMenuSearchQuery] = useState("");
+  const [menuCategoryFilter, setMenuCategoryFilter] = useState("all");
+  const [menuAvailFilter, setMenuAvailFilter] = useState<"all" | "active" | "inactive">("all");
+
+  // Modal State for Add / Edit Dish
+  const [menuModalOpen, setMenuModalOpen] = useState(false);
+  const [editingMenuItem, setEditingMenuItem] = useState<DynamicMenuItem | null>(null);
+
+  // Form Fields (Empty by default for adding new items!)
+  const [mFormName, setMFormName] = useState("");
+  const [mFormCategory, setMFormCategory] = useState("Signature Trays");
+  const [mFormDescription, setMFormDescription] = useState("");
+  const [mFormPrice, setMFormPrice] = useState("");
+  const [mFormPriceWithAloo, setMFormPriceWithAloo] = useState("");
+  const [mFormImage, setMFormImage] = useState("");
+  const [mFormAvailable, setMFormAvailable] = useState(true);
+  const [mFormTraySize, setMFormTraySize] = useState("");
+  const [mFormMeatWeight, setMFormMeatWeight] = useState("");
+  const [mFormRiceWeight, setMFormRiceWeight] = useState("");
+  const [mFormKcal, setMFormKcal] = useState("");
+  const [mFormBadge, setMFormBadge] = useState("");
+  const [mFormSpiciness, setMFormSpiciness] = useState<"Mild" | "Medium" | "Extra Spicy">("Medium");
+  const [mFormDailyLimit, setMFormDailyLimit] = useState("");
+  const [mFormIsHalal, setMFormIsHalal] = useState(true);
+  const [isSavingDish, setIsSavingDish] = useState(false);
+
+  // Delete Dish State
+  const [menuDeleteOpen, setMenuDeleteOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<DynamicMenuItem | null>(null);
+  const [isDeletingDish, setIsDeletingDish] = useState(false);
+
+  // Handlers for Add / Edit / Delete
+  const handleOpenAddDishModal = () => {
+    setEditingMenuItem(null);
+    setMFormName("");
+    setMFormCategory("Signature Trays");
+    setMFormDescription("");
+    setMFormPrice("");
+    setMFormPriceWithAloo("");
+    setMFormImage("");
+    setMFormAvailable(true);
+    setMFormTraySize("");
+    setMFormMeatWeight("");
+    setMFormRiceWeight("");
+    setMFormKcal("");
+    setMFormBadge("");
+    setMFormSpiciness("Medium");
+    setMFormDailyLimit("");
+    setMFormIsHalal(true);
+    setMenuModalOpen(true);
+  };
+
+  const handleOpenEditDishModal = (item: DynamicMenuItem) => {
+    setEditingMenuItem(item);
+    setMFormName(item.name || "");
+    setMFormCategory(item.category || "Signature Trays");
+    setMFormDescription(item.description || "");
+    setMFormPrice(item.price !== undefined ? String(item.price) : "");
+    setMFormPriceWithAloo(item.priceWithAloo !== undefined ? String(item.priceWithAloo) : "");
+    setMFormImage(item.image || "");
+    setMFormAvailable(item.available !== false);
+    setMFormTraySize(item.traySize || item.serves || "");
+    setMFormMeatWeight(item.meatWeight || "");
+    setMFormRiceWeight(item.riceWeight || "");
+    setMFormKcal(item.kcal ? String(item.kcal) : "");
+    setMFormBadge(item.badge || "");
+    setMFormSpiciness(item.spiciness || "Medium");
+    setMFormDailyLimit(item.dailyLimit ? String(item.dailyLimit) : "10");
+    setMFormIsHalal(item.isHalalCertified !== false);
+    setMenuModalOpen(true);
+  };
+
+  const handleSaveDish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mFormName.trim()) {
+      toast.error("Please enter a Biryani Tray name.");
+      return;
+    }
+    const numPrice = parseFloat(mFormPrice);
+    if (isNaN(numPrice) || numPrice <= 0) {
+      toast.error("Please enter a valid base price.");
+      return;
+    }
+    const numPriceWithAloo = mFormPriceWithAloo ? parseFloat(mFormPriceWithAloo) : numPrice + 7;
+    const numDailyLimit = parseInt(mFormDailyLimit, 10) || 10;
+    const numKcal = parseInt(mFormKcal, 10) || 1700;
+
+    setIsSavingDish(true);
+    try {
+      const payload = {
+        name: mFormName.trim(),
+        proteinId: mFormName.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+        category: mFormCategory || "Signature Trays",
+        description: mFormDescription.trim(),
+        price: numPrice,
+        priceWithAloo: numPriceWithAloo,
+        image: mFormImage.trim() || chickenImg,
+        available: mFormAvailable,
+        traySize: mFormTraySize.trim() || "Serves 4–5 Diners (Family Handi)",
+        serves: mFormTraySize.trim() || "Serves 4–5",
+        meatWeight: mFormMeatWeight.trim(),
+        riceWeight: mFormRiceWeight.trim() || "1.0 kg Raw Aged Basmati",
+        kcal: numKcal,
+        badge: mFormBadge.trim(),
+        spiciness: mFormSpiciness,
+        dailyLimit: numDailyLimit,
+        isHalalCertified: mFormIsHalal,
+      };
+
+      if (editingMenuItem) {
+        await updateMenuItem(editingMenuItem.id, payload);
+        toast.success(`'${mFormName}' updated in database!`);
+      } else {
+        await addMenuItem(payload);
+        toast.success(`New dish '${mFormName}' saved to database!`);
+      }
+      setMenuModalOpen(false);
+    } catch (err: any) {
+      toast.error("Failed to save menu dish: " + (err?.message || "Unknown error"));
+    } finally {
+      setIsSavingDish(false);
+    }
+  };
+
+  const handleOpenDeleteDishModal = (item: DynamicMenuItem) => {
+    setItemToDelete(item);
+    setMenuDeleteOpen(true);
+  };
+
+  const handleConfirmDeleteDish = async () => {
+    if (!itemToDelete) return;
+    setIsDeletingDish(true);
+    try {
+      const ok = await deleteMenuItem(itemToDelete.id);
+      if (ok) {
+        toast.success(`'${itemToDelete.name}' deleted from database.`);
+      } else {
+        toast.error("Could not delete dish.");
+      }
+      setMenuDeleteOpen(false);
+      setItemToDelete(null);
+    } catch (err: any) {
+      toast.error("Failed to delete dish: " + (err?.message || "Unknown error"));
+    } finally {
+      setIsDeletingDish(false);
+    }
+  };
+
+  const filteredMenuItems = useMemo(() => {
+    return dynamicMenuItems.filter((item) => {
+      if (menuCategoryFilter !== "all" && item.category !== menuCategoryFilter) return false;
+      if (menuAvailFilter === "active" && !item.available) return false;
+      if (menuAvailFilter === "inactive" && item.available) return false;
+      if (menuSearchQuery.trim()) {
+        const q = menuSearchQuery.toLowerCase().trim();
+        const matchName = item.name.toLowerCase().includes(q);
+        const matchDesc = (item.description || "").toLowerCase().includes(q);
+        const matchCat = (item.category || "").toLowerCase().includes(q);
+        const matchBadge = (item.badge || "").toLowerCase().includes(q);
+        return matchName || matchDesc || matchCat || matchBadge;
+      }
+      return true;
+    });
+  }, [dynamicMenuItems, menuCategoryFilter, menuAvailFilter, menuSearchQuery]);
 
   // Live clock
   useEffect(() => {
@@ -2678,94 +2857,616 @@ function AdminOverviewPage() {
           )}
 
           {/* ========================================================= */}
-          {/* TAB 3: MENU MANAGEMENT                                    */}
+          {/* TAB 3: MENU MANAGEMENT & TRAY PRICING (ALL-IN-ONE)        */}
           {/* ========================================================= */}
           {activeSection === "menu" && (
             <div className="space-y-6 animate-in fade-in-50 duration-500">
+              {/* 1. Header Toolbar */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gold/20 pb-4">
                 <div>
-                  <h2 className="font-display text-2xl text-cream font-bold">
-                    Signature Menu & Pricing Control
-                  </h2>
-                  <p className="text-xs text-cream/60">
-                    Control live availability, ingredient portions, and addon configurations
+                  <div className="flex items-center gap-2">
+                    <UtensilsCrossed className="h-5 w-5 text-gold" />
+                    <h2 className="font-display text-2xl text-cream font-bold">
+                      Signature Menu & Tray Pricing Control
+                    </h2>
+                  </div>
+                  <p className="text-xs text-cream/60 mt-0.5">
+                    Live database recipes ({dynamicMenuItems.length} dishes). Add new recipes, edit prices & portion specs, or delete items right here.
                   </p>
                 </div>
+
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button asChild size="sm" className="bg-gold text-black hover:bg-gold/90 font-bold text-xs">
-                    <Link to="/admin/menu">
-                      Open Full Visual Menu Catalog →
-                    </Link>
-                  </Button>
                   <Button
-                    onClick={() => toast.success("Menu configuration synchronized with live store.")}
-                    className="bg-gradient-to-r from-chili via-saffron to-gold text-white font-semibold text-xs gap-1.5"
+                    onClick={handleOpenAddDishModal}
+                    className="bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold text-xs shadow-md shadow-gold/20 hover:scale-105 transition-all gap-1.5"
                   >
-                    <Save className="h-4 w-4" /> Save All Menu Changes
+                    <Plus className="h-4 w-4" />
+                    <span>Add New Biryani Tray</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      await refreshMenuFromBackend();
+                      toast.success("Menu synchronized with MySQL database!");
+                    }}
+                    disabled={menuSyncing}
+                    className="border-gold/30 bg-black/40 text-xs text-cream hover:bg-gold/15 hover:text-gold gap-1.5"
+                    title="Refresh live menu from MySQL database"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${menuSyncing ? "animate-spin text-gold" : "text-gold"}`} />
+                    <span>Sync DB</span>
                   </Button>
                 </div>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-2">
-                {MENU.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-3xl border border-gold/25 bg-[#120c08]/85 p-6 backdrop-blur-xl shadow-xl space-y-4"
+              {/* 2. Filter & Search Controls */}
+              <div className="grid gap-3 sm:grid-cols-3 rounded-2xl border border-gold/20 bg-[#120c08]/90 p-4 shadow-lg backdrop-blur-xl">
+                {/* Search */}
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gold/60" />
+                  <Input
+                    placeholder="Search biryani recipe, meat cuts, spices..."
+                    value={menuSearchQuery}
+                    onChange={(e) => setMenuSearchQuery(e.target.value)}
+                    className="h-10 rounded-xl border-gold/25 bg-black/40 pl-10 pr-4 text-xs text-cream placeholder:text-cream/40 focus-visible:border-gold"
+                  />
+                </div>
+
+                {/* Category Filter */}
+                <div>
+                  <select
+                    value={menuCategoryFilter}
+                    onChange={(e) => setMenuCategoryFilter(e.target.value)}
+                    className="h-10 w-full rounded-xl border border-gold/25 bg-black/40 px-3 text-xs text-cream focus:outline-none focus:border-gold cursor-pointer"
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <span className="text-[0.65rem] font-semibold uppercase tracking-widest text-gold">
-                          {item.category}
+                    <option value="all">All Culinary Categories</option>
+                    <option value="Signature Trays">Signature Trays</option>
+                    <option value="Royal & Occasion">Royal & Occasion</option>
+                    <option value="Chef Reserve">Chef Reserve</option>
+                  </select>
+                </div>
+
+                {/* Availability Filter */}
+                <div>
+                  <select
+                    value={menuAvailFilter}
+                    onChange={(e) => setMenuAvailFilter(e.target.value as any)}
+                    className="h-10 w-full rounded-xl border border-gold/25 bg-black/40 px-3 text-xs text-cream focus:outline-none focus:border-gold cursor-pointer"
+                  >
+                    <option value="all">All Dishes (Active & Inactive)</option>
+                    <option value="active">Active On Menu Only</option>
+                    <option value="inactive">Inactive / Sold Out Only</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 3. Luxury Grid of Real Database Dishes */}
+              {filteredMenuItems.length === 0 ? (
+                <div className="rounded-3xl border border-gold/20 bg-[#120c08]/80 p-12 text-center space-y-4">
+                  <UtensilsCrossed className="h-12 w-12 text-gold/40 mx-auto" />
+                  <h3 className="font-display text-lg text-cream font-bold">No Menu Items Found</h3>
+                  <p className="text-xs text-cream/60 max-w-md mx-auto">
+                    {menuSearchQuery ? "No dishes match your search query." : "No dishes currently in database for this filter."}
+                  </p>
+                  <Button
+                    onClick={handleOpenAddDishModal}
+                    className="bg-gold text-black font-bold text-xs hover:bg-gold/90"
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add Your First Dish
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-6 md:grid-cols-2">
+                  {filteredMenuItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className={`rounded-3xl border p-6 backdrop-blur-xl shadow-xl space-y-4 transition-all ${
+                        item.available
+                          ? "border-gold/25 bg-[#120c08]/90 hover:border-gold/50"
+                          : "border-zinc-800 bg-zinc-950/60 opacity-80"
+                      }`}
+                    >
+                      {/* Dish Photo Thumbnail & Top Status Row */}
+                      <div className="flex flex-col sm:flex-row gap-4 items-start">
+                        <div className="relative h-24 w-32 rounded-2xl overflow-hidden border border-gold/30 shrink-0 bg-black/60 shadow-md">
+                          <img
+                            src={item.image || chickenImg}
+                            alt={item.name}
+                            className="h-full w-full object-cover"
+                          />
+                          {item.badge && (
+                            <span className="absolute top-1 left-1 rounded-md bg-gold/90 px-1.5 py-0.5 text-[0.58rem] font-bold text-black uppercase tracking-wider">
+                              {item.badge}
+                            </span>
+                          )}
+                          <span
+                            className={`absolute bottom-1 right-1 rounded-md px-1.5 py-0.5 text-[0.6rem] font-bold ${
+                              item.available
+                                ? "bg-emerald-950/90 text-emerald-300 border border-emerald-500/40"
+                                : "bg-red-950/90 text-red-300 border border-red-500/40"
+                            }`}
+                          >
+                            {item.available ? "Active" : "Inactive"}
+                          </span>
+                        </div>
+
+                        <div className="flex-1 space-y-1 w-full">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <span className="text-[0.62rem] font-bold uppercase tracking-widest text-gold block">
+                                {item.category || "Signature Trays"}
+                              </span>
+                              <h3 className="font-display text-lg font-bold text-cream leading-tight">
+                                {item.name}
+                              </h3>
+                            </div>
+
+                            {/* Active Switch Toggle */}
+                            <div className="flex items-center gap-1.5 shrink-0 bg-black/50 border border-gold/20 rounded-xl px-2.5 py-1">
+                              <Label htmlFor={`avail-${item.id}`} className="text-[0.68rem] text-cream/70 cursor-pointer">
+                                {item.available ? "Active" : "Off"}
+                              </Label>
+                              <Switch
+                                id={`avail-${item.id}`}
+                                checked={item.available}
+                                onCheckedChange={() => {
+                                  const newStatus = toggleMenuItemAvailability(item.id);
+                                  toast.success(`'${item.name}' is now ${newStatus ? "Active on public menu" : "Inactive (Hidden)"}`);
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          <p className="text-xs text-cream/70 line-clamp-2 leading-relaxed pt-1">
+                            {item.description || "Freshly layered dum biryani cooked in sealed handi vessels."}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* 4-Box Pricing & Portion Specs Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-2xl border border-gold/15 bg-black/50 p-3 text-xs">
+                        <div className="p-1">
+                          <span className="text-[0.62rem] text-gold uppercase tracking-wider block font-semibold">Standard Tray</span>
+                          <p className="font-display text-base font-bold text-cream mt-0.5">
+                            {formatMoney(item.price)}
+                          </p>
+                        </div>
+
+                        <div className="p-1">
+                          <span className="text-[0.62rem] text-saffron uppercase tracking-wider block font-semibold">With Golden Aloo</span>
+                          <p className="font-display text-base font-bold text-saffron mt-0.5">
+                            {formatMoney(item.priceWithAloo || item.price + 7)}
+                          </p>
+                        </div>
+
+                        <div className="p-1">
+                          <span className="text-[0.62rem] text-cream/50 uppercase tracking-wider block font-semibold">Meat Weight</span>
+                          <p className="font-medium text-cream text-[0.72rem] mt-0.5 truncate" title={item.meatWeight}>
+                            {item.meatWeight || "1.6 – 1.8 kg"}
+                          </p>
+                        </div>
+
+                        <div className="p-1">
+                          <span className="text-[0.62rem] text-cream/50 uppercase tracking-wider block font-semibold">Basmati Rice</span>
+                          <p className="font-medium text-cream text-[0.72rem] mt-0.5 truncate" title={item.riceWeight}>
+                            {item.riceWeight || "1.0 kg raw"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Meta Tags Strip */}
+                      <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-cream/60 pt-1">
+                        <span className={`rounded-full px-2 py-0.5 border font-semibold ${
+                          item.isHalalCertified !== false
+                            ? "bg-emerald-950/60 border-emerald-500/40 text-emerald-300"
+                            : "bg-purple-950/60 border-purple-500/40 text-purple-300"
+                        }`}>
+                          {item.isHalalCertified !== false ? "✅ 100% Halal Certified" : "⚠️ Dedicated Isolated Vessel"}
                         </span>
-                        <h3 className="font-display text-xl font-bold text-cream">{item.name}</h3>
+
+                        <span className="rounded-full bg-black/40 border border-gold/20 px-2 py-0.5 text-cream/70">
+                          👥 {item.serves || "Serves 4–5"}
+                        </span>
+
+                        <span className="rounded-full bg-black/40 border border-gold/20 px-2 py-0.5 text-cream/70">
+                          🌶️ {item.spiciness || "Medium"}
+                        </span>
+
+                        <span className="rounded-full bg-black/40 border border-gold/20 px-2 py-0.5 text-cream/70">
+                          🍲 {item.dailyLimit || 10} Trays Limit
+                        </span>
+
+                        {item.kcal && (
+                          <span className="rounded-full bg-black/40 border border-gold/20 px-2 py-0.5 text-cream/70">
+                            ⚡ {item.kcal} kcal
+                          </span>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor={`avail-${item.id}`} className="text-xs text-cream/80">
-                          Active
+
+                      {/* Card Action Buttons (Edit Specs & Delete) */}
+                      <div className="flex items-center justify-between pt-3 border-t border-gold/10 text-xs">
+                        <span className="text-[0.68rem] text-cream/50">
+                          Complimentary: Boiled Eggs & Cashew Ghee Pack
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenEditDishModal(item)}
+                            className="border-gold/30 bg-gold/10 text-gold hover:bg-gold hover:text-black font-semibold text-xs h-8 gap-1 cursor-pointer"
+                          >
+                            <Edit className="h-3 w-3" />
+                            <span>Edit Specs</span>
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenDeleteDishModal(item)}
+                            className="border-rose-500/30 text-rose-300 hover:bg-rose-500/20 hover:text-rose-200 text-xs h-8 px-2.5 cursor-pointer"
+                            title="Delete this dish"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 4. ADD / EDIT DISH DIALOG MODAL (Integrated on this page) */}
+              <Dialog open={menuModalOpen} onOpenChange={setMenuModalOpen}>
+                <DialogContent className="max-w-2xl border-gold/40 bg-[#0d0704] text-cream max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold">
+                      <UtensilsCrossed className="h-4 w-4 text-gold" />
+                      <span>{editingMenuItem ? "Edit Recipe Specs & Pricing" : "New Culinary Dish Addition"}</span>
+                    </div>
+                    <DialogTitle className="font-display text-2xl text-cream font-bold">
+                      {editingMenuItem ? `Edit "${editingMenuItem.name}"` : "Add New Dum Biryani Tray"}
+                    </DialogTitle>
+                    <DialogDescription className="text-xs text-cream/60">
+                      {editingMenuItem
+                        ? "Update portion weights, pricing, aloo rate, and chef tags in database."
+                        : "Enter fresh details for this new recipe. All inputs are clean and ready for your custom data."}
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <form onSubmit={handleSaveDish} className="space-y-4 pt-2 text-xs">
+                    {/* 1. Photography Selection & Preview */}
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-gold uppercase tracking-wider">
+                        Biryani Photography
+                      </Label>
+
+                      <div className="flex flex-col sm:flex-row gap-4 items-center rounded-2xl border border-gold/20 bg-black/40 p-4">
+                        <div className="relative h-24 w-32 rounded-xl overflow-hidden border border-gold/30 shrink-0 bg-black/60 flex items-center justify-center">
+                          {mFormImage ? (
+                            <img src={mFormImage} alt="Preview" className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="text-[0.68rem] text-cream/40 text-center px-2">No photo selected</span>
+                          )}
+                        </div>
+
+                        <div className="flex-1 space-y-2 w-full">
+                          <p className="text-cream/80 text-[0.7rem]">
+                            Choose from signature presets or provide custom image URL:
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {[
+                              { label: "🍗 Chicken Handi", url: chickenImg },
+                              { label: "🐐 Mutton Copper Handi", url: muttonImg },
+                              { label: "🥩 Spiced Beef Handi", url: dumHandiImg },
+                              { label: "🥓 Pork Platter", url: heroImg },
+                            ].map((preset, idx) => (
+                              <button
+                                type="button"
+                                key={idx}
+                                onClick={() => setMFormImage(preset.url)}
+                                className={`rounded-lg px-2.5 py-1 text-[0.65rem] font-medium transition-all ${
+                                  mFormImage === preset.url
+                                    ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
+                                    : "border border-gold/20 bg-black/50 text-cream/70 hover:border-gold/40"
+                                }`}
+                              >
+                                {preset.label}
+                              </button>
+                            ))}
+                          </div>
+
+                          <Input
+                            placeholder="Or paste custom image URL (https://...)"
+                            value={mFormImage}
+                            onChange={(e) => setMFormImage(e.target.value)}
+                            className="h-8 rounded-lg border-gold/25 bg-black/50 text-xs text-cream"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. Name & Category */}
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-1">
+                        <Label htmlFor="m-dish-name" className="text-xs text-cream/80">
+                          Biryani Name *
                         </Label>
-                        <Switch id={`avail-${item.id}`} defaultChecked />
+                        <Input
+                          id="m-dish-name"
+                          placeholder="e.g. Awadhi Mutton Dum Biryani"
+                          value={mFormName}
+                          onChange={(e) => setMFormName(e.target.value)}
+                          required
+                          className="rounded-xl border-gold/25 bg-black/40 text-xs text-cream"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="m-dish-category" className="text-xs text-cream/80">
+                          Category
+                        </Label>
+                        <select
+                          id="m-dish-category"
+                          value={mFormCategory}
+                          onChange={(e) => setMFormCategory(e.target.value)}
+                          className="w-full h-9 rounded-xl border border-gold/25 bg-black/40 px-3 text-xs text-cream focus:outline-none focus:border-gold cursor-pointer"
+                        >
+                          <option value="Signature Trays">Signature Trays</option>
+                          <option value="Royal & Occasion">Royal & Occasion</option>
+                          <option value="Chef Reserve">Chef Reserve</option>
+                        </select>
                       </div>
                     </div>
 
-                    <p className="text-xs text-cream/70 leading-relaxed">{item.description}</p>
+                    {/* 3. Description */}
+                    <div className="space-y-1">
+                      <Label htmlFor="m-dish-desc" className="text-xs text-cream/80">
+                        Detailed Culinary Description & Marination
+                      </Label>
+                      <Textarea
+                        id="m-dish-desc"
+                        rows={3}
+                        placeholder="Describe the marination, saffron basmati layering, ghee garnishes..."
+                        value={mFormDescription}
+                        onChange={(e) => setMFormDescription(e.target.value)}
+                        className="rounded-xl border-gold/25 bg-black/40 text-xs text-cream placeholder:text-cream/40"
+                      />
+                    </div>
 
-                    <div className="grid grid-cols-2 gap-4 rounded-xl border border-gold/15 bg-black/40 p-4 text-xs">
-                      <div>
-                        <span className="text-cream/60">Base Tray Price:</span>
-                        <p className="font-display text-lg font-bold text-gold">
-                          {formatMoney(item.price)}
-                        </p>
+                    {/* 4. Pricing & Daily Oven Limit */}
+                    <div className="grid gap-3 sm:grid-cols-3 rounded-2xl border border-gold/20 bg-black/40 p-4">
+                      <div className="space-y-1">
+                        <Label htmlFor="m-dish-price" className="text-xs text-gold font-semibold">
+                          Standard Tray Price ($) *
+                        </Label>
+                        <Input
+                          id="m-dish-price"
+                          type="number"
+                          step="0.01"
+                          placeholder="e.g. 109.99"
+                          value={mFormPrice}
+                          onChange={(e) => {
+                            setMFormPrice(e.target.value);
+                            const p = parseFloat(e.target.value) || 0;
+                            setMFormPriceWithAloo((p + 7).toFixed(2));
+                          }}
+                          required
+                          className="rounded-xl border-gold/30 bg-black/50 text-xs font-mono font-bold text-cream"
+                        />
                       </div>
-                      <div>
-                        <span className="text-cream/60">With Aloo (+{formatMoney(7)}):</span>
-                        <p className="font-display text-lg font-bold text-saffron">
-                          {formatMoney(item.priceWithAloo)}
-                        </p>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="m-dish-price-aloo" className="text-xs text-saffron font-semibold">
+                          Price with Golden Aloo ($)
+                        </Label>
+                        <Input
+                          id="m-dish-price-aloo"
+                          type="number"
+                          step="0.01"
+                          placeholder="e.g. 116.99"
+                          value={mFormPriceWithAloo}
+                          onChange={(e) => setMFormPriceWithAloo(e.target.value)}
+                          className="rounded-xl border-gold/30 bg-black/50 text-xs font-mono font-bold text-cream"
+                        />
                       </div>
-                      <div>
-                        <span className="text-cream/60">Meat Portion:</span>
-                        <p className="font-semibold text-cream">1.6 – 1.8 kg</p>
-                      </div>
-                      <div>
-                        <span className="text-cream/60">Basmati Rice:</span>
-                        <p className="font-semibold text-cream">1.0 kg raw</p>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="m-dish-daily-limit" className="text-xs text-cream/80">
+                          Daily Oven Limit (Trays)
+                        </Label>
+                        <Input
+                          id="m-dish-daily-limit"
+                          type="number"
+                          placeholder="e.g. 10"
+                          value={mFormDailyLimit}
+                          onChange={(e) => setMFormDailyLimit(e.target.value)}
+                          className="rounded-xl border-gold/25 bg-black/50 text-xs text-cream"
+                        />
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-gold/10 text-xs text-cream/60">
-                      <span>Complimentary: Boiled Eggs, Cashew Ghee Pack & Dessert</span>
+                    {/* 5. Portion Sizes & Weights */}
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="m-tray-size" className="text-xs text-cream/80">
+                          Serving Size
+                        </Label>
+                        <Input
+                          id="m-tray-size"
+                          value={mFormTraySize}
+                          onChange={(e) => setMFormTraySize(e.target.value)}
+                          placeholder="e.g. Serves 4–5"
+                          className="rounded-xl border-gold/25 bg-black/40 text-xs text-cream"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="m-meat-weight" className="text-xs text-cream/80">
+                          Meat Weight / Cut
+                        </Label>
+                        <Input
+                          id="m-meat-weight"
+                          value={mFormMeatWeight}
+                          onChange={(e) => setMFormMeatWeight(e.target.value)}
+                          placeholder="e.g. 1.6 kg Halal Marinated Chicken"
+                          className="rounded-xl border-gold/25 bg-black/40 text-xs text-cream"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="m-rice-weight" className="text-xs text-cream/80">
+                          Raw Basmati Rice
+                        </Label>
+                        <Input
+                          id="m-rice-weight"
+                          value={mFormRiceWeight}
+                          onChange={(e) => setMFormRiceWeight(e.target.value)}
+                          placeholder="e.g. 1.0 kg Raw Aged Basmati"
+                          className="rounded-xl border-gold/25 bg-black/40 text-xs text-cream"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 6. Heat, Calories, Badge */}
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="m-kcal" className="text-xs text-cream/80">
+                          Approx Calories (kcal)
+                        </Label>
+                        <Input
+                          id="m-kcal"
+                          type="number"
+                          placeholder="e.g. 1750"
+                          value={mFormKcal}
+                          onChange={(e) => setMFormKcal(e.target.value)}
+                          className="rounded-xl border-gold/25 bg-black/40 text-xs text-cream"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="m-badge" className="text-xs text-cream/80">
+                          Diner Badge (Optional)
+                        </Label>
+                        <Input
+                          id="m-badge"
+                          placeholder="e.g. Chef's Special, Top Seller"
+                          value={mFormBadge}
+                          onChange={(e) => setMFormBadge(e.target.value)}
+                          className="rounded-xl border-gold/25 bg-black/40 text-xs text-cream"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="m-spiciness" className="text-xs text-cream/80">
+                          Spiciness Profile
+                        </Label>
+                        <select
+                          id="m-spiciness"
+                          value={mFormSpiciness}
+                          onChange={(e) => setMFormSpiciness(e.target.value as any)}
+                          className="w-full h-9 rounded-xl border border-gold/25 bg-black/40 px-3 text-xs text-cream focus:outline-none focus:border-gold cursor-pointer"
+                        >
+                          <option value="Mild">Mild</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Extra Spicy">Extra Spicy</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* 7. Halal & Availability Switches */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-gold/20 bg-black/40 p-4">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id="m-halal"
+                          checked={mFormIsHalal}
+                          onCheckedChange={setMFormIsHalal}
+                        />
+                        <Label htmlFor="m-halal" className="text-xs text-cream/90 cursor-pointer">
+                          100% Halal Certified Meat
+                        </Label>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id="m-avail"
+                          checked={mFormAvailable}
+                          onCheckedChange={setMFormAvailable}
+                        />
+                        <Label htmlFor="m-avail" className="text-xs text-cream/90 cursor-pointer">
+                          Active & Orderable on Public Menu
+                        </Label>
+                      </div>
+                    </div>
+
+                    {/* 8. Action Buttons */}
+                    <div className="flex items-center justify-end gap-3 pt-3 border-t border-gold/20">
                       <Button
+                        type="button"
                         variant="ghost"
-                        size="sm"
-                        onClick={() => toast.info(`Editing configuration for ${item.name}`)}
-                        className="text-gold text-xs hover:bg-gold/10 gap-1 h-7"
+                        onClick={() => setMenuModalOpen(false)}
+                        className="text-xs text-cream/70 hover:text-cream"
                       >
-                        <Edit className="h-3 w-3" /> Edit Specs
+                        Cancel
+                      </Button>
+
+                      <Button
+                        type="submit"
+                        disabled={isSavingDish}
+                        className="bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold text-xs shadow-md shadow-gold/20"
+                      >
+                        {isSavingDish ? (
+                          <>
+                            <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1" />
+                            Saving to Database...
+                          </>
+                        ) : (
+                          editingMenuItem ? "Save Recipe Changes" : "Save & Publish Dish"
+                        )}
                       </Button>
                     </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+
+              {/* 5. DELETE CONFIRMATION MODAL */}
+              <Dialog open={menuDeleteOpen} onOpenChange={setMenuDeleteOpen}>
+                <DialogContent className="max-w-md border-rose-500/40 bg-[#0d0704] text-cream">
+                  <DialogHeader>
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-400">
+                      <Trash2 className="h-4 w-4 text-rose-400" />
+                      <span>Delete Recipe from Database</span>
+                    </div>
+                    <DialogTitle className="font-display text-xl text-cream font-bold">
+                      Delete "{itemToDelete?.name}"?
+                    </DialogTitle>
+                    <DialogDescription className="text-xs text-cream/70">
+                      Are you sure you want to permanently delete this recipe? It will be removed from the MySQL database and diner checkout immediately.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="flex items-center justify-end gap-3 pt-4 border-t border-rose-500/20">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setMenuDeleteOpen(false)}
+                      className="text-xs text-cream/70 hover:text-cream"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleConfirmDeleteDish}
+                      disabled={isDeletingDish}
+                      className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs"
+                    >
+                      {isDeletingDish ? "Deleting..." : "Yes, Delete Dish"}
+                    </Button>
                   </div>
-                ))}
-              </div>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
 

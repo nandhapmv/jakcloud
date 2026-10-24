@@ -89,10 +89,8 @@ export interface BiryaniMenuCard {
 const PRESET_GALLERY = [
   { label: "Golden Chicken Handi", url: chickenImg },
   { label: "Royal Mutton Copper Handi", url: muttonImg },
-  { label: "Shahi Paneer Brass Platter", url: paneerImg },
-  { label: "Jumbo King Prawn Clay Pot", url: prawnImg },
-  { label: "Traditional Sealed Handi", url: dumHandiImg },
-  { label: "Rich Spiced Dum Platter", url: heroBiryaniImg },
+  { label: "Slow-Braised Spiced Beef Handi", url: dumHandiImg },
+  { label: "Ozarks Smoked Pork Platter", url: heroBiryaniImg },
 ];
 
 const INITIAL_BIRYANI_MENU: BiryaniMenuCard[] = [
@@ -178,8 +176,6 @@ const CATEGORIES = [
   "All Categories",
   "Signature Trays",
   "Royal & Occasion",
-  "Shahi Vegetarian",
-  "Seafood Specialties",
 ];
 
 function MenuManagementPage() {
@@ -209,17 +205,17 @@ function MenuManagementPage() {
   const [formName, setFormName] = useState("");
   const [formCategory, setFormCategory] = useState("Signature Trays");
   const [formDescription, setFormDescription] = useState("");
-  const [formPrice, setFormPrice] = useState<string>("101.99");
-  const [formPriceWithAloo, setFormPriceWithAloo] = useState<string>("108.99");
-  const [formImage, setFormImage] = useState<string>(chickenImg);
+  const [formPrice, setFormPrice] = useState<string>("");
+  const [formPriceWithAloo, setFormPriceWithAloo] = useState<string>("");
+  const [formImage, setFormImage] = useState<string>("");
   const [formAvailable, setFormAvailable] = useState<boolean>(true);
-  const [formTraySize, setFormTraySize] = useState("Serves 4–5 Diners (Family Handi)");
-  const [formMeatWeight, setFormMeatWeight] = useState("1.6 kg Marinated Meat");
-  const [formRiceWeight, setFormRiceWeight] = useState("1.0 kg Raw Basmati");
-  const [formKcal, setFormKcal] = useState<string>("1750");
+  const [formTraySize, setFormTraySize] = useState("");
+  const [formMeatWeight, setFormMeatWeight] = useState("");
+  const [formRiceWeight, setFormRiceWeight] = useState("");
+  const [formKcal, setFormKcal] = useState<string>("");
   const [formBadge, setFormBadge] = useState("");
   const [formSpiciness, setFormSpiciness] = useState<"Mild" | "Medium" | "Extra Spicy">("Medium");
-  const [formDailyLimit, setFormDailyLimit] = useState<string>("10");
+  const [formDailyLimit, setFormDailyLimit] = useState<string>("");
 
   // Delete Dialog State
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -232,23 +228,23 @@ function MenuManagementPage() {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  // Open Modal for Create
+  // Open Modal for Create (completely empty inputs so admin fills fresh data)
   const handleOpenCreateModal = () => {
     setEditingItem(null);
     setFormName("");
     setFormCategory("Signature Trays");
     setFormDescription("");
-    setFormPrice("109.99");
-    setFormPriceWithAloo("116.99");
-    setFormImage(chickenImg);
+    setFormPrice("");
+    setFormPriceWithAloo("");
+    setFormImage("");
     setFormAvailable(true);
-    setFormTraySize("Serves 4–5");
-    setFormMeatWeight("1.6 kg Halal Marinated Chicken");
-    setFormRiceWeight("1.0 kg Raw Aged Basmati");
-    setFormKcal("1800");
-    setFormBadge("Chef's Special");
+    setFormTraySize("");
+    setFormMeatWeight("");
+    setFormRiceWeight("");
+    setFormKcal("");
+    setFormBadge("");
     setFormSpiciness("Medium");
-    setFormDailyLimit("10");
+    setFormDailyLimit("");
     setModalOpen(true);
   };
 
@@ -820,8 +816,12 @@ function MenuManagementPage() {
               </Label>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center rounded-2xl border border-gold/20 bg-black/40 p-4">
-                <div className="relative h-24 w-32 rounded-xl overflow-hidden border border-gold/30 shrink-0">
-                  <img src={formImage} alt="Preview" className="h-full w-full object-cover" />
+                <div className="relative h-24 w-32 rounded-xl overflow-hidden border border-gold/30 shrink-0 bg-black/60 flex items-center justify-center">
+                  {formImage ? (
+                    <img src={formImage} alt="Preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-[0.68rem] text-cream/40 text-center px-2">No photo selected</span>
+                  )}
                   <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1 text-[0.6rem] text-gold font-mono">
                     Active
                   </span>
@@ -886,8 +886,6 @@ function MenuManagementPage() {
                 >
                   <option value="Signature Trays">Signature Trays</option>
                   <option value="Royal & Occasion">Royal & Occasion</option>
-                  <option value="Shahi Vegetarian">Shahi Vegetarian</option>
-                  <option value="Seafood Specialties">Seafood Specialties</option>
                   <option value="Chef Reserve">Chef Reserve</option>
                 </select>
               </div>
@@ -918,6 +916,7 @@ function MenuManagementPage() {
                   id="dish-price"
                   type="number"
                   step="0.01"
+                  placeholder="e.g. 109.99"
                   value={formPrice}
                   onChange={(e) => {
                     setFormPrice(e.target.value);
@@ -937,6 +936,7 @@ function MenuManagementPage() {
                   id="dish-price-aloo"
                   type="number"
                   step="0.01"
+                  placeholder="e.g. 116.99"
                   value={formPriceWithAloo}
                   onChange={(e) => setFormPriceWithAloo(e.target.value)}
                   className="rounded-xl border-gold/30 bg-black/50 text-xs font-mono font-bold text-cream"
@@ -950,6 +950,7 @@ function MenuManagementPage() {
                 <Input
                   id="dish-daily-limit"
                   type="number"
+                  placeholder="e.g. 10"
                   value={formDailyLimit}
                   onChange={(e) => setFormDailyLimit(e.target.value)}
                   className="rounded-xl border-gold/25 bg-black/50 text-xs text-cream"
