@@ -16,6 +16,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { CartProvider } from "@/lib/cart";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
+import { TraySelectorModal } from "@/components/tray-selector-modal";
 
 function NotFoundComponent() {
   return (
@@ -218,6 +219,7 @@ function RootComponent() {
               </aside>
             )}
           </div>
+          {!isAdminRoute && <TraySelectorModal />}
           <Toaster />
         </CartProvider>
       </AuthProvider>

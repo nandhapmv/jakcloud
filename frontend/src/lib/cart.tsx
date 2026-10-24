@@ -48,7 +48,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     return 1;
   });
-  const [traySelectorOpen, setTraySelectorOpen] = useState(false);
+  const [traySelectorOpen, setTraySelectorOpen] = useState(true);
 
   const setSelectedTrayQty = (qty: number) => {
     const validQty = Math.max(1, qty);

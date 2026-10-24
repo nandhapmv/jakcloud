@@ -626,9 +626,6 @@ export function MenuSection() {
         proteinId={nutritionModalDish?.proteinId}
         dishImage={nutritionModalDish?.image}
       />
-
-      {/* Initial Tray Quantity Selector Modal ("How Many Trays Do You Need?") */}
-      <TraySelectorModal />
     </section>
   );
 }

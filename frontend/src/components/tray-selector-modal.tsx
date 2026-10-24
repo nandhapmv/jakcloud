@@ -92,7 +92,8 @@ export function TraySelectorModal({
             { qty: 4, name: "4 Trays", desc: "Serves 16–20 Adults · Family Feast" },
             { qty: 5, name: "5+ Trays", desc: "Serves 22–25 Adults · Party Feast" },
           ].map((tier) => (
-            <div
+            <button
+              type="button"
               key={tier.qty}
               onClick={() => handleConfirm(tier.qty)}
               className="w-full text-left p-3.5 rounded-2xl border border-zinc-200/90 hover:border-amber-500 hover:bg-amber-50/80 shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99] group"
@@ -115,7 +116,7 @@ export function TraySelectorModal({
                 <span>Select</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </div>
-            </div>
+            </button>
           ))}
 
           {/* Custom Quantity Stepper */}
