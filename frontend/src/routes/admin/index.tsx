@@ -1278,9 +1278,13 @@ function AdminOverviewPage() {
               </div>
 
               {/* Integrated Mini Capacity Gauge (Per-Day Rollover) */}
-              <Link
-                to="/admin/daily-control"
-                className="block pt-1.5 border-t border-white/[0.06] hover:opacity-90 transition-opacity group"
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveSection("daily-control");
+                  setMobileNavOpen(false);
+                }}
+                className="w-full text-left block pt-1.5 border-t border-white/[0.06] hover:opacity-90 transition-opacity group cursor-pointer"
                 title={`Manage Daily ${activeDailyLimit}-Tray Limit & Capacity`}
               >
                 <div className="flex items-center justify-between text-[0.68rem] mb-1">
@@ -1295,7 +1299,7 @@ function AdminOverviewPage() {
                   value={capacityPercentage}
                   className="h-1.5 bg-black/60 border border-gold/20"
                 />
-              </Link>
+              </button>
             </div>
           </div>
         ) : (
