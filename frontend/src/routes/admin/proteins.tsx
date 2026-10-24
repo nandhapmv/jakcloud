@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
 import {
   UtensilsCrossed,
@@ -54,6 +54,9 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/proteins")({
+  beforeLoad: () => {
+    throw redirect({ to: "/admin" });
+  },
   head: () => ({
     meta: [
       { title: "Protein & Halal Cut Management — JAKloud J Paradize" },

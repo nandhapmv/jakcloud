@@ -419,17 +419,6 @@ function MenuManagementPage() {
 
         <div className="flex items-center gap-3">
           <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="border-gold/30 bg-black/40 text-xs text-gold hover:bg-gold/15 gap-1.5 hidden sm:flex"
-          >
-            <Link to="/admin/proteins">
-              <ShieldCheck className="h-3.5 w-3.5" /> Meat & Halal Cuts
-            </Link>
-          </Button>
-
-          <Button
             onClick={handleOpenCreateModal}
             className="bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold text-xs shadow-lg shadow-chili/30 hover:scale-105 transition-all gap-1.5"
           >

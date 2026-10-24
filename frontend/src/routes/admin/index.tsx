@@ -1184,11 +1184,6 @@ function AdminOverviewPage() {
                 fullRoute: "/admin/menu",
               },
               {
-                link: "/admin/proteins",
-                label: "Meat & Halal Matrix",
-                icon: Flame,
-              },
-              {
                 link: "/admin/daily-control",
                 label: `Daily ${activeDailyLimit}-Tray Limit`,
                 icon: Sliders,
