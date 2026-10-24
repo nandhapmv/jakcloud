@@ -3,7 +3,6 @@ import {
   ShoppingBag,
   Phone,
   MessageSquare,
-  Sparkles,
   Shield,
   Menu as MenuIcon,
   X,
@@ -13,7 +12,6 @@ import {
   Truck,
   Info,
   MapPin,
-  Clock,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -22,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { CartSheet } from "@/components/cart-sheet";
 import { useCart } from "@/lib/cart";
 import { BUSINESS } from "@/lib/menu";
-import { useKitchenSettings } from "@/lib/store";
 
 // Desktop Navigation with Home, Food, About, Contact
 const DESKTOP_NAV = [
@@ -44,7 +41,6 @@ const MOBILE_NAV = [
 
 export function SiteHeader() {
   const { count } = useCart();
-  const { settings } = useKitchenSettings();
   const [cartOpen, setCartOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -58,43 +54,9 @@ export function SiteHeader() {
     "Hello Master Chef Kartheek! I would like to order a fresh handcrafted Dum Biryani Handi tray from JAKloud.",
   )}`;
 
-  const cutoffLabel =
-    settings?.orderCutoffHour === 12
-      ? "12:00 PM"
-      : (settings?.orderCutoffHour ?? 15) > 12
-      ? `${(settings?.orderCutoffHour ?? 15) - 12}:00 PM`
-      : `${settings?.orderCutoffHour ?? 15}:00 AM`;
-
-  const dailyLimit = settings?.dailyTrayLimit ?? 10;
-
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-amber-500/20 bg-white/95 text-zinc-900 backdrop-blur-2xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all">
-        {/* Top Announcement Bar (Ultra-Premium Luxury Banner - Light Theme) */}
-        <Link
-          to="/validation"
-          className="hidden lg:flex bg-[#faf6ee] border-b border-amber-200/60 py-1.5 px-4 text-center text-xs text-zinc-700 items-center justify-center gap-3 sm:gap-4 overflow-hidden hover:bg-[#f5efdf] transition-all group cursor-pointer relative"
-        >
-          <span className="flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 text-amber-900 font-bold text-[10.5px] uppercase tracking-wider">
-            <Sparkles className="h-3 w-3 text-amber-600" />
-            <span>Limited to {dailyLimit} Handi Trays Daily</span>
-          </span>
-
-          <span className="text-zinc-300 text-[10px]">◆</span>
-
-          <span className="text-xs text-zinc-700 group-hover:text-amber-900 transition-colors font-normal flex items-center gap-1.5">
-            <span>Order by <strong className="text-zinc-900 font-semibold">{cutoffLabel}</strong> for Next-Day Springfield Pickup & Delivery</span>
-            <span className="text-amber-700 text-[11px] group-hover:translate-x-0.5 transition-transform font-semibold">(Check Live Capacity →)</span>
-          </span>
-
-          <span className="text-zinc-300 text-[10px]">◆</span>
-
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 text-[10.5px] font-semibold text-emerald-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            <span>100% Zabiha Halal Certified</span>
-          </span>
-        </Link>
-
         {/* Main Navbar Container */}
         <div className="mx-auto flex max-w-7xl items-center justify-between px-3.5 py-2.5 sm:px-6 lg:px-8">
           {/* Brand Logo & Name */}

@@ -51,11 +51,6 @@ export function SiteFooter() {
           <p className="text-xs text-zinc-600 leading-relaxed font-normal">
             Springfield's authentic slow-cooked royal Dum Pukht handi trays. Prepared fresh daily with aged saffron basmati and sealed with traditional dough.
           </p>
-
-          <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 p-2.5 text-xs text-emerald-900 font-normal">
-            <Shield className="h-4 w-4 text-emerald-600 shrink-0" />
-            <span>100% Zabiha Halal Certified Poultry & Meats</span>
-          </div>
         </div>
 
         {/* Column 2: Order Channels & Hotline */}

@@ -111,7 +111,7 @@ export async function openRazorpayCheckout({
         contact: customerPhone.replace(/\D/g, ""),
       },
       notes: {
-        store: "3625 S Bedford Ave, Springfield, MO",
+        store: "3625 S Bedford Ave., Springfield, MO 65809",
         ...notes,
       },
       theme: {

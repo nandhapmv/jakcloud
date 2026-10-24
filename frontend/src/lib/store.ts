@@ -204,50 +204,6 @@ export const INITIAL_MENU_ITEMS: DynamicMenuItem[] = [
     isHalalCertified: true,
   },
   {
-    id: "dish-paneer",
-    proteinId: "paneer",
-    name: "Royal Shahi Paneer Dum Biryani (Veg)",
-    category: "Shahi Vegetarian",
-    description:
-      "Fresh golden paneer cubes slow-simmered with aromatic saffron gravy, baby potatoes, roasted cashews, caramelized crispy onions, and fresh mint leaves.",
-    price: 98.99,
-    priceWithAloo: 105.99,
-    image: paneerImg,
-    available: true,
-    traySize: "Serves 4–5 Diners (Veg Handi)",
-    meatWeight: "1.2 kg Fresh Artisanal Paneer",
-    riceWeight: "1.0 kg Raw Aged Basmati",
-    kcal: 1540,
-    kcalAloo: 1697,
-    badge: "Vegetarian Royal",
-    spiciness: "Medium",
-    dailyLimit: 6,
-    traysSoldWeek: 21,
-    isHalalCertified: false,
-  },
-  {
-    id: "dish-prawn",
-    proteinId: "prawn",
-    name: "Jumbo King Tiger Prawn Dum Biryani",
-    category: "Seafood Specialties",
-    description:
-      "Wild-caught jumbo king tiger prawns seared in coastal roasted spice ghee masala, layered over aromatic yellow basmati, finished with lime zest and star anise.",
-    price: 139.99,
-    priceWithAloo: 146.99,
-    image: prawnImg,
-    available: true,
-    traySize: "Serves 4–5 Diners (Deluxe Handi)",
-    meatWeight: "1.5 kg Wild Tiger Prawns",
-    riceWeight: "1.0 kg Raw Aged Basmati",
-    kcal: 1620,
-    kcalAloo: 1777,
-    badge: "Coastal Specialty",
-    spiciness: "Extra Spicy",
-    dailyLimit: 5,
-    traysSoldWeek: 16,
-    isHalalCertified: true,
-  },
-  {
     id: "dish-pork",
     proteinId: "pork",
     name: "Springfield Signature Pork Dum Biryani",
@@ -326,28 +282,6 @@ export const INITIAL_PROTEINS: ProteinMatrixItem[] = [
     notes: "Slow braised for maximum juice extraction into rice grains.",
   },
   {
-    id: "prot_paneer",
-    name: "Royal Artisanal Paneer (Vegetarian)",
-    cutType: "Fresh Malai Pressed Cubes (1.2kg)",
-    halalCertified: false,
-    inStock: true,
-    supplier: "Heritage Dairy Co-op, Springfield",
-    storageTemp: "36°F (2°C) Refrigerated",
-    separateCookingVessel: true,
-    notes: "Strictly prepared in dedicated 100% vegetarian copper handis.",
-  },
-  {
-    id: "prot_prawn",
-    name: "Jumbo King Tiger Prawns",
-    cutType: "Wild-Caught Cleaned & Deveined (1.5kg)",
-    halalCertified: true,
-    inStock: true,
-    supplier: "Gulf Coast Seafood Reserve",
-    storageTemp: "-4°F (-20°C) Flash Deep Frozen",
-    separateCookingVessel: true,
-    notes: "Quick roasted in coastal spice blend before gentle dum steam.",
-  },
-  {
     id: "prot_pork",
     name: "Ozarks Shoulder Pork",
     cutType: "Smoked Shoulder Cuts (1.6kg)",
@@ -421,6 +355,28 @@ function getStored<T>(key: string, defaultValue: T): T {
           c.name !== "Sophia Martinez" &&
           c.name !== "Rajesh & Priya Sharma"
       );
+      if (filtered.length !== parsed.length) {
+        localStorage.setItem(key, JSON.stringify(filtered));
+        return filtered as unknown as T;
+      }
+    }
+    // Automatically purge old paneer & prawn/seafood menu items
+    if (key === KEYS.MENU && Array.isArray(parsed)) {
+      const filtered = parsed.filter((m: any) => {
+        const id = (m.proteinId || m.id || "").replace(/^dish-/, "").toLowerCase();
+        return id !== "paneer" && id !== "prawn" && id !== "seafood";
+      });
+      if (filtered.length !== parsed.length) {
+        localStorage.setItem(key, JSON.stringify(filtered));
+        return filtered as unknown as T;
+      }
+    }
+    // Automatically purge old paneer & prawn/seafood proteins
+    if (key === KEYS.PROTEINS && Array.isArray(parsed)) {
+      const filtered = parsed.filter((p: any) => {
+        const id = (p.id || "").toLowerCase();
+        return !id.includes("paneer") && !id.includes("prawn") && !id.includes("seafood");
+      });
       if (filtered.length !== parsed.length) {
         localStorage.setItem(key, JSON.stringify(filtered));
         return filtered as unknown as T;

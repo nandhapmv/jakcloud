@@ -95,26 +95,43 @@ function ContactPage() {
           {/* Contact details */}
           <div className="space-y-3.5 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm hover:border-amber-500/40 hover:shadow-md transition-all text-xs font-normal">
             <h2 className="font-display text-lg font-semibold text-amber-800">Reach Us</h2>
-            <a href={`tel:${BUSINESS.phone}`} className="flex items-center gap-2.5 text-zinc-700 hover:text-amber-800 transition-colors">
-              <Phone className="h-4 w-4 shrink-0 text-amber-600" /> <span>Call or text {BUSINESS.phone}</span>
-            </a>
-            <a href={`mailto:${BUSINESS.email}`} className="flex items-center gap-2.5 text-zinc-700 hover:text-amber-800 transition-colors">
-              <Mail className="h-4 w-4 shrink-0 text-amber-600" /> <span>{BUSINESS.email}</span>
-            </a>
-            <a
-              href="https://wa.me/14178979754?text=Hello%20Master%20Chef%20Kartheek!%20I%20have%20an%20inquiry%20regarding%20JAKloud%20Dum%20Biryani."
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2.5 text-emerald-700 hover:underline font-medium"
-            >
-              <MessageSquare className="h-4 w-4 shrink-0" /> <span>WhatsApp: +1 417-897-9754</span>
-            </a>
-            <p className="flex items-start gap-2.5 text-zinc-700 pt-1">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" /> <span>{BUSINESS.address}</span>
-            </p>
-            <p className="text-zinc-500 text-[0.72rem] pt-2 border-t border-zinc-100">
-              Springfield Delivery Area: within 10 miles of 65809. Flat delivery fee $10.
-            </p>
+            <div className="space-y-2">
+              <a href={`tel:${BUSINESS.phone}`} className="flex items-center gap-2.5 text-zinc-700 hover:text-amber-800 transition-colors">
+                <Phone className="h-4 w-4 shrink-0 text-amber-600" />
+                <span><strong className="text-zinc-900 font-medium">Phone & Text:</strong> {BUSINESS.phone}</span>
+              </a>
+              <a href={`mailto:${BUSINESS.email}`} className="flex items-center gap-2.5 text-zinc-700 hover:text-amber-800 transition-colors">
+                <Mail className="h-4 w-4 shrink-0 text-amber-600" />
+                <span><strong className="text-zinc-900 font-medium">Email:</strong> {BUSINESS.email}</span>
+              </a>
+              <a
+                href="https://wa.me/14178979754?text=Hello%20Master%20Chef%20Kartheek!%20I%20have%20an%20inquiry%20regarding%20JAKloud%20Dum%20Biryani."
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2.5 text-emerald-700 hover:underline font-medium"
+              >
+                <MessageSquare className="h-4 w-4 shrink-0" />
+                <span><strong className="font-medium">WhatsApp:</strong> +1 417-897-9754</span>
+              </a>
+              <div className="rounded-xl bg-amber-50/80 border border-amber-200/80 p-2.5 text-[0.72rem] text-amber-950 font-normal">
+                <strong className="text-zinc-900 font-medium">Preferred Customer Contact Method:</strong>{" "}
+                <span className="font-semibold text-amber-800">Email / Phone / Text</span>
+              </div>
+            </div>
+            <div className="pt-2 border-t border-zinc-100 space-y-2 text-xs">
+              <div className="flex items-start gap-2 text-zinc-700">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <div>
+                  <p className="font-semibold text-zinc-900">Business & Pickup Address:</p>
+                  <p>{BUSINESS.address}</p>
+                </div>
+              </div>
+              <div className="rounded-xl bg-zinc-50 border border-zinc-200/80 p-2.5 space-y-1 text-[0.72rem] text-zinc-600 font-normal">
+                <p><strong className="text-zinc-800 font-medium">Current Location:</strong> {BUSINESS.currentLocation}</p>
+                <p><strong className="text-zinc-800 font-medium">Pickup Area:</strong> {BUSINESS.pickupArea}</p>
+                <p><strong className="text-zinc-800 font-medium">Delivery Area:</strong> within 10 miles of Springfield from 65809 zip code ($10 flat fee)</p>
+              </div>
+            </div>
           </div>
 
           {/* Operating hours */}

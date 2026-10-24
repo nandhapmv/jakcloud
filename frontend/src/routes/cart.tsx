@@ -176,10 +176,10 @@ export function CartPage() {
       servings: "Serves 4–5",
     },
     {
-      id: "paneer" as const,
-      name: "Royal Shahi Paneer Dum (Veg)",
-      price: 98.99,
-      image: paneerImg,
+      id: "beef" as const,
+      name: "Slow-Braised Spiced Beef Dum",
+      price: 122.99,
+      image: rawBeefImg,
       servings: "Serves 4–5",
     },
   ];

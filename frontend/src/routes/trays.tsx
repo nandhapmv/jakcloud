@@ -142,7 +142,7 @@ const TRAY_TIERS: TrayTier[] = [
     riceWeight: "5.0 kg Aged Basmati",
     basePrice: 469.99,
     savings: "$40.00 Off + Free Delivery",
-    image: paneerImg,
+    image: heroImg,
     eggs: 10,
     desserts: 5,
     description: "Ultimate catering bundle for large corporate events and wedding celebrations.",

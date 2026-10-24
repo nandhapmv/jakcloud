@@ -18,8 +18,18 @@ export const config = {
   business: {
     name: "JAKloud J Paradize Dum Biryani",
     phone: "417-897-9754",
+    text: "417-897-9754",
+    phoneAndText: "417-897-9754",
     email: "sales@jakloud.com",
+    preferredContactMethod: "Email / Phone / Text",
     address: "3625 S Bedford Ave., Springfield, MO 65809",
+    businessAddress: "3625 S Bedford Ave., Springfield, MO 65809",
+    pickupAddress: "3625 S Bedford Ave., Springfield, MO 65809",
+    currentLocation: "Springfield, Missouri",
+    pickupArea: "Springfield, Missouri",
+    deliveryArea: "within 10 miles of Springfield from 65809 zip code",
+    deliveryRadius: 10,
+    hubZip: "65809",
     cutoffHour: 15, // 3:00 PM (Updated per requirement)
     deliveryFee: 10.0,
     alooCharge: 7.0,

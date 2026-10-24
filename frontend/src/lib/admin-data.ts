@@ -606,7 +606,7 @@ export const MOCK_CUSTOMERS: CustomerRecord[] = [
     adminNotes: "Always picks up on time at the front counter. Leaves 5-star reviews on Google and Yelp.",
     address: "3625 S Bedford Ave Area",
     city: "Springfield",
-    zipCode: "65807",
+    zipCode: "65809",
     orderHistory: [
       {
         id: "ord_102",

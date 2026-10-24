@@ -180,12 +180,12 @@ function CheckoutPage() {
     if (isSpringfield) {
       return {
         valid: true,
-        message: "✓ Verified: Within 10-mile Springfield Delivery Zone",
+        message: "✓ Verified: Within 10-mile Springfield Delivery Zone (from 65809)",
       };
     }
     return {
       valid: false,
-      message: "⚠️ Outside standard 10-mile radius. Counter pickup recommended at 3625 S Bedford Ave.",
+      message: "⚠️ Outside 10-mile radius from 65809. Counter pickup recommended at 3625 S Bedford Ave.",
     };
   }, [zipCode]);
 
@@ -712,8 +712,8 @@ function CheckoutPage() {
                       )}
                     </div>
                     <div className="mt-3 pt-2.5 border-t border-zinc-100 text-[11px] text-zinc-600 space-y-0.5">
-                      <p className="font-medium text-zinc-900">{BUSINESS.address}</p>
-                      <p className="text-zinc-500">Pickup window: 11:00 AM – 1:00 PM (Lunch)</p>
+                      <p className="font-medium text-zinc-900">{BUSINESS.pickupAddress || BUSINESS.address}</p>
+                      <p className="text-zinc-500">Pickup Area: Springfield, Missouri (11:00 AM – 1:00 PM)</p>
                     </div>
                   </button>
 
@@ -755,8 +755,8 @@ function CheckoutPage() {
                       )}
                     </div>
                     <div className="mt-3 pt-2.5 border-t border-zinc-100 text-[11px] text-zinc-600 space-y-0.5">
-                      <p className="font-medium text-zinc-900">Springfield 10-Mile Radius</p>
-                      <p className="text-zinc-500">Delivered piping hot: 2:00 PM – 6:00 PM</p>
+                      <p className="font-medium text-zinc-900">Within 10 Miles of 65809</p>
+                      <p className="text-zinc-500">Delivery area: within 10 miles of Springfield from 65809 zip code</p>
                     </div>
                   </button>
                 </div>
@@ -852,6 +852,15 @@ function CheckoutPage() {
                         className="h-11 bg-zinc-50 border-zinc-200 text-zinc-900 text-base sm:text-sm rounded-xl pl-10 focus:border-amber-500 focus:bg-white focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
+                  </div>
+
+                  {/* Preferred Customer Contact Method */}
+                  <div className="sm:col-span-2 pt-2 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span className="text-zinc-600 font-medium">Preferred Customer Contact Method:</span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200/80 px-2.5 py-0.5 text-[11px] font-semibold text-amber-900">
+                      <Check className="h-3 w-3 text-amber-700" />
+                      Email / Phone / Text
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1215,7 +1224,7 @@ function CheckoutPage() {
                       className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 p-2 text-xs font-medium text-zinc-800 transition-all"
                     >
                       <Phone className="h-3.5 w-3.5 text-amber-700" />
-                      <span>Kitchen Hotline: {BUSINESS.phone}</span>
+                      <span>Phone & Text: {BUSINESS.phone}</span>
                     </a>
                   </div>
 

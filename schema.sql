@@ -164,7 +164,12 @@ INSERT IGNORE INTO `settings` (`setting_key`, `setting_value`) VALUES
 ('maxDailyTrays', '25'),
 ('businessPhone', '417-897-9754'),
 ('businessEmail', 'sales@jakloud.com'),
-('businessAddress', '3625 S Bedford Ave., Springfield, MO 65809');
+('preferredContactMethod', 'Email / Phone / Text'),
+('businessAddress', '3625 S Bedford Ave., Springfield, MO 65809'),
+('pickupAddress', '3625 S Bedford Ave., Springfield, MO 65809'),
+('currentLocation', 'Springfield, Missouri'),
+('pickupArea', 'Springfield, Missouri'),
+('deliveryArea', 'within 10 miles of Springfield from 65809 zip code');
 
 -- --------------------------------------------------------
 -- 8. Table: daily_control

@@ -65,18 +65,6 @@ const PROTEIN_FLYER_DATA: Record<
     halal: false,
     badge: "House Special",
   },
-  paneer: {
-    flyerName: "Paneer (Veg)",
-    meatDesc: "1.2 kg Fresh Malai Paneer Cubes",
-    halal: false,
-    badge: "Vegetarian Royal",
-  },
-  prawn: {
-    flyerName: "Seafood",
-    meatDesc: "1.5 kg Wild Jumbo King Tiger Prawns",
-    halal: true,
-    badge: "Coastal Dum",
-  },
 };
 
 export function MenuSection() {
@@ -100,11 +88,16 @@ export function MenuSection() {
   const [modalNotes, setModalNotes] = useState("");
   const [modalQty, setModalQty] = useState(1);
 
-  // Standardize menu items
+  // Standardize menu items (Core 4 signature meats)
   const menuList = useMemo(() => {
     const source = dynamicItems && dynamicItems.length > 0 ? dynamicItems : MENU;
-    return source.map((item) => {
-      const pId = ((item as any).proteinId || item.id || "chicken").replace(/^dish-/, "") as ProteinId;
+    return source
+      .filter((item) => {
+        const pId = ((item as any).proteinId || item.id || "").replace(/^dish-/, "").toLowerCase();
+        return pId !== "paneer" && pId !== "prawn" && pId !== "seafood";
+      })
+      .map((item) => {
+        const pId = ((item as any).proteinId || item.id || "chicken").replace(/^dish-/, "") as ProteinId;
       const flyer = PROTEIN_FLYER_DATA[pId] || {
         flyerName: item.name,
         meatDesc: (item as any).meatWeight || item.description,
@@ -193,12 +186,12 @@ export function MenuSection() {
 
         <div className="flex items-center gap-2 text-xs text-zinc-500 shrink-0">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-medium text-zinc-700">6 Signature Recipes Available</span>
+          <span className="font-medium text-zinc-700">4 Signature Recipes Available</span>
         </div>
       </div>
 
-      {/* Clean 6-Dish Responsive Card Grid (Matching Mobile App View exactly) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+      {/* Clean 4-Dish Responsive Card Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
         {menuList.map((dish) => {
           const totalCartCount = getProteinCartCount(dish.id);
 

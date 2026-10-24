@@ -303,8 +303,6 @@ function HomePage() {
             "🍖 Hyderabadi Shahi Mutton Dum",
             "🥩 Slow-Braised Spiced Beef Dum",
             "🥓 Springfield Signature Pork Dum",
-            "🧀 Royal Shahi Paneer Dum (Veg)",
-            "🦐 Jumbo King Tiger Prawns",
             "🥔 Slow-Steamed Spiced Baby Aloo",
             "🌰 Desi Ghee Roasted Cashews & Birista",
             "🥣 Mirchi Ka Salan & Mint Raita",

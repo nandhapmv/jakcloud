@@ -116,7 +116,7 @@ export function PickupDeliveryPage() {
     } else {
       setZipCheckResult({
         valid: false,
-        message: `ZIP ${cleanZip} appears to be outside our standard 10-mile Springfield radius. Hot Counter Pickup is available at 3625 S Bedford Ave!`,
+        message: `ZIP ${cleanZip} appears to be outside our standard 10-mile Springfield radius from 65809. Hot Counter Pickup is available at 3625 S Bedford Ave!`,
       });
       toast.warning("Outside standard radius. Counter pickup is available!");
     }
@@ -201,8 +201,8 @@ export function PickupDeliveryPage() {
                 <div className="flex items-start gap-2">
                   <MapPin className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-zinc-900">{BUSINESS.address}</p>
-                    <p className="text-[0.68rem] text-zinc-500">East Springfield (Near Highway 65 & Battlefield)</p>
+                    <p className="font-semibold text-zinc-900">{BUSINESS.pickupAddress || BUSINESS.address}</p>
+                    <p className="text-[0.68rem] text-zinc-500">Pickup Area: {BUSINESS.pickupArea} (Near Hwy 65 & Battlefield)</p>
                   </div>
                 </div>
 
@@ -328,8 +328,8 @@ export function PickupDeliveryPage() {
                 <div className="flex items-start gap-2 border-t border-zinc-200/60 pt-2">
                   <MapPin className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-zinc-900">10-Mile Springfield Radius</p>
-                    <p className="text-[0.68rem] text-zinc-500">Serving Springfield, Galloway, Battlefield & Metro</p>
+                    <p className="font-semibold text-zinc-900">Within 10 Miles of 65809</p>
+                    <p className="text-[0.68rem] text-zinc-500">Delivery area: within 10 miles of Springfield from 65809 zip code</p>
                   </div>
                 </div>
 

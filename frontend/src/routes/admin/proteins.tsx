@@ -72,7 +72,7 @@ export interface ProteinItem {
   type: "poultry" | "mutton" | "beef" | "pork" | "seafood" | "vegetarian";
   image: string;
   isHalal: boolean;
-  halalCertOrg?: string;
+  halalCertOrg?: string | undefined;
   available: boolean;
   basePrice: number;
   priceWithAloo: number;

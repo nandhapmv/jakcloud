@@ -75,13 +75,13 @@ export interface DeliveryZone {
 const INITIAL_ZONES: DeliveryZone[] = [
   {
     id: "zone-1",
-    name: "Zone 1 — Central Springfield / Downtown",
+    name: "Zone 1 — Central Springfield / 65809 Hub",
     minMiles: 0,
     maxMiles: 5,
     fee: 10.0,
     minOrderValue: 80.0,
     estimatedTime: "15 – 25 mins",
-    zipCodes: ["65806", "65802", "65807"],
+    zipCodes: ["65809", "65804", "65807", "65806"],
     active: true,
   },
   {
@@ -189,7 +189,7 @@ function DeliveryManagementPage() {
   const [zoneFee, setZoneFee] = useState("10.00");
   const [zoneMinOrder, setZoneMinOrder] = useState("80.00");
   const [zoneEta, setZoneEta] = useState("15 – 25 mins");
-  const [zoneZips, setZoneZips] = useState("65806, 65802, 65807");
+  const [zoneZips, setZoneZips] = useState("65809, 65804, 65807, 65806");
   const [zoneActive, setZoneActive] = useState(true);
 
   // Delete Zone Dialog State
@@ -582,7 +582,7 @@ function DeliveryManagementPage() {
                     <Compass className="h-4 w-4 text-gold" /> Maximum Delivery Radius
                   </Label>
                   <p className="text-[0.65rem] text-cream/60">
-                    Radius extending from JAKloud central kitchen (3625 S Bedford Ave)
+                    Radius extending from Central Kitchen (3625 S Bedford Ave., Springfield, MO 65809)
                   </p>
                 </div>
                 <div className="text-right">
@@ -826,7 +826,7 @@ function DeliveryManagementPage() {
                     JAKloud Central Handi Kitchen
                   </h4>
                   <p className="text-[0.7rem] text-gold font-mono">
-                    3625 S Bedford Ave, Springfield, MO
+                    3625 S Bedford Ave., Springfield, MO 65809
                   </p>
                 </div>
 

@@ -8,7 +8,7 @@ export const Route = createFileRoute("/menu")({
       {
         name: "description",
         content:
-          "Order handcrafted Hyderabadi Dum Biryani handi trays made to order in Springfield, MO. 100% Zabiha Halal chicken, mutton, beef, pork, paneer, and prawn.",
+          "Order handcrafted Hyderabadi Dum Biryani handi trays made to order in Springfield, MO. 100% Zabiha Halal chicken, mutton, beef, and pork.",
       },
       { property: "og:title", content: "Biryani Menu & Selection — J Paradize Dum Biryani" },
       {

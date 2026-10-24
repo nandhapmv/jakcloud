@@ -51,7 +51,7 @@ export const Route = createFileRoute("/biryani")({
       {
         name: "description",
         content:
-          "Explore handcrafted Dum Biryani Handi Trays in Springfield, MO. 100% Zabiha Halal Chicken, Hyderabadi Mutton, Prime Beef, Paneer, Prawn, and Signature Pork.",
+          "Explore handcrafted Dum Biryani Handi Trays in Springfield, MO. 100% Zabiha Halal Chicken, Hyderabadi Mutton, Prime Beef, and Signature Pork.",
       },
       { property: "og:title", content: "Dum Biryani Handi Selection — JAKloud" },
       {
@@ -191,58 +191,6 @@ export const BIRYANI_CARDS: BiryaniCardData[] = [
       "Includes 2 eggs, raita, salan & dessert",
     ],
   },
-  {
-    id: "paneer",
-    name: "Royal Shahi Paneer Dum (Veg)",
-    category: "Shahi Vegetarian",
-    price: 98.99,
-    priceWithAloo: 98.99,
-    note: "Vegetarian Delicacy",
-    description:
-      "Fresh golden artisan paneer cubes slow-simmered in saffron yogurt marinade, baby potatoes, roasted whole cashews, fresh mint, and caramelized onions layered in fragrant basmati.",
-    kcal: 1540,
-    kcalAloo: 1697,
-    image: paneerImg,
-    spiceDefault: "mild",
-    spiceRating: 1,
-    isHalal: true,
-    dietaryBadge: "100% Pure Vegetarian",
-    badgeColor: "bg-teal-950/80 border-teal-500/50 text-teal-300",
-    meatWeight: "1.4 kg Fresh Royal Paneer",
-    riceWeight: "1.0 kg Aged Basmati",
-    serves: "4 – 5 Adults",
-    highlightNotes: [
-      "Artisan fresh milk paneer",
-      "Aromatic saffron cream infusion",
-      "Includes raita, salan & dessert",
-    ],
-  },
-  {
-    id: "prawn",
-    name: "Jumbo King Tiger Prawn Dum",
-    category: "Seafood Specialties",
-    price: 139.99,
-    priceWithAloo: 139.99,
-    note: "Coastal Saffron Special",
-    description:
-      "Succulent ocean king tiger prawns tossed in coastal roasted spices, lemon juice, turmeric, and garlic, gently steamed over saffron basmati so seafood juices remain juicy and tender.",
-    kcal: 1620,
-    kcalAloo: 1777,
-    image: prawnImg,
-    spiceDefault: "medium",
-    spiceRating: 2,
-    isHalal: true,
-    dietaryBadge: "Seafood Prime",
-    badgeColor: "bg-sky-950/80 border-sky-500/50 text-sky-300",
-    meatWeight: "1.4 – 1.5 kg Jumbo Prawns",
-    riceWeight: "1.0 kg Aged Basmati",
-    serves: "4 – 5 Adults",
-    highlightNotes: [
-      "Wild-caught jumbo tiger prawns",
-      "Delicate coastal lemon & ghee dum",
-      "Includes 2 eggs, raita, salan & dessert",
-    ],
-  },
 ];
 
 export function BiryaniSelectionPage() {
@@ -291,7 +239,12 @@ export function BiryaniSelectionPage() {
   };
 
   const allBiryaniCards: (BiryaniCardData & { available: boolean })[] = useMemo(() => {
-    return dynamicMenuItems.map((dyn) => {
+    return dynamicMenuItems
+      .filter((dyn) => {
+        const id = (dyn.proteinId || dyn.id || "").replace(/^dish-/, "").toLowerCase();
+        return id !== "paneer" && id !== "prawn" && id !== "seafood";
+      })
+      .map((dyn) => {
       const preset = BIRYANI_CARDS.find(
         (p) => p.id === dyn.proteinId || p.name.toLowerCase() === dyn.name.toLowerCase(),
       );
@@ -394,11 +347,10 @@ export function BiryaniSelectionPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             {[
-              { id: "all", label: "All Biryanis (6)" },
+              { id: "all", label: "All Biryanis (4)" },
               { id: "halal", label: "100% Zabiha Halal" },
               { id: "signature", label: "Signature Trays" },
               { id: "premium", label: "Royal Occasion" },
-              { id: "veg-seafood", label: "Veg & Seafood" },
             ].map((tab) => {
               const isSelected = selectedCategory === tab.id;
               return (

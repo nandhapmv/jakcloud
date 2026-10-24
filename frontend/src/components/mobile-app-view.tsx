@@ -136,20 +136,6 @@ const PROTEIN_FLYER_DATA: Record<
     halal: true,
     badge: "Royal Feast",
   },
-  prawn: {
-    emoji: "🦐",
-    flyerName: "Seafood",
-    meatDesc: "1.5 kg wild jumbo king tiger prawns",
-    halal: true,
-    badge: "Coastal Dum",
-  },
-  paneer: {
-    emoji: "🧀",
-    flyerName: "Paneer (Veg)",
-    meatDesc: "1.2 kg fresh malai paneer in saffron gravy",
-    halal: false,
-    badge: "100% Veg",
-  },
 };
 
 export interface MobileAppViewProps {
@@ -162,35 +148,38 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   const { items: dynamicMenuItems } = useDynamicMenu();
   const navigate = useNavigate();
 
-  // Real-time dynamic menu synced from Admin & Backend
+  // Real-time dynamic menu synced from Admin & Backend (Core 4 signature meats)
   const displayMenu = useMemo(() => {
-    if (!dynamicMenuItems || dynamicMenuItems.length === 0) {
-      return MENU;
-    }
-    return dynamicMenuItems.map((d) => {
-      const pId = (d.proteinId || d.id || "chicken").replace(/^dish-/, "") as ProteinId;
-      return {
-        id: pId,
-        dishId: d.id,
-        proteinId: pId,
-        name: d.name,
-        category: d.category,
-        price: d.price,
-        priceWithAloo: d.priceWithAloo || d.price + (settings?.alooCharge ?? 0),
-        note: d.badge || "Handi Dum",
-        description: d.description,
-        meatWeight: d.meatWeight,
-        traySize: d.traySize || (d as any).serves || "Serves 4–5",
-        serves: (d as any).serves || d.traySize || "Serves 4–5",
-        riceWeight: d.riceWeight,
-        kcal: d.kcal,
-        kcalAloo: d.kcalAloo || (d.kcal ? d.kcal + 157 : 1850),
-        available: d.available !== false,
-        image: d.image || DISH_IMAGES[pId] || chickenImg,
-        badge: d.badge,
-        halal: d.isHalalCertified !== false,
-      };
-    });
+    const raw = !dynamicMenuItems || dynamicMenuItems.length === 0 ? MENU : dynamicMenuItems;
+    return raw
+      .filter((d: any) => {
+        const pId = (d.proteinId || d.id || "").replace(/^dish-/, "").toLowerCase();
+        return pId !== "paneer" && pId !== "prawn" && pId !== "seafood";
+      })
+      .map((d: any) => {
+        const pId = (d.proteinId || d.id || "chicken").replace(/^dish-/, "") as ProteinId;
+        return {
+          id: pId,
+          dishId: d.id,
+          proteinId: pId,
+          name: d.name,
+          category: d.category,
+          price: d.price,
+          priceWithAloo: d.priceWithAloo || d.price + (settings?.alooCharge ?? 0),
+          note: d.badge || "Handi Dum",
+          description: d.description,
+          meatWeight: d.meatWeight,
+          traySize: d.traySize || (d as any).serves || "Serves 4–5",
+          serves: (d as any).serves || d.traySize || "Serves 4–5",
+          riceWeight: d.riceWeight,
+          kcal: d.kcal,
+          kcalAloo: d.kcalAloo || (d.kcal ? d.kcal + 157 : 1850),
+          available: d.available !== false,
+          image: d.image || DISH_IMAGES[pId] || chickenImg,
+          badge: d.badge,
+          halal: d.isHalalCertified !== false,
+        };
+      });
   }, [dynamicMenuItems, settings?.alooCharge]);
 
   const lowestPrice = useMemo(() => {

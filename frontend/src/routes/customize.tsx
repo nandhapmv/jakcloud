@@ -118,8 +118,6 @@ const PROTEIN_OPTIONS: { id: ProteinId; name: string; price: number; halal: bool
   { id: "mutton", name: "Hyderabadi Shahi Mutton", price: 157.99, halal: true, image: muttonImg, tag: "Royal Feast" },
   { id: "beef", name: "Slow-Braised Spiced Beef", price: 122.99, halal: true, image: rawBeefImg, tag: "Hearty & Bold" },
   { id: "pork", name: "Springfield Signature Pork", price: 108.99, halal: false, image: rawPorkImg, tag: "Specialty" },
-  { id: "paneer", name: "Royal Shahi Paneer (Veg)", price: 98.99, halal: true, image: paneerImg, tag: "Vegetarian" },
-  { id: "prawn", name: "Jumbo King Tiger Prawns", price: 139.99, halal: true, image: prawnImg, tag: "Seafood Prime" },
 ];
 
 export function CustomizeOrderPage() {

@@ -65,37 +65,11 @@ export const MENU: MenuItem[] = [
     kcal: 1952,
     kcalAloo: 2109,
   },
-  {
-    id: "paneer",
-    name: "Royal Shahi Paneer Dum (Veg)",
-    category: "Vegetarian Royal",
-    price: 98.99,
-    priceWithAloo: 98.99,
-    note: "Vegetarian Delicacy",
-    description:
-      "Fresh golden paneer cubes slow-simmered with aromatic saffron gravy, baby potatoes, roasted cashews, and caramelized onions.",
-    kcal: 1540,
-    kcalAloo: 1697,
-  },
-  {
-    id: "prawn",
-    name: "Jumbo King Tiger Prawn Dum",
-    category: "Seafood Specialty",
-    price: 139.99,
-    priceWithAloo: 139.99,
-    note: "Coastal Saffron Special",
-    description:
-      "Succulent ocean king tiger prawns marinated in coastal roasted spices, layered with aged basmati, and steamed on gentle dum.",
-    kcal: 1620,
-    kcalAloo: 1777,
-  },
 ];
 
 export const CATEGORIES = [
   "Signature Trays",
   "Premium & Occasion",
-  "Vegetarian Royal",
-  "Seafood Specialty",
 ] as const;
 
 export const CLOSED_WEEKDAY = -1; // All 7 days open (No forced weekday closure)
@@ -142,7 +116,24 @@ export const PICKUP_TIMES = [
 export const DELIVERY_TIMES = ["2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM"];
 
 export const BUSINESS = {
+  name: "JAKloud J Paradize Dum Biryani",
   phone: "417-897-9754",
+  text: "417-897-9754",
+  phoneAndText: "417-897-9754",
   email: "sales@jakloud.com",
+  preferredContactMethod: "Email / Phone / Text",
   address: "3625 S Bedford Ave., Springfield, MO 65809",
+  businessAddress: "3625 S Bedford Ave., Springfield, MO 65809",
+  pickupAddress: "3625 S Bedford Ave., Springfield, MO 65809",
+  street: "3625 S Bedford Ave.",
+  city: "Springfield",
+  state: "MO",
+  stateFullName: "Missouri",
+  zip: "65809",
+  currentLocation: "Springfield, Missouri",
+  pickupArea: "Springfield, Missouri",
+  deliveryArea: "within 10 miles of Springfield from 65809 zip code",
+  deliveryRadiusMiles: 10,
+  hubZip: "65809",
 };
+

@@ -283,7 +283,7 @@ function OrderDetailsPage() {
   const mapsQuery = encodeURIComponent(
     order.customer.address
       ? `${order.customer.address}, ${order.customer.city || "Springfield"} ${order.customer.zipCode || "MO"}`
-      : "3625 S Bedford Ave, Springfield, MO 65807",
+      : "3625 S Bedford Ave., Springfield, MO 65809",
   );
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
 
@@ -520,7 +520,7 @@ function OrderDetailsPage() {
                     <Truck className="h-4 w-4 text-saffron" /> Delivery Drop-off Destination
                   </div>
                   <p className="font-medium text-cream text-sm">
-                    {order.customer.address}, {order.customer.city || "Springfield"}, MO {order.customer.zipCode || "65807"}
+                    {order.customer.address}, {order.customer.city || "Springfield"}, MO {order.customer.zipCode || "65809"}
                   </p>
                   {order.customer.deliveryInstructions && (
                     <div className="mt-2 rounded-xl bg-gold/5 p-3 border border-gold/15 text-xs text-cream/90">
