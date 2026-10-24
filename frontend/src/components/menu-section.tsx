@@ -22,6 +22,7 @@ import { useCart } from "@/lib/cart";
 import { formatMoney, MENU, type ProteinId } from "@/lib/menu";
 import { useDynamicMenu, useKitchenSettings } from "@/lib/store";
 import { DishIngredientsModal } from "@/components/dish-ingredients-modal";
+import { TraySelectorModal } from "@/components/tray-selector-modal";
 
 const DISH_IMAGES: Record<string, string> = {
   chicken: chickenImg,
@@ -69,7 +70,7 @@ const PROTEIN_FLYER_DATA: Record<
 };
 
 export function MenuSection() {
-  const { lines, addLine, setQty } = useCart();
+  const { lines, addLine, setQty, selectedTrayQty, openTraySelector } = useCart();
   const { items: dynamicItems } = useDynamicMenu();
   const { settings } = useKitchenSettings();
 
@@ -135,12 +136,29 @@ export function MenuSection() {
       .reduce((sum, l) => sum + l.qty, 0);
   };
 
-  const handleOpenCustomizer = (dish: (typeof menuList)[0]) => {
+  // Quick 1-tap add matching mobile view
+  const handleQuickAddProtein = (dish: (typeof menuList)[0]) => {
+    const qtyToAdd = selectedTrayQty || 1;
+    addLine({
+      proteinId: dish.id,
+      name: dish.name,
+      aloo: true,
+      extraSpicy: true,
+      notes: "",
+      qty: qtyToAdd,
+      unitPrice: dish.price,
+    });
+    toast.success(
+      `Added ${qtyToAdd}× ${dish.name} (${qtyToAdd} ${qtyToAdd > 1 ? "Trays" : "Tray"}) to Cart! 🥘`
+    );
+  };
+
+  const handleOpenCustomizer = (dish: (typeof menuList)[0], qty?: number) => {
     setActiveDish(dish);
     setModalAloo(true);
     setModalExtraSpicy(false);
     setModalNotes("");
-    setModalQty(1);
+    setModalQty(qty || selectedTrayQty || 1);
   };
 
   const handleUpdateProteinQty = (dish: (typeof menuList)[0], delta: number) => {
@@ -196,6 +214,30 @@ export function MenuSection() {
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           <span className="font-medium text-zinc-700">4 Signature Recipes Available</span>
         </div>
+      </div>
+
+      {/* Selected Tray Allocation Bar (Exact Mobile App Feature) */}
+      <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-100/40 to-orange-500/10 border border-amber-300/80 p-3.5 sm:p-4 shadow-xs flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-zinc-950 flex items-center justify-center font-bold text-base shadow-xs shrink-0">
+            {selectedTrayQty}
+          </div>
+          <div className="min-w-0">
+            <span className="text-sm sm:text-base font-bold text-zinc-900 font-display block">
+              {selectedTrayQty} {selectedTrayQty === 1 ? "Tray" : "Trays"} Selected
+            </span>
+            <p className="text-xs text-zinc-500 truncate mt-0.5">
+              Pick your biryani below to add to your order
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => openTraySelector()}
+          className="shrink-0 rounded-xl bg-white border border-amber-300 px-4 py-2 text-xs font-bold text-amber-800 hover:bg-amber-50 shadow-xs cursor-pointer transition-colors"
+        >
+          Change
+        </button>
       </div>
 
       {/* Clean 4-Dish Responsive Card Grid */}
@@ -276,8 +318,19 @@ export function MenuSection() {
                     )}
                   </div>
 
-                  {/* Ingredients & Nutrition trigger button */}
-                  <div className="mt-2">
+                  {/* Customize & Nutrition triggers */}
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                    {dish.available && (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenCustomizer(dish)}
+                        className="text-[10.5px] font-medium text-amber-700 hover:text-amber-800 flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <span>Customize</span>
+                        <span className="text-zinc-400 text-[9px]">(Aloo & Spice)</span>
+                      </button>
+                    )}
+
                     <button
                       type="button"
                       onClick={(e) => {
@@ -288,10 +341,10 @@ export function MenuSection() {
                           image: dish.image,
                         });
                       }}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-300/80 px-2.5 py-1 text-[10.5px] font-bold transition-all cursor-pointer shadow-2xs group"
+                      className="inline-flex items-center gap-1 rounded-md bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-300/80 px-2 py-0.5 text-[10px] font-bold transition-all cursor-pointer shadow-2xs group"
                     >
-                      <UtensilsCrossed className="h-3 w-3 text-amber-600 group-hover:scale-110 transition-transform" />
-                      <span>Ingredients & Nutrition (38 Items)</span>
+                      <UtensilsCrossed className="h-2.5 w-2.5 text-amber-600 group-hover:scale-110 transition-transform" />
+                      <span>38 Ingredients</span>
                     </button>
                   </div>
                 </div>
@@ -313,29 +366,29 @@ export function MenuSection() {
                 ) : totalCartCount === 0 ? (
                   <button
                     type="button"
-                    onClick={() => handleOpenCustomizer(dish)}
-                    className="flex items-center gap-1.5 rounded-lg bg-amber-500 text-zinc-950 px-3 py-1.5 text-xs font-bold hover:bg-amber-400 active:scale-95 transition-all ml-auto cursor-pointer shadow-sm"
+                    onClick={() => handleQuickAddProtein(dish)}
+                    className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold px-3.5 py-1.5 text-xs shadow-sm hover:brightness-105 active:scale-95 transition-all ml-auto cursor-pointer"
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    <span>Add Tray</span>
+                    <span>Add {selectedTrayQty > 1 ? `${selectedTrayQty} Trays` : "Tray"}</span>
                   </button>
                 ) : (
-                  <div className="flex items-center rounded-lg border border-zinc-200 bg-zinc-50 p-0.5 ml-auto">
+                  <div className="flex items-center rounded-xl border border-amber-300 bg-amber-50/50 p-0.5 ml-auto shadow-sm">
                     <button
                       type="button"
                       onClick={() => handleUpdateProteinQty(dish, -1)}
-                      className="h-6 w-6 flex items-center justify-center text-zinc-600 hover:text-zinc-900 hover:bg-white rounded transition-colors active:scale-95 cursor-pointer"
+                      className="h-7 w-7 flex items-center justify-center text-zinc-700 hover:text-zinc-950 hover:bg-white rounded-lg transition-colors active:scale-95 cursor-pointer"
                       title="Decrease quantity"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
-                    <span className="w-7 text-center text-xs font-medium text-zinc-900 font-mono">
+                    <span className="w-7 text-center text-xs font-bold text-amber-800 font-mono">
                       {totalCartCount}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleOpenCustomizer(dish)}
-                      className="h-6 w-6 flex items-center justify-center text-amber-800 hover:text-amber-950 hover:bg-white rounded transition-colors active:scale-95 cursor-pointer"
+                      className="h-7 w-7 flex items-center justify-center text-amber-700 hover:text-amber-800 hover:bg-white rounded-lg transition-colors active:scale-95 cursor-pointer"
                       title="Add customized tray"
                     >
                       <Plus className="h-3 w-3" />
@@ -573,6 +626,9 @@ export function MenuSection() {
         proteinId={nutritionModalDish?.proteinId}
         dishImage={nutritionModalDish?.image}
       />
+
+      {/* Initial Tray Quantity Selector Modal ("How Many Trays Do You Need?") */}
+      <TraySelectorModal />
     </section>
   );
 }

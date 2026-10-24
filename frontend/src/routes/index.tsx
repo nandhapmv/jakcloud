@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { MenuSection } from "@/components/menu-section";
 import { formatDate, nextAvailableDate, BUSINESS } from "@/lib/menu";
 import { MobileAppView } from "@/components/mobile-app-view";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -50,6 +51,7 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const { openTraySelector } = useCart();
   const nextDate = formatDate(nextAvailableDate());
 
   const whatsappUrl = `https://wa.me/14178979754?text=${encodeURIComponent(
@@ -154,6 +156,12 @@ function HomePage() {
               <div className="flex flex-wrap items-center gap-3.5 pt-1">
                 <a
                   href="#menu"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openTraySelector();
+                    const el = document.getElementById("menu");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
                   className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-extrabold text-sm px-6 py-3.5 shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
                 >
                   <UtensilsCrossed className="h-4 w-4" />

@@ -22,14 +22,47 @@ type CartContextValue = {
   removeLine: (key: string) => void;
   clear: () => void;
   clearCart: () => void;
+  selectedTrayQty: number;
+  setSelectedTrayQty: (qty: number) => void;
+  traySelectorOpen: boolean;
+  setTraySelectorOpen: (open: boolean) => void;
+  openTraySelector: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "jakloud-jparadize-cart-v1";
 const LEGACY_STORAGE_KEY = "spiceking-cart-v1";
+const TRAY_QTY_STORAGE_KEY = "jakloud-selected-tray-qty";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
+  const [selectedTrayQty, setSelectedTrayQtyState] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(TRAY_QTY_STORAGE_KEY);
+      if (saved) {
+        const val = parseInt(saved, 10);
+        if (val > 0) return val;
+      }
+    } catch {
+      /* ignore */
+    }
+    return 1;
+  });
+  const [traySelectorOpen, setTraySelectorOpen] = useState(false);
+
+  const setSelectedTrayQty = (qty: number) => {
+    const validQty = Math.max(1, qty);
+    setSelectedTrayQtyState(validQty);
+    try {
+      localStorage.setItem(TRAY_QTY_STORAGE_KEY, String(validQty));
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const openTraySelector = () => {
+    setTraySelectorOpen(true);
+  };
 
   useEffect(() => {
     try {
@@ -109,8 +142,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setLines((prev) => prev.filter((l) => l.key !== key)),
       clear: clearAll,
       clearCart: clearAll,
+      selectedTrayQty,
+      setSelectedTrayQty,
+      traySelectorOpen,
+      setTraySelectorOpen,
+      openTraySelector,
     };
-  }, [lines]);
+  }, [lines, selectedTrayQty, traySelectorOpen]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

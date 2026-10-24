@@ -40,7 +40,7 @@ const MOBILE_NAV = [
 ] as const;
 
 export function SiteHeader() {
-  const { count } = useCart();
+  const { count, openTraySelector } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -152,7 +152,17 @@ export function SiteHeader() {
             {/* Handi Tray Cart Button */}
             <Button
               size="sm"
-              onClick={() => setCartOpen(true)}
+              onClick={() => {
+                if (count === 0) {
+                  openTraySelector();
+                  const menuEl = document.getElementById("menu");
+                  if (menuEl) {
+                    menuEl.scrollIntoView({ behavior: "smooth" });
+                  }
+                } else {
+                  setCartOpen(true);
+                }
+              }}
               className="relative rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs shadow-md hover:scale-105 transition-all gap-2 px-4 py-2 cursor-pointer h-9 border border-amber-300"
               aria-label={`Open Handi Tray cart, ${count} tray${count === 1 ? "" : "s"}`}
             >

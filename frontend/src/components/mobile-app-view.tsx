@@ -144,7 +144,20 @@ export interface MobileAppViewProps {
 }
 
 export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
-  const { lines, addLine, setQty, updateLine, removeLine, count, subtotal, clearCart } = useCart();
+  const {
+    lines,
+    addLine,
+    setQty,
+    updateLine,
+    removeLine,
+    count,
+    subtotal,
+    clearCart,
+    selectedTrayQty,
+    setSelectedTrayQty,
+    traySelectorOpen,
+    setTraySelectorOpen,
+  } = useCart();
   const { settings } = useKitchenSettings();
   const { items: dynamicMenuItems } = useDynamicMenu();
   const navigate = useNavigate();
@@ -217,9 +230,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   } | null>(null);
 
   // Initial Tray Quantity Selector Modal ("How Many Trays Do You Need?")
-  const [traySelectorOpen, setTraySelectorOpen] = useState(true);
-  const [selectedTrayQty, setSelectedTrayQty] = useState(1);
-  const [tempTrayQty, setTempTrayQty] = useState(1);
+  const [tempTrayQty, setTempTrayQty] = useState(selectedTrayQty || 1);
 
   const handleConfirmTraySelection = (qty: number) => {
     setSelectedTrayQty(qty);
