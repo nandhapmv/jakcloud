@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
 import {
   FileText,
@@ -61,16 +61,10 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/cms")({
-  head: () => ({
-    meta: [
-      { title: "Website Content Management (CMS) — JAKloud J Paradize" },
-      {
-        name: "description",
-        content: "Manage Hero banner, about section, gallery images, contacts, WhatsApp, QR codes, social links and footer.",
-      },
-    ],
-  }),
-  component: CmsManagementPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/admin" });
+  },
+  component: () => null,
 });
 
 export interface GalleryItem {

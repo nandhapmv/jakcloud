@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
 import {
   AreaChart,
@@ -78,16 +78,10 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/reports")({
-  head: () => ({
-    meta: [
-      { title: "Financial Reports & Analytics — JAKloud J Paradize" },
-      {
-        name: "description",
-        content: "Executive restaurant analytics, monthly sales revenue, capacity limits, protein share, and exportable reports.",
-      },
-    ],
-  }),
-  component: ReportsAnalyticsPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/admin" });
+  },
+  component: () => null,
 });
 
 function ReportsAnalyticsPage() {

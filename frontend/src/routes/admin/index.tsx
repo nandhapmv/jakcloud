@@ -114,9 +114,7 @@ type NavSection =
   | "orders"
   | "menu"
   | "daily-control"
-  | "delivery"
-  | "reports"
-  | "settings";
+  | "delivery";
 
 interface AdminSearchParams {
   tab?: string;
@@ -160,8 +158,6 @@ function AdminOverviewPage() {
     if (s === "menu") return "menu";
     if (s === "orders") return "orders";
     if (s === "delivery") return "delivery";
-    if (s === "reports") return "reports";
-    if (s === "settings") return "settings";
     return "dashboard";
   });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -1420,22 +1416,6 @@ function AdminOverviewPage() {
                 icon: Truck,
                 fullRoute: "/admin/delivery",
               },
-              {
-                id: "reports",
-                label: "Financial Reports & BI",
-                icon: BarChart3,
-                fullRoute: "/admin/reports",
-              },
-              {
-                link: "/admin/cms",
-                label: "Website CMS & Media",
-                icon: Sparkles,
-              },
-              {
-                id: "settings",
-                label: "Kitchen Settings",
-                icon: Settings,
-              },
             ].map((item) => {
               const Icon = item.icon;
               const isActive = item.id ? activeSection === item.id : false;
@@ -1728,16 +1708,6 @@ function AdminOverviewPage() {
                     <p className="text-[0.65rem] text-gold/80 truncate">{user?.email || "admin@jakloud.com"}</p>
                   </div>
                   <div className="py-1 space-y-0.5">
-                    <button
-                      onClick={() => {
-                        setActiveSection("settings");
-                        setProfileMenuOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs text-cream/80 hover:bg-gold/15 hover:text-gold transition-colors text-left cursor-pointer"
-                    >
-                      <Settings className="h-3.5 w-3.5 text-gold" />
-                      <span>Kitchen Settings</span>
-                    </button>
                     <Link
                       to="/"
                       target="_blank"
@@ -2049,9 +2019,6 @@ function AdminOverviewPage() {
                   <div className="mt-2 flex items-center justify-between text-[0.68rem] text-emerald-400">
                     <span className="flex items-center gap-1 font-medium truncate">
                       <TrendingUp className="h-3 w-3" /> Real database receipts
-                    </span>
-                    <span className="text-gold/60 group-hover:text-gold group-hover:translate-x-0.5 transition-all text-[0.65rem] font-bold">
-                      Reports →
                     </span>
                   </div>
                 </div>
@@ -4210,324 +4177,6 @@ function AdminOverviewPage() {
             </div>
           )}
 
-          {/* ========================================================= */}
-          {/* TAB 6: FINANCIAL REPORTS                                  */}
-          {/* ========================================================= */}
-          {activeSection === "reports" && (
-            <div className="space-y-6 animate-in fade-in-50 duration-500">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gold/20 pb-4">
-                <div>
-                  <h2 className="font-display text-2xl text-cream font-bold">
-                    Financial Performance & Sales Analytics
-                  </h2>
-                  <p className="text-xs text-cream/60">
-                    Gross revenue, net margins, daily capacity tracking, protein share & downloadable reports
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button asChild className="bg-gold text-black hover:bg-gold/90 font-bold text-xs">
-                    <Link to="/admin/reports">
-                      Open Dedicated Analytics & BI Dashboard →
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 text-center">
-                  <p className="text-xs uppercase tracking-wider text-gold">Average Order Value (AOV)</p>
-                  <h3 className="mt-2 font-display text-3xl font-bold text-cream font-mono">$154.50</h3>
-                  <p className="mt-1 text-[0.7rem] text-cream/60">+$12.50 per Handi booking</p>
-                </div>
-                <div className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 text-center">
-                  <p className="text-xs uppercase tracking-wider text-saffron">Aloo Addon Margin Rate</p>
-                  <h3 className="mt-2 font-display text-3xl font-bold text-cream font-mono">71.2%</h3>
-                  <p className="mt-1 text-[0.7rem] text-cream/60">+$7.00 per tray upgrade</p>
-                </div>
-                <div className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 text-center">
-                  <p className="text-xs uppercase tracking-wider text-emerald-400">Gross Month Revenue</p>
-                  <h3 className="mt-2 font-display text-3xl font-bold text-cream font-mono">$38,750.00</h3>
-                  <p className="mt-1 text-[0.7rem] text-emerald-400 font-mono">+16.8% monthly growth</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* TAB 7: KITCHEN SETTINGS                                   */}
-          {/* ========================================================= */}
-          {activeSection === "settings" && (
-            <div className="space-y-6 animate-in fade-in-50 duration-500">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gold/20 pb-4">
-                <div>
-                  <h2 className="font-display text-2xl text-cream font-bold">
-                    Kitchen Operations & Store Configuration
-                  </h2>
-                  <p className="text-xs text-cream/60">
-                    Manage daily cooking quotas, order cutoff schedules, and operating hours
-                  </p>
-                </div>
-                <Button asChild size="sm" className="bg-gold text-black hover:bg-gold/90 font-bold text-xs">
-                  <Link to="/admin/daily-control">
-                    Open Dedicated Daily Control →
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="max-w-2xl space-y-6">
-                <div className="rounded-3xl border border-gold/25 bg-[#120c08]/85 p-6 space-y-5">
-                  <div className="flex items-center justify-between border-b border-gold/15 pb-3">
-                    <h3 className="font-display text-lg text-cream font-bold">Dum Kitchen Capacity Quota</h3>
-                    <span className="font-mono text-xs text-gold font-bold">Active Limit: {dailyLimit} Trays</span>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center text-xs">
-                      <Label htmlFor="limit-input" className="text-gold font-semibold">Maximum Daily Trays Limit:</Label>
-                      <span className="font-bold text-cream font-mono">{dailyLimitInput} Trays</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setDailyLimitInput((prev) => Math.max(1, prev - 1))}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-black/50 text-gold hover:bg-gold/15 text-lg font-bold cursor-pointer"
-                        title="Decrease 1 tray"
-                      >
-                        -
-                      </button>
-
-                      <Input
-                        id="limit-input"
-                        type="number"
-                        min={1}
-                        max={100}
-                        value={dailyLimitInput}
-                        onChange={(e) => setDailyLimitInput(Math.max(1, parseInt(e.target.value, 10) || 10))}
-                        className="h-10 text-center font-display text-lg font-bold text-cream rounded-xl border-gold/30 bg-black/60"
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() => setDailyLimitInput((prev) => Math.min(100, prev + 1))}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-black/50 text-gold hover:bg-gold/15 text-lg font-bold cursor-pointer"
-                        title="Increase 1 tray"
-                      >
-                        +
-                      </button>
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => {
-                          updateSettings({ dailyTrayLimit: dailyLimitInput });
-                          toast.success(`✅ Saved to Database: Capacity limit set to ${dailyLimitInput} trays!`);
-                        }}
-                        className="h-10 bg-gold text-black hover:bg-amber-400 font-bold text-xs px-3 shadow-md shrink-0 cursor-pointer"
-                      >
-                        Apply Limit
-                      </Button>
-                    </div>
-
-                    {/* Quick Preset Buttons */}
-                    <div className="space-y-1.5 pt-1">
-                      <span className="text-[0.65rem] text-cream/50 uppercase tracking-wider font-semibold block">
-                        Quick Capacity Presets (Click to Save to DB):
-                      </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {[
-                          { label: "10 Trays (Default)", val: 10 },
-                          { label: "15 Trays", val: 15 },
-                          { label: "20 Trays", val: 20 },
-                          { label: "25 Trays", val: 25 },
-                          { label: "35 Trays (Weekend)", val: 35 },
-                          { label: "50 Trays (Feast)", val: 50 },
-                        ].map((preset) => (
-                          <button
-                            key={preset.val}
-                            type="button"
-                            onClick={() => {
-                              setDailyLimitInput(preset.val);
-                              updateSettings({ dailyTrayLimit: preset.val });
-                              toast.success(`✅ Saved to Database: Capacity set to ${preset.val} trays!`);
-                            }}
-                            className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all cursor-pointer ${
-                              dailyLimitInput === preset.val
-                                ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
-                                : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/40 hover:text-cream"
-                            }`}
-                          >
-                            {preset.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 border-t border-gold/15 pt-4">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="cutoff-time" className="text-xs text-gold font-semibold">
-                        Daily Order Acceptance Cutoff Time
-                      </Label>
-                      {(() => {
-                        const now = new Date();
-                        const isPast = now.getHours() * 60 + now.getMinutes() >= cutoffHourInput * 60;
-                        const hour12 = cutoffHourInput > 12 ? cutoffHourInput - 12 : cutoffHourInput === 0 ? 12 : cutoffHourInput;
-                        const ampm = cutoffHourInput >= 12 ? "PM" : "AM";
-                        return (
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold ${
-                              isPast
-                                ? "bg-red-500/15 text-red-400 border border-red-500/30"
-                                : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                            }`}
-                          >
-                            {isPast ? `🔴 Closed for Today (Past ${hour12}:00 ${ampm})` : `🟢 Active (Closes at ${hour12}:00 ${ampm})`}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                    <select
-                      id="cutoff-time"
-                      value={cutoffHourInput}
-                      onChange={(e) => setCutoffHourInput(parseInt(e.target.value, 10))}
-                      className="w-full h-10 rounded-xl border border-gold/25 bg-black/50 px-3 text-xs text-cream font-mono cursor-pointer focus:outline-none focus:border-gold"
-                    >
-                      <option value={9}>9:00 AM (Morning Cutoff)</option>
-                      <option value={10}>10:00 AM</option>
-                      <option value={11}>11:00 AM</option>
-                      <option value={12}>12:00 PM (Noon Cutoff)</option>
-                      <option value={13}>1:00 PM</option>
-                      <option value={14}>2:00 PM (2:00 PM Cutoff)</option>
-                      <option value={15}>3:00 PM (Standard 3:00 PM Cutoff)</option>
-                      <option value={16}>4:00 PM</option>
-                      <option value={17}>5:00 PM</option>
-                      <option value={18}>6:00 PM (Evening Cutoff)</option>
-                      <option value={19}>7:00 PM</option>
-                      <option value={20}>8:00 PM</option>
-                      <option value={21}>9:00 PM (Night Cutoff)</option>
-                      <option value={22}>10:00 PM</option>
-                      <option value={23}>11:00 PM</option>
-                    </select>
-                    <p className="text-[0.65rem] text-cream/60">
-                      Once this time passes today, new customer checkout is automatically closed and blocked in the database.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-gold/15 pt-4">
-                    <div>
-                      <p className="text-xs font-medium text-cream">Kitchen Open / Accepting Trays</p>
-                      <p className="text-[0.65rem] text-cream/60">Turn off to temporarily pause new customer orders</p>
-                    </div>
-                    <Switch
-                      checked={kitchenOpenInput}
-                      onCheckedChange={setKitchenOpenInput}
-                      className="data-[state=checked]:bg-emerald-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2 border-t border-gold/15 pt-4">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="admin-delivery-fee" className="text-xs text-gold font-semibold">
-                        Delivery Charge ($)
-                      </Label>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold border ${
-                          deliveryFeeInput === 0
-                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                            : "bg-amber-500/20 text-amber-400 border-amber-500/40"
-                        }`}
-                      >
-                        {deliveryFeeInput === 0 ? "🎉 FREE ($0.00)" : `💵 $${deliveryFeeInput.toFixed(2)}`}
-                      </span>
-                    </div>
-
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-cream/40 font-mono text-xs">$</span>
-                      <input
-                        id="admin-delivery-fee"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={deliveryFeeInput}
-                        onChange={(e) => setDeliveryFeeInput(Math.max(0, parseFloat(e.target.value) || 0))}
-                        className="w-full h-10 rounded-xl border border-gold/25 bg-black/50 pl-7 pr-3 text-xs text-cream font-mono font-bold focus:outline-none focus:border-gold"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                      <button
-                        type="button"
-                        onClick={() => setDeliveryFeeInput(0)}
-                        className={`px-2.5 py-1 text-[11px] rounded-lg font-bold border transition-all cursor-pointer ${
-                          deliveryFeeInput === 0
-                            ? "bg-emerald-500 text-zinc-950 border-emerald-400 shadow-sm"
-                            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
-                        }`}
-                      >
-                        🎉 Free ($0)
-                      </button>
-                      {[5, 10, 12, 15].map((fee) => (
-                        <button
-                          key={fee}
-                          type="button"
-                          onClick={() => setDeliveryFeeInput(fee)}
-                          className={`px-2.5 py-1 text-[11px] rounded-lg font-mono font-medium border transition-all cursor-pointer ${
-                            deliveryFeeInput === fee
-                              ? "bg-gold text-zinc-950 border-gold font-bold shadow-sm"
-                              : "border-gold/20 bg-black/40 text-cream hover:bg-gold/10"
-                          }`}
-                        >
-                          ${fee}.00
-                        </button>
-                      ))}
-                    </div>
-                    <p className="text-[0.65rem] text-cream/60">
-                      Set to 0 for Free Delivery, or enter custom fee. Stored in MySQL and dynamically reflected in customer app.
-                    </p>
-                  </div>
-
-                  <Button
-                    onClick={async () => {
-                      const hour12 = cutoffHourInput > 12 ? cutoffHourInput - 12 : cutoffHourInput === 0 ? 12 : cutoffHourInput;
-                      const ampm = cutoffHourInput >= 12 ? "PM" : "AM";
-                      const cutoffLabel = `${hour12}:00 ${ampm}`;
-
-                      const payload = {
-                        dailyTrayLimit: dailyLimitInput,
-                        isKitchenOpen: kitchenOpenInput,
-                        orderCutoffHour: cutoffHourInput,
-                        orderCutoffTime: `${cutoffHourInput}:00`,
-                        deliveryFee: deliveryFeeInput,
-                        strictCutoffEnforced: true,
-                      };
-
-                      updateSettings(payload);
-
-                      try {
-                        await fetch("/api/settings", {
-                          method: "PUT",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify(payload),
-                        });
-                      } catch (err) {
-                        console.warn("Settings sync warning:", err);
-                      }
-
-                      toast.success(
-                        `✅ Saved to MySQL Database: Daily Cutoff set to ${cutoffLabel}, limit set to ${dailyLimitInput} trays & Delivery Fee set to ${
-                          deliveryFeeInput === 0 ? "FREE ($0.00)" : `$${deliveryFeeInput.toFixed(2)}`
-                        }!`
-                      );
-                    }}
-                    className="w-full bg-gradient-to-r from-chili via-saffron to-gold text-white hover:brightness-110 font-bold text-xs h-10 shadow-lg shadow-chili/30 cursor-pointer"
-                  >
-                    Save Operational Settings to Database
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
           </div>
         </main>
       </div>
