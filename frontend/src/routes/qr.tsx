@@ -145,19 +145,13 @@ export function QrWelcomePage() {
       </div>
 
       {/* Desktop Rich Brand QR Hub */}
-      <div className="hidden lg:block min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-100 selection:text-amber-900 relative overflow-hidden pb-16">
-      {/* Background Ambience Photography with Warm Light Vignette */}
+      <div className="hidden lg:block min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-100 selection:text-amber-900 relative overflow-hidden pb-8">
+      {/* Background Ambience */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <img
-          src={heroImg}
-          alt="Cinematic Dum Biryani"
-          className="h-full w-full object-cover object-center opacity-10 blur-[3px] scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#fbf9f5]/90 via-[#fbf9f5]/95 to-[#fbf9f5]" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-gradient-to-b from-amber-200/20 via-orange-200/10 to-transparent blur-3xl pointer-events-none" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-lg px-4 pt-6 sm:pt-10 space-y-6">
+      <div className="relative z-10 mx-auto max-w-lg px-4 pt-4 sm:pt-6 space-y-4">
         {/* ========================================================================= */}
         {/* 1. QR CODE SCANNER SUCCESS HEADER BANNER                                 */}
         {/* ========================================================================= */}

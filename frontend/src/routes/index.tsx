@@ -109,20 +109,20 @@ function HomePage() {
       </div>
 
       {/* Desktop Rich Brand Experience */}
-      <div className="hidden lg:block min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 w-full max-w-full overflow-x-hidden">
+      <div className="hidden lg:block min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 w-full max-w-full overflow-x-hidden">
       {/* ------------------------------------------------------------- */}
       {/* 1. ULTRA-LUXURY SPLIT HERO SECTION (LIGHT / WARM IVORY THEME)  */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#fbf9f5] via-amber-50/30 to-[#fbf9f5] border-b border-zinc-200/80 pt-8 pb-12 lg:pt-14 lg:pb-16">
+      <section className="relative overflow-hidden border-b border-zinc-200/60 pt-4 pb-6 lg:pt-6 lg:pb-8">
         {/* Ambient Subtle Warm Glows */}
         <div className="absolute top-0 right-1/4 -z-10 h-96 w-96 rounded-full bg-gradient-to-br from-amber-200/40 via-orange-100/30 to-transparent blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-10 -z-10 h-72 w-72 rounded-full bg-gradient-to-tr from-amber-300/20 via-orange-200/10 to-transparent blur-2xl pointer-events-none" />
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-center">
             
             {/* LEFT COLUMN: Majestic Editorial Typography & CTAs (Col 7) */}
-            <div className="lg:col-span-7 space-y-6 text-left">
+            <div className="lg:col-span-7 space-y-3.5 text-left">
               {/* Status Badge Pill */}
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50/90 px-3.5 py-1.5 shadow-sm text-xs">
                 <span className="relative flex h-2 w-2">
@@ -179,62 +179,7 @@ function HomePage() {
                 </a>
               </div>
 
-              {/* Live Batch Allocation Meter Card */}
-              <div className="rounded-2xl border border-amber-200/90 bg-white/90 p-4 shadow-sm backdrop-blur-md space-y-2.5 max-w-lg">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-amber-600" />
-                    <span className="font-bold text-zinc-900">Today's Kitchen Allocation</span>
-                  </div>
-                  <span className="rounded-full bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 text-[10.5px] font-bold text-emerald-800">
-                    ● 19 of 25 Trays Booked (6 Left)
-                  </span>
-                </div>
 
-                <div className="h-2 w-full rounded-full bg-zinc-100 overflow-hidden border border-zinc-200">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-amber-500 to-amber-600 transition-all duration-1000"
-                    style={{ width: "76%" }}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-zinc-500">
-                  <span className="flex items-center gap-1 text-zinc-700">
-                    <MapPin className="h-3 w-3 text-amber-600" />
-                    Springfield Pickup & Delivery
-                  </span>
-                  <span className="text-amber-800 font-semibold">
-                    Cutoff: 2:00 PM Prior Day
-                  </span>
-                </div>
-              </div>
-
-              {/* Trust Badges Row */}
-              <div className="grid grid-cols-3 gap-3 pt-1 max-w-lg">
-                <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white p-2.5 shadow-xs">
-                  <Shield className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <div className="text-left leading-tight">
-                    <p className="text-[11px] font-bold text-zinc-900">100% Halal</p>
-                    <p className="text-[9.5px] text-zinc-500">Zabiha Certified</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white p-2.5 shadow-xs">
-                  <UtensilsCrossed className="h-4 w-4 text-amber-600 shrink-0" />
-                  <div className="text-left leading-tight">
-                    <p className="text-[11px] font-bold text-zinc-900">Feeds 4–5</p>
-                    <p className="text-[9.5px] text-zinc-500">1.8 kg Meat Tray</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white p-2.5 shadow-xs">
-                  <Sparkles className="h-4 w-4 text-amber-600 shrink-0" />
-                  <div className="text-left leading-tight">
-                    <p className="text-[11px] font-bold text-zinc-900">Free Aloo</p>
-                    <p className="text-[9.5px] text-emerald-700 font-medium">$0.00 Included</p>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* RIGHT COLUMN: Splendid Culinary Food Showcase (Col 5) */}
@@ -304,7 +249,7 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 2. SCROLLING FOOD CATEGORIES TICKER RIBBON                    */}
       {/* ------------------------------------------------------------- */}
-      <div className="border-y border-amber-200/60 bg-gradient-to-r from-amber-50/80 via-white to-amber-50/80 py-3.5 overflow-hidden shadow-xs">
+      <div className="border-y border-amber-200/60 bg-white/70 backdrop-blur-xs py-3.5 overflow-hidden shadow-xs">
         <div className="flex animate-marquee whitespace-nowrap gap-8 text-xs font-bold text-amber-950">
           {[
             "🍗 Royal Chicken Dum Biryani",
@@ -332,7 +277,7 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 3. QUALITY STANDARD                                          */}
       {/* ------------------------------------------------------------- */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-5">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 lg:py-7 space-y-3.5">
         <div className="text-left space-y-1 max-w-2xl">
           <div className="inline-flex items-center gap-1.5 text-xs text-amber-800 font-semibold">
             <Shield className="h-4 w-4 text-emerald-600" />
@@ -401,8 +346,8 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 6. CUSTOMER REVIEWS                                           */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-y border-zinc-200 bg-zinc-50/70 py-8 lg:py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-5">
+      <section className="border-y border-zinc-200/60 bg-transparent py-5 lg:py-7">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-3.5">
           <div className="text-left space-y-1 max-w-2xl">
             <span className="text-xs uppercase tracking-wider text-amber-800 font-semibold">
               Verified Patron Testimonials
@@ -450,7 +395,7 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 7. PICKUP & DELIVERY LOCATION                                 */}
       {/* ------------------------------------------------------------- */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-5">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 lg:py-7 space-y-3.5">
         <div className="text-left space-y-1 max-w-2xl">
           <span className="text-xs uppercase tracking-wider text-amber-800 font-semibold">
             Springfield, MO Hub
@@ -536,8 +481,8 @@ function HomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 8. FREQUENTLY ASKED QUESTIONS                                 */}
       {/* ------------------------------------------------------------- */}
-      <section className="border-t border-zinc-200 bg-zinc-50/70 py-8 lg:py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-5">
+      <section className="border-t border-zinc-200/60 bg-transparent py-5 lg:py-7">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-3.5">
           <div className="text-left space-y-1 max-w-2xl">
             <span className="text-xs uppercase tracking-wider text-amber-800 font-semibold">
               Got Questions?

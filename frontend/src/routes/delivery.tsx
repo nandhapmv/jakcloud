@@ -127,10 +127,10 @@ export function PickupDeliveryPage() {
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 relative overflow-hidden pb-24">
+    <div className="min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 relative overflow-hidden pb-8 sm:pb-10">
       {/* 1. HERO HEADER BANNER */}
-      <section className="relative border-b border-zinc-200 bg-white py-12 px-4 sm:px-8 text-center overflow-hidden">
-        <div className="relative z-10 mx-auto max-w-4xl space-y-3">
+      <section className="relative border-b border-zinc-200/60 bg-transparent py-4 sm:py-6 px-4 sm:px-8 text-center overflow-hidden">
+        <div className="relative z-10 mx-auto max-w-4xl space-y-2.5">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-xs font-medium text-amber-800">
             <MapPin className="h-3.5 w-3.5 text-amber-600" />
             <span>Fulfilment Hub & Delivery Radius</span>
@@ -153,7 +153,7 @@ export function PickupDeliveryPage() {
       </section>
 
       {/* 2. MAIN 2-CARD SELECTION SECTION */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-8 py-10 space-y-10">
+      <main className="mx-auto max-w-7xl px-4 sm:px-8 py-5 sm:py-6 space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           {/* CARD 1: COUNTER PICKUP */}
           <div
@@ -398,7 +398,7 @@ export function PickupDeliveryPage() {
         </div>
 
         {/* 3. INTERACTIVE MAP & DELIVERY RADIUS RADAR */}
-        <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-sm space-y-6">
+        <section className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 shadow-sm space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
             <div className="space-y-1">
               <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Coverage Radius</span>
@@ -511,7 +511,7 @@ export function PickupDeliveryPage() {
         </section>
 
         {/* 4. CALL TO ACTION & FLOW TRANSITION */}
-        <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5">
+        <section className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center md:text-left">
             <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
               Ready to Order?

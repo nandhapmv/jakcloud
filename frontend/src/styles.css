@@ -124,7 +124,11 @@
 
   body,
   #root {
-    background-color: #fbf9f5;
+    background-color: #fcf9f2;
+    background-image: url("/bg-pattern.jpg");
+    background-repeat: repeat;
+    background-size: 560px auto;
+    background-attachment: scroll;
     color: #18181b;
     font-family: var(--font-sans);
     font-weight: 400;
@@ -134,6 +138,14 @@
     max-width: 100%;
     margin: 0;
     padding: 0;
+  }
+
+  .site-pattern-bg {
+    background-color: #fcf9f2;
+    background-image: url("/bg-pattern.jpg");
+    background-repeat: repeat;
+    background-size: 560px auto;
+    background-attachment: scroll;
   }
 
   h1,

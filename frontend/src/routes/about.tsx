@@ -25,8 +25,8 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 pb-12">
-      <section className="relative border-b border-zinc-200 bg-white px-4 sm:px-6 lg:px-8 py-8 sm:py-10 shadow-sm">
+    <div className="min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 pb-6">
+      <section className="relative border-b border-zinc-200/60 bg-transparent px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-start sm:items-center gap-5 text-left">
           <img
             src={logoImg}
@@ -47,7 +47,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 space-y-5">
         <section className="grid gap-6 md:grid-cols-2 items-center">
           <div className="space-y-3 text-xs sm:text-sm leading-relaxed text-zinc-700 font-normal">
             <p>

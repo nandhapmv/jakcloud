@@ -167,7 +167,7 @@ export function SiteHeader() {
               aria-label={`Open Handi Tray cart, ${count} tray${count === 1 ? "" : "s"}`}
             >
               <ShoppingBag className="h-3.5 w-3.5 text-zinc-950 stroke-[2.5]" />
-              <span className="tracking-wide">Handi Tray</span>
+              <span className="tracking-wide">Tray</span>
               {count > 0 ? (
                 <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-950 text-amber-300 text-[10px] font-black px-1.5 ring-1 ring-amber-400/60">
                   {count}

@@ -192,12 +192,12 @@ export function CartPage() {
       </div>
 
       {/* Desktop Rich Brand Experience */}
-      <div className="hidden lg:block min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 relative overflow-hidden pb-32 sm:pb-36">
+      <div className="hidden lg:block min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 relative overflow-hidden pb-10 sm:pb-12">
       {/* ------------------------------------------------------------- */}
       {/* 1. HERO HEADER                                                */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative border-b border-zinc-200 bg-white py-10 px-6 sm:px-8 text-center overflow-hidden shadow-sm">
-        <div className="relative z-10 mx-auto max-w-3xl space-y-3">
+      <section className="relative border-b border-zinc-200/60 bg-transparent py-4 sm:py-6 px-6 sm:px-8 text-center overflow-hidden">
+        <div className="relative z-10 mx-auto max-w-3xl space-y-2">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-1 text-xs font-semibold text-amber-800 shadow-sm">
             <ShoppingBag className="h-3.5 w-3.5 text-amber-600" />
             <span>Handcrafted Dum Biryani Reservation</span>
@@ -223,7 +223,7 @@ export function CartPage() {
       {/* ------------------------------------------------------------- */}
       {/* 2. MAIN 2-COLUMN CART LAYOUT                                  */}
       {/* ------------------------------------------------------------- */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
         {count === 0 ? (
           /* EMPTY CART SCREEN WITH RECOMMENDATIONS */
           <div className="max-w-3xl mx-auto space-y-8 text-center py-6">

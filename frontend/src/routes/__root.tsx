@@ -163,7 +163,7 @@ function RootComponent() {
             className={`flex w-full max-w-full flex-col font-sans overflow-x-hidden ${
               isAdminRoute
                 ? "bg-[#080503] text-cream"
-                : "bg-[#fbf9f5] text-zinc-900"
+                : "site-pattern-bg text-zinc-900"
             } ${
               isAdminDashboard ? "h-screen h-[100dvh] max-h-[100dvh] overflow-hidden" : "min-h-screen"
             }`}

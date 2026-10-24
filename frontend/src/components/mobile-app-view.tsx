@@ -655,7 +655,7 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   };
 
   return (
-    <div className="min-h-screen w-full max-w-full bg-[#fbf9f5] text-zinc-900 font-sans selection:bg-amber-500/20 selection:text-amber-800 pb-32 overflow-x-hidden">
+    <div className="min-h-screen w-full max-w-full bg-transparent text-zinc-900 font-sans selection:bg-amber-500/20 selection:text-amber-800 pb-20 sm:pb-24 overflow-x-hidden">
       {/* ========================================================================= */}
       {/* TAB CONTENT: HOME TAB                                                     */}
       {/* ========================================================================= */}

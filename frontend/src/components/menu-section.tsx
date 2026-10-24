@@ -194,7 +194,7 @@ export function MenuSection() {
   };
 
   return (
-    <section id="menu" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12 space-y-6 scroll-mt-24">
+    <section id="menu" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 lg:py-7 space-y-4 scroll-mt-20">
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-zinc-200/80 pb-4">
         <div className="text-left space-y-1.5 max-w-2xl">

@@ -230,12 +230,12 @@ export function BookingValidationPage() {
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 relative overflow-hidden pb-24">
+    <div className="min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 relative overflow-hidden pb-8 sm:pb-10">
       {/* ------------------------------------------------------------- */}
       {/* 1. HERO HEADER WITH LIVE COUNTDOWN TO 2:00 PM CUTOFF          */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative border-b border-zinc-200 bg-white py-12 px-4 sm:px-8 text-center overflow-hidden">
-        <div className="relative z-10 mx-auto max-w-4xl space-y-4">
+      <section className="relative border-b border-zinc-200/60 bg-transparent py-4 sm:py-6 px-4 sm:px-8 text-center overflow-hidden">
+        <div className="relative z-10 mx-auto max-w-4xl space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-amber-800 shadow-xs">
             <Hourglass className="h-3.5 w-3.5 text-amber-600 animate-spin" />
             <span>Real-Time Dum Capacity & Booking Engine</span>
@@ -302,7 +302,7 @@ export function BookingValidationPage() {
       {/* ------------------------------------------------------------- */}
       {/* 2. DYNAMIC VALIDATION & ELIGIBILITY SIMULATOR HUB              */}
       {/* ------------------------------------------------------------- */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-8 py-12 space-y-12">
+      <main className="mx-auto max-w-7xl px-4 sm:px-8 py-5 sm:py-6 space-y-6">
         {/* Interactive Scenario Tester Buttons */}
         <section className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-100 pb-4">

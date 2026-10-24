@@ -79,8 +79,8 @@ function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 pb-16">
-      <section className="relative border-b border-zinc-200 bg-white px-4 sm:px-6 lg:px-8 py-8 sm:py-10 text-left shadow-sm">
+    <div className="min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 pb-8">
+      <section className="relative border-b border-zinc-200/60 bg-transparent px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-left">
         <div className="mx-auto max-w-7xl space-y-1">
           <span className="text-xs uppercase tracking-wider text-amber-800 font-semibold">Customer Support & Inquiries</span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-semibold text-zinc-900">Talk to J Paradize</h1>
@@ -90,7 +90,7 @@ function ContactPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 space-y-4">
         <div className="grid gap-6 md:grid-cols-2">
           {/* Contact details */}
           <div className="space-y-3.5 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm hover:border-amber-500/40 hover:shadow-md transition-all text-xs font-normal">

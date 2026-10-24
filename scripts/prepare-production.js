@@ -25,8 +25,8 @@ if (fs.existsSync(assetsOutputDir)) {
   console.log(`✅ Copied ${files.length} asset files to root ./assets`);
 }
 
-// 2. Copy static files (favicon.png, logo.png, robots.txt) to root
-const staticFiles = ["favicon.png", "logo.png", "robots.txt"];
+// 2. Copy static files (favicon.png, logo.png, robots.txt, bg-pattern.jpg) to root
+const staticFiles = ["favicon.png", "logo.png", "robots.txt", "bg-pattern.jpg"];
 for (const file of staticFiles) {
   const src = path.join(publicOutputDir, file);
   const dest = path.join(rootDir, file);

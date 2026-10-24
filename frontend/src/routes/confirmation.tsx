@@ -215,12 +215,12 @@ export function OrderConfirmationPage() {
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 relative overflow-hidden pb-28">
+    <div className="min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 relative overflow-hidden pb-10 sm:pb-12">
       {/* ------------------------------------------------------------- */}
       {/* 1. HERO CELEBRATION & THANK-YOU ILLUSTRATION BANNER           */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative border-b border-zinc-200 bg-white py-14 px-4 sm:px-8 text-center overflow-hidden">
-        <div className="relative z-10 mx-auto max-w-4xl space-y-5">
+      <section className="relative border-b border-zinc-200/60 bg-transparent py-6 sm:py-8 px-4 sm:px-8 text-center overflow-hidden">
+        <div className="relative z-10 mx-auto max-w-4xl space-y-4">
           {/* Animated Royal Handi Crest */}
           <div className="relative mx-auto flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center">
             <div className="absolute -inset-2 rounded-full bg-amber-400/20 blur-md animate-pulse" />
@@ -316,7 +316,7 @@ export function OrderConfirmationPage() {
       {/* ------------------------------------------------------------- */}
       {/* 2. MAIN 2-COLUMN ORDER HUB & TIMELINE                         */}
       {/* ------------------------------------------------------------- */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-8 py-12 space-y-12">
+      <main className="mx-auto max-w-7xl px-4 sm:px-8 py-5 sm:py-6 space-y-6">
         {/* Quick Action Hub Buttons Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <a

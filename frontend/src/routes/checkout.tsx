@@ -413,7 +413,7 @@ function CheckoutPage() {
   // -------------------------------------------------------------------------
   if (confirmedOrder) {
     return (
-      <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 py-12 px-4 sm:px-8 relative overflow-hidden">
+      <div className="min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 py-6 sm:py-8 px-4 sm:px-8 relative overflow-hidden">
         <div className="mx-auto max-w-3xl space-y-8 relative z-10">
           <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-12 text-center shadow-xl space-y-6">
             {/* Animated Royal Checkmark */}
@@ -610,7 +610,7 @@ function CheckoutPage() {
   // MAIN CHECKOUT FORM SCREEN
   // -------------------------------------------------------------------------
   return (
-    <div className="min-h-screen w-full max-w-full bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 py-6 sm:py-10 px-3 sm:px-6 lg:px-8 relative overflow-x-hidden pb-28">
+    <div className="min-h-screen w-full max-w-full bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 relative overflow-x-hidden pb-10 sm:pb-12">
       <div className="mx-auto max-w-7xl w-full min-w-0 space-y-6 relative z-10">
         {/* Top Header & Breadcrumbs */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 pb-4">

@@ -259,10 +259,10 @@ export function TraySelectionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 relative overflow-hidden pb-32 sm:pb-36">
+    <div className="min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-900 relative overflow-hidden pb-10 sm:pb-12">
       {/* Top Banner Ambience */}
-      <div className="relative border-b border-zinc-200 bg-white py-10 px-4 sm:px-8 text-center">
-        <div className="mx-auto max-w-4xl space-y-3">
+      <div className="relative border-b border-zinc-200/60 bg-transparent py-4 sm:py-6 px-4 sm:px-8 text-center">
+        <div className="mx-auto max-w-4xl space-y-2">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-xs font-medium text-amber-800">
             <Sparkles className="h-3.5 w-3.5 text-amber-600" />
             <span>Dum Pukht Catering Sizing</span>
@@ -277,7 +277,7 @@ export function TraySelectionPage() {
             marinated meat, 1 kg aged basmati, boiled eggs, fried onions, cashews, raita, salan, and dessert.
           </p>
 
-          <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs text-zinc-700 mt-2">
+          <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs text-zinc-700 mt-1">
             <Calendar className="h-3.5 w-3.5 text-amber-600" />
             <span>Next Available Batch: <strong className="text-amber-800 font-semibold">{nextDate}</strong> (Order by 2:00 PM)</span>
           </div>
@@ -285,8 +285,8 @@ export function TraySelectionPage() {
       </div>
 
       {/* Main Grid Layout */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-8 py-10">
-        <div className="grid gap-10 lg:grid-cols-12 items-start">
+      <div className="mx-auto max-w-7xl px-4 sm:px-8 py-5 sm:py-6">
+        <div className="grid gap-6 lg:grid-cols-12 items-start">
           {/* LEFT COLUMN: TRAY QUANTITY CARDS & CUSTOMIZATION */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-8">
             {/* 1. TRAY QUANTITY CARDS */}

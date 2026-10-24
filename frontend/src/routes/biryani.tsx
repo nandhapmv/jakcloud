@@ -306,11 +306,11 @@ export function BiryaniSelectionPage() {
   }, [allBiryaniCards, selectedCategory, spiceFilter, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#fbf9f5] font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 relative overflow-hidden pb-32 sm:pb-36">
+    <div className="min-h-screen bg-transparent font-sans text-zinc-900 selection:bg-amber-500/20 selection:text-amber-800 relative overflow-hidden pb-12 sm:pb-16">
       {/* 1. HERO HEADER BANNER */}
-      <section className="relative border-b border-zinc-200 bg-white py-8 sm:py-10 px-4 sm:px-6 lg:px-8 text-left overflow-hidden shadow-sm">
+      <section className="relative border-b border-zinc-200/60 bg-transparent py-4 sm:py-5 px-4 sm:px-6 lg:px-8 text-left overflow-hidden">
         <div className="relative z-10 mx-auto max-w-7xl space-y-2.5">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-xs font-semibold text-amber-800">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50/90 px-3.5 py-1 text-xs font-semibold text-amber-800">
             <Sparkles className="h-3.5 w-3.5 text-amber-600" />
             <span>Nizam Dum Pukht Recipes</span>
           </div>
@@ -324,7 +324,7 @@ export function BiryaniSelectionPage() {
           </p>
 
           <div className="flex flex-wrap items-center justify-start gap-3 pt-1">
-            <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs text-zinc-700">
+            <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3.5 py-1.5 text-xs text-zinc-700">
               <Calendar className="h-3.5 w-3.5 text-amber-600" />
               <span>Next Handi Batch: <strong className="text-amber-800 font-semibold">{nextDate}</strong></span>
               <span className="text-zinc-400">•</span>
@@ -333,7 +333,7 @@ export function BiryaniSelectionPage() {
 
             <Link
               to="/trays"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 px-3.5 py-1.5 text-xs font-semibold text-amber-800 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50/90 hover:bg-amber-100 px-3.5 py-1.5 text-xs font-semibold text-amber-800 transition-colors"
             >
               <span>Need Catering or 2+ Trays? View Tray Sizing</span>
               <ChevronRight className="h-3.5 w-3.5" />
@@ -343,7 +343,7 @@ export function BiryaniSelectionPage() {
       </section>
 
       {/* 2. FILTER & SEARCH CONTROL BAR */}
-      <section className="sticky top-16 z-30 border-b border-zinc-200 bg-white/95 backdrop-blur-xl py-3 shadow-sm">
+      <section className="sticky top-16 z-30 border-b border-zinc-200/60 bg-white/85 backdrop-blur-md py-3 shadow-xs">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             {[
