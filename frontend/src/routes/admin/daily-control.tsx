@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
 import {
   Flame,
@@ -47,6 +47,9 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/daily-control")({
+  beforeLoad: () => {
+    throw redirect({ to: "/admin", search: { section: "daily-control" } });
+  },
   head: () => ({
     meta: [
       { title: "Daily Order & Dum Capacity Control — JAKloud J Paradize" },

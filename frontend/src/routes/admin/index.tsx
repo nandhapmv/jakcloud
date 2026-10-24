@@ -19,6 +19,8 @@ import {
   Clock,
   DollarSign,
   Flame,
+  Lock,
+  Unlock,
   LogOut,
   Mail,
   MapPin,
@@ -113,12 +115,24 @@ type NavSection =
   | "dashboard"
   | "orders"
   | "menu"
+  | "daily-control"
   | "customers"
   | "delivery"
   | "reports"
   | "settings";
 
+interface AdminSearchParams {
+  tab?: string;
+  section?: string;
+}
+
 export const Route = createFileRoute("/admin/")({
+  validateSearch: (search: Record<string, unknown>): AdminSearchParams => {
+    return {
+      tab: typeof search["tab"] === "string" ? search["tab"] : undefined,
+      section: typeof search["section"] === "string" ? search["section"] : undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Restaurant Command & Analytics — JAKloud J Paradize" },
@@ -134,6 +148,7 @@ export const Route = createFileRoute("/admin/")({
 function AdminOverviewPage() {
   const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const search = Route.useSearch();
 
   // Client mount state to ensure 100% hydration match with server
   const [isMounted, setIsMounted] = useState(false);
@@ -142,7 +157,17 @@ function AdminOverviewPage() {
   }, []);
 
   // Navigation & UI state
-  const [activeSection, setActiveSection] = useState<NavSection>("dashboard");
+  const [activeSection, setActiveSection] = useState<NavSection>(() => {
+    const s = search.section || search.tab;
+    if (s === "daily-control") return "daily-control";
+    if (s === "menu") return "menu";
+    if (s === "orders") return "orders";
+    if (s === "customers") return "customers";
+    if (s === "delivery") return "delivery";
+    if (s === "reports") return "reports";
+    if (s === "settings") return "settings";
+    return "dashboard";
+  });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -406,6 +431,132 @@ function AdminOverviewPage() {
       return true;
     });
   }, [dynamicMenuItems, menuCategoryFilter, menuAvailFilter, menuSearchQuery]);
+
+  // -------------------------------------------------------------
+  // DAILY ORDER & CAPACITY CONTROL STATE (ON-PAGE)
+  // -------------------------------------------------------------
+  const [dcOnlineOrderingActive, setDcOnlineOrderingActive] = useState<boolean>(() => settings.isKitchenOpen);
+  const [dcTodayOrdersClosed, setDcTodayOrdersClosed] = useState<boolean>(() => !settings.isKitchenOpen);
+  const [dcDailyLimit, setDcDailyLimit] = useState<number>(() => settings.dailyTrayLimit || 10);
+  const [dcCutoffHour, setDcCutoffHour] = useState<number>(() => settings.orderCutoffHour || 15);
+  const [dcHorizonDays, setDcHorizonDays] = useState<number>(() => settings.bookingHorizonDays || 7);
+  const [dcTomorrowLimit, setDcTomorrowLimit] = useState<number>(() => {
+    return settings.dateLimits?.[tomorrowKey] ?? (settings.dailyTrayLimit || 10);
+  });
+  const [dcAutoRollTomorrow, setDcAutoRollTomorrow] = useState(true);
+  const [dcBannerTitle, setDcBannerTitle] = useState("Today's Dum Biryani Batch is Fully Booked!");
+  const [dcBannerMessage, setDcBannerMessage] = useState(
+    "Chef Kartheek's kitchen has reached today's 25-tray artisanal slow-cooked capacity. Pre-orders are now open for tomorrow's freshly prepared Dum Handis."
+  );
+  const [dcCloseConfirmOpen, setDcCloseConfirmOpen] = useState(false);
+  const [dcPreviewModalOpen, setDcPreviewModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (settings.dailyTrayLimit) {
+      setDcDailyLimit(settings.dailyTrayLimit);
+      setDcTomorrowLimit(settings.dailyTrayLimit);
+    }
+    if (settings.orderCutoffHour !== undefined) {
+      setDcCutoffHour(settings.orderCutoffHour);
+    }
+    if (settings.bookingHorizonDays !== undefined) {
+      setDcHorizonDays(settings.bookingHorizonDays);
+    }
+    setDcOnlineOrderingActive(settings.isKitchenOpen);
+    setDcTodayOrdersClosed(!settings.isKitchenOpen);
+  }, [settings]);
+
+  const dcBookedTraysToday = useMemo(() => {
+    const todayOrders = orders.filter((o) => {
+      if (o.status === "cancelled") return false;
+      return normalizeDateKey(o.fulfilmentDate) === todayKey;
+    });
+    return todayOrders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + (Number(i.qty) || 1), 0), 0);
+  }, [orders, todayKey]);
+
+  const dcPickupTrays = useMemo(() => {
+    return orders
+      .filter((o) => o.fulfilmentType === "pickup" && o.status !== "cancelled" && (normalizeDateKey(o.fulfilmentDate) || normalizeDateKey(o.createdAt)) === todayKey)
+      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + (Number(i.qty) || 1), 0), 0);
+  }, [orders, todayKey]);
+
+  const dcDeliveryTrays = useMemo(() => {
+    return orders
+      .filter((o) => o.fulfilmentType === "delivery" && o.status !== "cancelled" && (normalizeDateKey(o.fulfilmentDate) || normalizeDateKey(o.createdAt)) === todayKey)
+      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + (Number(i.qty) || 1), 0), 0);
+  }, [orders, todayKey]);
+
+  const dcRemainingTrays = Math.max(0, dcDailyLimit - dcBookedTraysToday);
+  const dcCapacityPercent = dcDailyLimit > 0 ? Math.min(100, Math.round((dcBookedTraysToday / dcDailyLimit) * 100)) : 0;
+  const dcCircleRadius = 70;
+  const dcCircumference = 2 * Math.PI * dcCircleRadius;
+  const dcStrokeDashoffset = dcCircumference - (dcCapacityPercent / 100) * dcCircumference;
+
+  const handleDcToggleMasterOrdering = (checked: boolean) => {
+    setDcOnlineOrderingActive(checked);
+    updateSettings({ isKitchenOpen: checked });
+    if (checked) {
+      setDcTodayOrdersClosed(false);
+      toast.success("Online ordering platform is now LIVE and accepting diner bookings.");
+    } else {
+      toast.error("Online ordering paused across all public menus.");
+    }
+  };
+
+  const handleDcConfirmCloseToday = () => {
+    setDcTodayOrdersClosed(true);
+    setDcCloseConfirmOpen(false);
+    updateSettings({ isKitchenOpen: false, emergencyPauseReason: dcBannerTitle });
+    toast.error(
+      "Today's Dum orders have been CLOSED. Public menu is now automatically prompting pre-orders for tomorrow."
+    );
+  };
+
+  const handleDcReopenToday = () => {
+    setDcTodayOrdersClosed(false);
+    setDcOnlineOrderingActive(true);
+    updateSettings({ isKitchenOpen: true, emergencyPauseReason: "" });
+    toast.success("Today's ordering reopened! Diners can book remaining trays.");
+  };
+
+  const handleDcApplyLimit = (newLimit?: number) => {
+    const targetLimit = newLimit !== undefined ? newLimit : dcDailyLimit;
+    setDcDailyLimit(targetLimit);
+    updateSettings({ dailyTrayLimit: targetLimit });
+    toast.success(`✅ Saved to Database: Daily order limit set to ${targetLimit} trays!`);
+  };
+
+  const handleDcSaveAll = async () => {
+    const updatedDateLimits = {
+      ...(settings.dateLimits || {}),
+      [tomorrowKey]: dcTomorrowLimit,
+    };
+    const payload = {
+      dailyTrayLimit: dcDailyLimit,
+      dateLimits: updatedDateLimits,
+      orderCutoffHour: dcCutoffHour,
+      orderCutoffTime: `${dcCutoffHour}:00`,
+      strictCutoffEnforced: true,
+      bookingHorizonDays: dcHorizonDays,
+      isKitchenOpen: dcOnlineOrderingActive && !dcTodayOrdersClosed,
+    };
+
+    updateSettings(payload);
+
+    try {
+      await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.warn("Settings sync warning:", err);
+    }
+
+    const hour12 = dcCutoffHour > 12 ? dcCutoffHour - 12 : dcCutoffHour === 0 ? 12 : dcCutoffHour;
+    const ampm = dcCutoffHour >= 12 ? "PM" : "AM";
+    toast.success(`✅ Saved to MySQL Database! Cutoff: ${hour12}:00 ${ampm}, Daily limit: ${dcDailyLimit} trays.`);
+  };
 
   // Live clock
   useEffect(() => {
@@ -1184,7 +1335,7 @@ function AdminOverviewPage() {
                 fullRoute: "/admin/menu",
               },
               {
-                link: "/admin/daily-control",
+                id: "daily-control",
                 label: `Daily ${activeDailyLimit}-Tray Limit`,
                 icon: Sliders,
               },
@@ -3529,6 +3680,481 @@ function AdminOverviewPage() {
           )}
 
           {/* ========================================================= */}
+          {/* TAB: DAILY ORDER & CAPACITY CONTROL (ON-PAGE)             */}
+          {/* ========================================================= */}
+          {activeSection === "daily-control" && (
+            <div className="space-y-8 animate-in fade-in-50 duration-500">
+              {/* Executive Header Banner */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 rounded-3xl border border-gold/30 bg-gradient-to-r from-[#170f0a] via-[#120c08] to-[#1a100a] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+                <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-gold font-semibold">
+                    <Flame className="h-3.5 w-3.5 text-chili" />
+                    <span>Slow-Cooked Dum Oven Capacity Command</span>
+                  </div>
+                  <h1 className="mt-1 font-display text-2xl sm:text-4xl text-cream font-bold">
+                    Daily Order Control
+                  </h1>
+                  <p className="mt-2 text-xs sm:text-sm text-cream/75 max-w-2xl leading-relaxed">
+                    Maintain culinary perfection by enforcing our daily 25-tray maximum. Control live ordering switches, emergency close triggers, and automated tomorrow rollover.
+                  </p>
+                </div>
+
+                <div className="relative z-10 flex flex-wrap items-center gap-3">
+                  {dcTodayOrdersClosed ? (
+                    <Button
+                      onClick={handleDcReopenToday}
+                      size="lg"
+                      className="bg-emerald-600 text-white hover:bg-emerald-700 font-bold text-xs px-5 shadow-lg shadow-emerald-600/30 gap-1.5"
+                    >
+                      <Unlock className="h-4 w-4" /> Re-open Today's Orders
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => setDcCloseConfirmOpen(true)}
+                      size="lg"
+                      className="bg-chili text-white hover:bg-chili/90 font-bold text-xs px-5 shadow-lg shadow-chili/30 gap-1.5 animate-pulse"
+                    >
+                      <Lock className="h-4 w-4" /> Close Today's Orders
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => setDcPreviewModalOpen(true)}
+                    className="border-gold/30 bg-black/40 text-xs text-gold hover:bg-gold/15 gap-1.5"
+                  >
+                    <Eye className="h-3.5 w-3.5" /> Preview Diner Popup
+                  </Button>
+
+                  <Button
+                    onClick={handleDcSaveAll}
+                    size="lg"
+                    className="bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold text-xs shadow-lg shadow-chili/30 hover:scale-105 transition-all gap-1.5"
+                  >
+                    <Save className="h-4 w-4" /> Save Settings
+                  </Button>
+                </div>
+              </div>
+
+              {/* 1. CIRCULAR PROGRESS GAUGE & CAPACITY METRICS */}
+              <div className="grid gap-6 lg:grid-cols-3">
+                {/* Card 1: Glowing Circular Progress Indicator */}
+                <div className="rounded-3xl border border-gold/30 bg-[#120c08]/90 p-6 shadow-2xl backdrop-blur-xl flex flex-col items-center justify-center text-center relative overflow-hidden group">
+                  <div className="absolute top-4 left-4 flex items-center gap-1.5 text-[0.65rem] font-bold text-gold uppercase tracking-wider">
+                    <Flame className="h-3.5 w-3.5 text-chili" /> Today's Dum Booking Progress
+                  </div>
+
+                  {/* Circular Progress SVG */}
+                  <div className="relative my-4 flex items-center justify-center">
+                    <svg className="h-52 w-52 -rotate-90 transform" viewBox="0 0 180 180">
+                      <circle
+                        cx="90"
+                        cy="90"
+                        r={dcCircleRadius}
+                        className="stroke-black/60"
+                        strokeWidth="12"
+                        fill="transparent"
+                      />
+                      <circle
+                        cx="90"
+                        cy="90"
+                        r={dcCircleRadius}
+                        stroke="url(#dcProgressGradient)"
+                        strokeWidth="12"
+                        strokeDasharray={dcCircumference}
+                        strokeDashoffset={dcTodayOrdersClosed ? 0 : dcStrokeDashoffset}
+                        strokeLinecap="round"
+                        fill="transparent"
+                        className="transition-all duration-1000 ease-out drop-shadow-[0_0_12px_rgba(212,160,23,0.5)]"
+                      />
+                      <defs>
+                        <linearGradient id="dcProgressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#b91c1c" />
+                          <stop offset="50%" stopColor="#ea580c" />
+                          <stop offset="100%" stopColor="#d4a017" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                      <span className="font-display text-4xl font-bold text-cream">
+                        {dcTodayOrdersClosed ? "100%" : `${dcCapacityPercent}%`}
+                      </span>
+                      <span className="text-[0.7rem] font-mono font-semibold uppercase tracking-wider text-gold mt-0.5">
+                        {dcBookedTraysToday} / {dcDailyLimit} Trays
+                      </span>
+                      <span className="text-[0.65rem] text-cream/50 mt-0.5">
+                        {dcTodayOrdersClosed ? "Batch Locked" : `${dcRemainingTrays} Slots Remaining`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full pt-2 border-t border-gold/15 flex items-center justify-between text-xs">
+                    <span className="text-cream/60">Oven Status:</span>
+                    <span
+                      className={`font-bold ${
+                        dcTodayOrdersClosed
+                          ? "text-chili"
+                          : dcCapacityPercent >= 80
+                            ? "text-saffron"
+                            : "text-emerald-400"
+                      }`}
+                    >
+                      {dcTodayOrdersClosed
+                        ? "🔴 Orders Closed"
+                        : dcCapacityPercent >= 80
+                          ? "🟠 Near Full Capacity"
+                          : "🟢 Normal Dum Production"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card 2: Current Order Count vs Maximum Orders Breakdown */}
+                <div className="rounded-3xl border border-gold/25 bg-[#120c08]/90 p-6 shadow-xl backdrop-blur-xl space-y-4">
+                  <div className="border-b border-gold/15 pb-3">
+                    <h3 className="font-display text-lg font-bold text-cream flex items-center gap-2">
+                      <ShoppingBag className="h-5 w-5 text-gold" /> Order Allocation Breakdown
+                    </h3>
+                    <p className="text-xs text-cream/60">
+                      Fulfilment split between counter pickups and local delivery courier
+                    </p>
+                  </div>
+
+                    <div className="space-y-3 text-xs">
+                      <div className="rounded-2xl border border-gold/15 bg-black/40 p-3.5 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-gold font-semibold">
+                            <Store className="h-4 w-4" /> Counter Pickup Trays
+                          </span>
+                          <span className="font-mono font-bold text-cream text-sm">
+                            {dcPickupTrays} Trays
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-[0.65rem] text-cream/50">
+                          <span>3625 S Bedford Ave</span>
+                          <span>~{dcBookedTraysToday > 0 ? Math.round((dcPickupTrays / dcBookedTraysToday) * 100) : 0}% of today's total</span>
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-gold/15 bg-black/40 p-3.5 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-saffron font-semibold">
+                            <Truck className="h-4 w-4" /> Local Delivery Trays
+                          </span>
+                          <span className="font-mono font-bold text-cream text-sm">
+                            {dcDeliveryTrays} Trays
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-[0.65rem] text-cream/50">
+                          <span>10-Mile Radius Dispatch</span>
+                          <span>~{dcBookedTraysToday > 0 ? Math.round((dcDeliveryTrays / dcBookedTraysToday) * 100) : 0}% of today's total</span>
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-gold/20 bg-gradient-to-r from-gold/10 via-black/40 to-gold/5 p-3.5 flex items-center justify-between">
+                        <div>
+                          <span className="text-[0.65rem] uppercase tracking-wider text-gold font-semibold block">
+                            Remaining Dum Slots:
+                          </span>
+                          <span className="font-display text-lg font-bold text-cream">
+                            {dcTodayOrdersClosed ? "0 Trays" : `${dcRemainingTrays} Trays Left`}
+                          </span>
+                        </div>
+                        <div className="text-right font-mono text-[0.7rem] text-cream/70">
+                          Max Cap: <strong>{dcDailyLimit}</strong>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+
+                {/* Card 3: Daily Capacity Limit Input */}
+                <div className="rounded-3xl border border-gold/25 bg-[#120c08]/90 p-6 shadow-xl backdrop-blur-xl space-y-4">
+                  <div className="border-b border-gold/15 pb-3">
+                    <h3 className="font-display text-lg font-bold text-cream flex items-center gap-2">
+                      <Sliders className="h-5 w-5 text-gold" /> Daily Capacity Limit Input
+                    </h3>
+                    <p className="text-xs text-cream/60">
+                      Adjust maximum allowable Dum handi trays for today's production
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="rounded-2xl border border-gold/15 bg-black/40 p-3.5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="dc-daily-limit-input" className="text-xs font-semibold text-gold">
+                          Maximum Oven Limit (Trays):
+                        </Label>
+                        <span className="text-xs font-mono font-bold text-cream/70">
+                          Currently: {dcDailyLimit}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center rounded-xl border border-gold/30 bg-black/60 p-1 flex-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = Math.max(1, dcDailyLimit - 1);
+                              setDcDailyLimit(next);
+                            }}
+                            className="h-8 w-8 rounded-lg bg-gold/10 hover:bg-gold/20 text-gold font-bold flex items-center justify-center transition-colors cursor-pointer"
+                            title="Decrease 1 tray"
+                          >
+                            -
+                          </button>
+                          <Input
+                            id="dc-daily-limit-input"
+                            type="number"
+                            min={1}
+                            max={100}
+                            value={dcDailyLimit}
+                            onChange={(e) => setDcDailyLimit(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                            className="h-8 border-none bg-transparent text-center font-display text-base font-bold text-cream shadow-none focus-visible:ring-0"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setDcDailyLimit(dcDailyLimit + 1)}
+                            className="h-8 w-8 rounded-lg bg-gold/10 hover:bg-gold/20 text-gold font-bold flex items-center justify-center transition-colors cursor-pointer"
+                            title="Increase 1 tray"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => handleDcApplyLimit(dcDailyLimit)}
+                          className="h-10 bg-gradient-to-r from-chili via-saffron to-gold text-white font-bold text-xs px-4 shadow-md shrink-0 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
+                        >
+                          <Save className="h-3.5 w-3.5" />
+                          Save Limit
+                        </Button>
+                      </div>
+
+                      {/* Preset Pills */}
+                      <div className="space-y-1.5 pt-1">
+                        <span className="text-[0.65rem] text-cream/50 uppercase tracking-wider font-semibold block">
+                          Instant Presets (Click to Auto-Save to DB):
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { label: "10 Trays (Default)", val: 10 },
+                            { label: "15 Trays", val: 15 },
+                            { label: "20 Trays", val: 20 },
+                            { label: "25 Trays", val: 25 },
+                            { label: "35 Trays (Weekend)", val: 35 },
+                            { label: "50 Trays (Festival)", val: 50 },
+                          ].map((preset) => (
+                            <button
+                              key={preset.val}
+                              type="button"
+                              onClick={() => handleDcApplyLimit(preset.val)}
+                              className={`rounded-lg px-2.5 py-1 text-[0.65rem] font-medium transition-all cursor-pointer ${
+                                dcDailyLimit === preset.val
+                                  ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
+                                  : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/40 hover:text-cream"
+                              }`}
+                            >
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Master Ordering Switch */}
+                    <div className="flex items-center justify-between rounded-2xl border border-gold/20 bg-black/40 p-4">
+                      <div>
+                        <Label htmlFor="dc-master-ordering-switch" className="text-xs font-semibold text-cream cursor-pointer">
+                          Live Web Ordering System
+                        </Label>
+                        <p className="text-[0.65rem] text-cream/60">
+                          Master toggle for customer checkout availability
+                        </p>
+                      </div>
+                      <Switch
+                        id="dc-master-ordering-switch"
+                        checked={dcOnlineOrderingActive && !dcTodayOrdersClosed}
+                        onCheckedChange={handleDcToggleMasterOrdering}
+                        className="data-[state=checked]:bg-emerald-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. AUTOMATION & CUSTOMER-FACING POPUP PREVIEW */}
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* Card: Open Tomorrow's Orders Automation */}
+                <div className="rounded-3xl border border-gold/25 bg-[#120c08]/90 p-6 shadow-xl backdrop-blur-xl space-y-5">
+                  <div className="flex items-center justify-between border-b border-gold/15 pb-4">
+                    <div>
+                      <h3 className="font-display text-lg font-bold text-cream flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-gold" /> Tomorrow's Orders Automation
+                      </h3>
+                      <p className="text-xs text-cream/60">
+                        Automated rollover to next-day booking upon cutoff or capacity reach
+                      </p>
+                    </div>
+                    <Switch
+                      id="dc-auto-roll-toggle"
+                      checked={dcAutoRollTomorrow}
+                      onCheckedChange={setDcAutoRollTomorrow}
+                      className="data-[state=checked]:bg-gold"
+                    />
+                  </div>
+
+                  <div className="space-y-4 text-xs">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-2xl border border-gold/15 bg-black/40 p-3.5 space-y-1">
+                        <Label htmlFor="dc-cutoff-time" className="text-xs text-gold font-semibold flex items-center gap-1">
+                          <Clock className="h-3.5 w-3.5 text-gold" /> Daily Cutoff Hour:
+                        </Label>
+                        <select
+                          id="dc-cutoff-time"
+                          value={dcCutoffHour}
+                          onChange={(e) => setDcCutoffHour(parseInt(e.target.value, 10))}
+                          className="w-full h-8 rounded-lg border border-gold/25 bg-black/60 px-2 text-xs text-cream focus:outline-none cursor-pointer font-mono"
+                        >
+                          <option value={9}>9:00 AM (Morning Cutoff)</option>
+                          <option value={10}>10:00 AM</option>
+                          <option value={11}>11:00 AM</option>
+                          <option value={12}>12:00 PM (Noon Cutoff)</option>
+                          <option value={13}>1:00 PM</option>
+                          <option value={14}>2:00 PM (2:00 PM Cutoff)</option>
+                          <option value={15}>3:00 PM (Standard 3 PM Cutoff)</option>
+                          <option value={16}>4:00 PM</option>
+                          <option value={17}>5:00 PM</option>
+                          <option value={18}>6:00 PM (Evening Cutoff)</option>
+                          <option value={19}>7:00 PM</option>
+                          <option value={20}>8:00 PM</option>
+                          <option value={21}>9:00 PM (Night Cutoff)</option>
+                          <option value={22}>10:00 PM</option>
+                          <option value={23}>11:00 PM</option>
+                        </select>
+                      </div>
+
+                      <div className="rounded-2xl border border-gold/15 bg-black/40 p-3.5 space-y-1">
+                        <Label htmlFor="dc-tmrw-limit" className="text-xs text-saffron font-semibold">
+                          Tomorrow's Capacity (Trays):
+                        </Label>
+                        <Input
+                          id="dc-tmrw-limit"
+                          type="number"
+                          value={dcTomorrowLimit}
+                          onChange={(e) => setDcTomorrowLimit(parseInt(e.target.value, 10) || 10)}
+                          className="h-8 rounded-lg border-gold/25 bg-black/60 text-xs font-mono font-bold text-cream"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Advance Slot Booking Horizon Window */}
+                    <div className="rounded-2xl border border-gold/30 bg-black/40 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="dc-horizon-days-input" className="text-xs text-gold font-bold flex items-center gap-1.5">
+                          <Calendar className="h-4 w-4 text-gold" /> Advance Slot Booking Horizon (Days):
+                        </Label>
+                        <span className="font-mono text-xs font-bold text-amber-300 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-md">
+                          {dcHorizonDays} Days Open
+                        </span>
+                      </div>
+
+                      <p className="text-[0.68rem] text-cream/70 leading-relaxed">
+                        Controls the rolling advance booking window for diners (default 7 days). Diners can pick dates from today up to <strong className="text-amber-300">+{dcHorizonDays} days</strong>. Every night at 12:00 AM midnight, the window automatically shifts forward by 1 day.
+                      </p>
+
+                      <div className="flex items-center gap-3">
+                        <input
+                          id="dc-horizon-days-input"
+                          type="range"
+                          min={1}
+                          max={30}
+                          step={1}
+                          value={dcHorizonDays}
+                          onChange={(e) => setDcHorizonDays(Number(e.target.value))}
+                          className="w-full accent-amber-500 cursor-pointer"
+                        />
+                        <span className="font-mono text-xs text-cream/80 font-bold shrink-0 w-12 text-right">
+                          {dcHorizonDays} d
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[0.62rem] text-cream/50 pt-1">
+                        <span>1 Day (Next-day only)</span>
+                        <span>7 Days (Default rolling week)</span>
+                        <span>14 Days</span>
+                        <span>30 Days (Full Month)</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-xl bg-gold/10 p-3 text-gold">
+                      <span className="font-semibold">Next Available Booking Date on Menu:</span>
+                      <strong className="font-mono">{tomorrowKey}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card: Customer-Facing Closed Announcement Customizer */}
+                <div className="rounded-3xl border border-gold/25 bg-[#120c08]/90 p-6 shadow-xl backdrop-blur-xl space-y-4">
+                  <div className="border-b border-gold/15 pb-3">
+                    <h3 className="font-display text-lg font-bold text-cream flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5 text-chili" /> Capacity Announcement Message
+                    </h3>
+                    <p className="text-xs text-cream/60">
+                      Custom message displayed to storefront visitors when today's limit is hit
+                    </p>
+                  </div>
+
+                  <div className="space-y-3 text-xs">
+                    <div className="space-y-1">
+                      <Label htmlFor="dc-banner-title" className="text-xs font-semibold text-cream">
+                        Announcement Title:
+                      </Label>
+                      <Input
+                        id="dc-banner-title"
+                        value={dcBannerTitle}
+                        onChange={(e) => setDcBannerTitle(e.target.value)}
+                        className="h-9 rounded-xl border-gold/25 bg-black/60 text-xs text-cream"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor="dc-banner-msg" className="text-xs font-semibold text-cream">
+                        Announcement Description:
+                      </Label>
+                      <Textarea
+                        id="dc-banner-msg"
+                        rows={3}
+                        value={dcBannerMessage}
+                        onChange={(e) => setDcBannerMessage(e.target.value)}
+                        className="rounded-xl border-gold/25 bg-black/60 text-xs text-cream"
+                      />
+                    </div>
+
+                    {/* Live Customer Simulation Preview Box */}
+                    <div className="rounded-2xl border border-dashed border-gold/30 bg-black/60 p-4 space-y-2">
+                      <span className="text-[0.65rem] uppercase tracking-wider text-gold font-bold block">
+                        Preview of Customer Storefront Alert:
+                      </span>
+                      <div className="rounded-xl border border-gold/30 bg-gradient-to-r from-chili/20 via-saffron/10 to-gold/15 p-3.5 space-y-1">
+                        <p className="font-display text-xs font-bold text-cream flex items-center gap-1.5">
+                          <Flame className="h-3.5 w-3.5 text-chili" /> {dcBannerTitle}
+                        </p>
+                        <p className="text-[0.7rem] text-cream/70 leading-relaxed">
+                          {dcBannerMessage}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
           {/* TAB 4: CUSTOMERS DIRECTORY                                */}
           {/* ========================================================= */}
           {activeSection === "customers" && (
@@ -4124,6 +4750,70 @@ function AdminOverviewPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Daily Control: Confirm Close Today Modal */}
+      <Dialog open={dcCloseConfirmOpen} onOpenChange={setDcCloseConfirmOpen}>
+        <DialogContent className="max-w-md border-chili/40 bg-[#0d0704] text-cream">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-chili">
+              <Lock className="h-4 w-4 text-chili" />
+              <span>Confirm Emergency Kitchen Close</span>
+            </div>
+            <DialogTitle className="font-display text-xl text-cream font-bold">
+              Close Today's Orders Immediately?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-cream/70">
+              This will lock customer checkout on the storefront for today. Diners will only be allowed to pre-order for tomorrow or future dates.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-chili/20">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setDcCloseConfirmOpen(false)}
+              className="text-xs text-cream/70 hover:text-cream"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleDcConfirmCloseToday}
+              className="bg-chili hover:bg-chili/90 text-white font-bold text-xs"
+            >
+              Yes, Close Today's Orders
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Daily Control: Diner Popup Preview Modal */}
+      <Dialog open={dcPreviewModalOpen} onOpenChange={setDcPreviewModalOpen}>
+        <DialogContent className="max-w-md border-gold/30 bg-[#120c08] text-cream p-6">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold">
+              <Flame className="h-4 w-4 text-chili" />
+              <span>Customer Storefront Preview</span>
+            </div>
+            <DialogTitle className="font-display text-lg text-cream font-bold mt-1">
+              {dcBannerTitle}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-cream/75 leading-relaxed pt-2">
+              {dcBannerMessage}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="pt-4 border-t border-gold/20 flex justify-end">
+            <Button
+              type="button"
+              onClick={() => setDcPreviewModalOpen(false)}
+              className="bg-gold text-black font-bold text-xs hover:bg-gold/90"
+            >
+              Close Preview
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
