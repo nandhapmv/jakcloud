@@ -42,6 +42,7 @@ import {
 import { toast } from "sonner";
 import { formatUsPhone, isValidUsPhone, sanitizeName, isValidName } from "@/lib/validation";
 import { openRazorpayCheckout } from "@/lib/razorpay";
+import { DishIngredientsModal } from "@/components/dish-ingredients-modal";
 
 // Springfield Quick Location Presets
 const SPRINGFIELD_PRESETS = [
@@ -207,6 +208,13 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
   const [modalExtraSpicy, setModalExtraSpicy] = useState(true);
   const [modalNotes, setModalNotes] = useState("");
   const [modalQty, setModalQty] = useState(1);
+
+  // Ingredients & Nutrition Popup State
+  const [nutritionModalDish, setNutritionModalDish] = useState<{
+    name: string;
+    proteinId: string;
+    image?: string;
+  } | null>(null);
 
   // Initial Tray Quantity Selector Modal ("How Many Trays Do You Need?")
   const [traySelectorOpen, setTraySelectorOpen] = useState(true);
@@ -767,19 +775,37 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
 
                   {/* Bottom Row: Actions */}
                   <div className="flex items-center justify-between gap-2 border-t border-zinc-100 pt-2.5">
-                    {/* Customize Trigger */}
-                    {isAvailable ? (
+                    {/* Customize & Nutrition Triggers */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {isAvailable ? (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenCustomizer(dish)}
+                          className="text-[11px] font-medium text-amber-700 hover:text-amber-800 flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <span>Customize</span>
+                          <span className="text-zinc-400 text-[9px]">(Aloo & Spice)</span>
+                        </button>
+                      ) : (
+                        <span className="text-[11px] font-semibold text-rose-600">Sold Out Today</span>
+                      )}
+
                       <button
                         type="button"
-                        onClick={() => handleOpenCustomizer(dish)}
-                        className="text-[11px] font-medium text-amber-700 hover:text-amber-800 flex items-center gap-1 cursor-pointer transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setNutritionModalDish({
+                            name: dish.name,
+                            proteinId: (dish as any).proteinId || dish.id,
+                            image: DISH_IMAGES[dish.id] || chickenImg,
+                          });
+                        }}
+                        className="text-[10px] font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-300/80 px-2 py-0.5 rounded-md flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
                       >
-                        <span>Customize</span>
-                        <span className="text-zinc-400 text-[9px]">(Aloo & Spice)</span>
+                        <UtensilsCrossed className="h-2.5 w-2.5 text-amber-600" />
+                        <span>38 Ingredients</span>
                       </button>
-                    ) : (
-                      <span className="text-[11px] font-semibold text-rose-600">Sold Out Today</span>
-                    )}
+                    </div>
 
                     {/* Quantity Stepper or Add Button */}
                     {!isAvailable ? (
@@ -907,10 +933,20 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                   </div>
 
                   <div className="flex items-center justify-between pt-1 border-t border-zinc-100">
-                    <span className="text-[10px] text-zinc-700 font-normal flex items-center gap-1">
-                      <span>🥔 Royal Dum Aloo:</span>
-                      <span className="text-emerald-700 font-semibold">100% Free ($0)</span>
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNutritionModalDish({
+                          name: dish.name,
+                          proteinId: (dish as any).proteinId || dish.id,
+                          image: dishImg,
+                        });
+                      }}
+                      className="text-[10px] font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-300/80 px-2 py-0.5 rounded-lg flex items-center gap-1 cursor-pointer"
+                    >
+                      <UtensilsCrossed className="h-3 w-3 text-amber-600" />
+                      <span>38 Ingredients</span>
+                    </button>
                     {!isAvailable ? (
                       <span className="text-xs text-zinc-400 font-medium px-2.5 py-1">Unavailable</span>
                     ) : (
@@ -1850,6 +1886,21 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
                         {formatMoney(selectedDishModal.price)} / Tray
                       </span>
                     </DialogDescription>
+                    {/* Direct 38 Ingredients & USDA Nutrition Trigger in Mobile Customizer */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNutritionModalDish({
+                          name: selectedDishModal.name,
+                          proteinId: (selectedDishModal as any).proteinId || selectedDishModal.id,
+                          image: DISH_IMAGES[selectedDishModal.id] || chickenImg,
+                        });
+                      }}
+                      className="mt-1.5 inline-flex items-center gap-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/80 px-2.5 py-1 text-[10.5px] font-bold text-amber-950 transition-all cursor-pointer shadow-2xs"
+                    >
+                      <UtensilsCrossed className="h-3 w-3 text-amber-800" />
+                      <span>🥗 View 38 Ingredients & Nutrition Specs →</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -2232,6 +2283,15 @@ export function MobileAppView({ initialTab = "home" }: MobileAppViewProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Full 38-Ingredient Master & USDA Nutrition Estimates Popup */}
+      <DishIngredientsModal
+        open={!!nutritionModalDish}
+        onOpenChange={(open) => !open && setNutritionModalDish(null)}
+        dishName={nutritionModalDish?.name || ""}
+        proteinId={nutritionModalDish?.proteinId}
+        dishImage={nutritionModalDish?.image}
+      />
     </div>
   );
 }
