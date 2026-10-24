@@ -61,6 +61,7 @@ import {
   Archive,
   History,
   Store,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 

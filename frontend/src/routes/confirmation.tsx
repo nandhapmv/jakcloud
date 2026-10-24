@@ -26,6 +26,7 @@ import {
   Check,
   Award,
   Camera,
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 
