@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
 import {
   Users,
@@ -66,16 +66,10 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/customers")({
-  head: () => ({
-    meta: [
-      { title: "Patron & Customer Management — JAKloud J Paradize" },
-      {
-        name: "description",
-        content: "Manage VIP patrons, customer loyalty profiles, lifetime spending, and order history timelines.",
-      },
-    ],
-  }),
-  component: CustomerManagementPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/admin" });
+  },
+  component: () => null,
 });
 
 const STORAGE_KEY = "jakloud_admin_customers_v2";

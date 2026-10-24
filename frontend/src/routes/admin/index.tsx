@@ -86,7 +86,6 @@ import {
   useDynamicOrders,
   useKitchenSettings,
   useDynamicMenu,
-  useDynamicCustomers,
   normalizeDateKey,
   type DynamicOrder,
   type DynamicMenuItem,
@@ -94,7 +93,6 @@ import {
 import {
   INITIAL_NOTIFICATIONS,
   type NotificationItem,
-  type CustomerRecord,
 } from "@/lib/admin-data";
 import { MENU, formatMoney, BUSINESS } from "@/lib/menu";
 import { Button } from "@/components/ui/button";
@@ -116,7 +114,6 @@ type NavSection =
   | "orders"
   | "menu"
   | "daily-control"
-  | "customers"
   | "delivery"
   | "reports"
   | "settings";
@@ -162,7 +159,6 @@ function AdminOverviewPage() {
     if (s === "daily-control") return "daily-control";
     if (s === "menu") return "menu";
     if (s === "orders") return "orders";
-    if (s === "customers") return "customers";
     if (s === "delivery") return "delivery";
     if (s === "reports") return "reports";
     if (s === "settings") return "settings";
@@ -178,7 +174,6 @@ function AdminOverviewPage() {
   // Live reactive store hooks
   const { orders, stats: dynamicStats, updateStatus, deleteOrder, purgeTestOrders, reload } = useDynamicOrders();
   const { settings, updateSettings } = useKitchenSettings();
-  const { customers: dynamicCustomers } = useDynamicCustomers();
   const {
     items: dynamicMenuItems,
     isSyncing: menuSyncing,
@@ -1411,21 +1406,14 @@ function AdminOverviewPage() {
             })}
           </div>
 
-          {/* Group 2: MANAGEMENT & CRM */}
+          {/* Group 2: MANAGEMENT */}
           <div className="space-y-1 pt-2 border-t border-gold/15">
             {!sidebarCollapsed && (
               <p className="px-3 text-[0.62rem] font-semibold uppercase tracking-wider text-gold/60 mb-1">
-                Management & CRM
+                Management
               </p>
             )}
             {[
-              {
-                id: "customers",
-                label: "Customers CRM",
-                icon: Users,
-                badge: uniqueDinersCount > 0 ? String(uniqueDinersCount) : undefined,
-                fullRoute: "/admin/customers",
-              },
               {
                 id: "delivery",
                 label: "Delivery & Routing",
@@ -2068,19 +2056,13 @@ function AdminOverviewPage() {
                   </div>
                 </div>
 
-                {/* 6. Diner Base */}
+                {/* 6. Active Diners */}
                 <div
-                  onClick={() => {
-                    navigate({
-                      to: "/admin/customers",
-                    });
-                  }}
-                  className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold hover:scale-[1.02] hover:shadow-xl hover:shadow-gold/10 active:scale-[0.99] transition-all cursor-pointer group"
-                  title="Click to view Customer CRM and active diner profiles"
+                  className="rounded-2xl border border-gold/25 bg-[#120c08]/85 p-5 backdrop-blur-xl shadow-lg hover:border-gold/50 transition-all group"
                 >
                   <div className="flex items-center justify-between">
                     <p className="text-[0.7rem] uppercase tracking-wider text-gold font-semibold truncate">
-                      Diner Base
+                      Active Diners
                     </p>
                     <div className="rounded-xl bg-gold/15 p-2 text-gold group-hover:scale-110 transition-transform">
                       <Users className="h-4 w-4" />
@@ -2089,12 +2071,9 @@ function AdminOverviewPage() {
                   <h3 className="mt-3 font-display text-2xl font-bold text-cream">
                     {filteredDinersCount} <span className="text-xs font-sans text-cream/60">Diners</span>
                   </h3>
-                  <div className="mt-2 flex items-center justify-between text-[0.68rem] text-emerald-400">
+                  <div className="mt-2 flex items-center justify-between text-[0.68rem] text-cream/60">
                     <span className="truncate">
                       {filteredDinersCount > 0 ? `${filteredDinersCount} active in ${dateFilterLabel.toLowerCase()}` : "No diners in period"}
-                    </span>
-                    <span className="text-gold/60 group-hover:text-gold group-hover:translate-x-0.5 transition-all text-[0.65rem] font-bold">
-                      CRM →
                     </span>
                   </div>
                 </div>
@@ -4158,116 +4137,6 @@ function AdminOverviewPage() {
             </div>
           )}
 
-          {/* ========================================================= */}
-          {/* TAB 4: CUSTOMERS DIRECTORY                                */}
-          {/* ========================================================= */}
-          {activeSection === "customers" && (
-            <div className="space-y-6 animate-in fade-in-50 duration-500">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gold/20 pb-4">
-                <div>
-                  <h2 className="font-display text-2xl text-cream font-bold">
-                    Diner Database & VIP Profiles
-                  </h2>
-                  <p className="text-xs text-cream/60">
-                    128 registered diners across Springfield, MO • VIP loyalty & order histories
-                  </p>
-                </div>
-                <Button asChild className="bg-gold text-black hover:bg-gold/90 font-bold text-xs">
-                  <Link to="/admin/customers">
-                    Open Dedicated Customer CRM →
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="rounded-3xl border border-gold/25 bg-[#120c08]/85 shadow-2xl overflow-hidden backdrop-blur-xl">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="border-b border-gold/15 bg-black/40 text-[0.7rem] uppercase tracking-wider text-gold">
-                      <tr>
-                        <th className="px-5 py-4">Customer</th>
-                        <th className="px-5 py-4">Contact Info</th>
-                        <th className="px-5 py-4">Status</th>
-                        <th className="px-5 py-4">Order Frequency</th>
-                        <th className="px-5 py-4">Total Spend</th>
-                        <th className="px-5 py-4">Favorite Tray</th>
-                        <th className="px-5 py-4">Preferred Method</th>
-                        <th className="px-5 py-4 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gold/10">
-                      {dynamicCustomers.length === 0 ? (
-                        <tr>
-                          <td colSpan={8} className="px-5 py-12 text-center">
-                            <Users className="mx-auto h-8 w-8 text-gold/40 mb-2" />
-                            <p className="text-sm font-semibold text-cream">No customer records in database yet</p>
-                            <p className="text-xs text-cream/60 mt-1">
-                              Customers who place orders on the storefront or reservations will automatically appear here.
-                            </p>
-                            <Link
-                              to="/admin/customers"
-                              className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-gold/30 bg-black/40 px-3 py-1.5 text-xs text-gold hover:bg-gold/15 transition-all"
-                            >
-                              Open Customer Management →
-                            </Link>
-                          </td>
-                        </tr>
-                      ) : (
-                        dynamicCustomers.map((cust) => (
-                          <tr key={cust.id} className="hover:bg-gold/5 transition-colors">
-                            <td className="px-5 py-4">
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold border ${cust.avatarBg || "bg-gold/15 border-gold/30"} ${cust.avatarText || "text-gold"}`}
-                                >
-                                  {cust.avatarInitials}
-                                </div>
-                                <div>
-                                  <p className="font-semibold text-cream text-xs">{cust.name}</p>
-                                  <p className="text-[0.65rem] text-cream/50">Joined {cust.joinDate}</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-5 py-4 text-xs">
-                              <p className="text-cream font-mono">{cust.phone}</p>
-                              <p className="text-[0.7rem] text-cream/60">{cust.email}</p>
-                            </td>
-                            <td className="px-5 py-4 text-xs">
-                              <span className="rounded-full bg-gold/15 border border-gold/30 px-2 py-0.5 text-[0.65rem] font-semibold text-gold">
-                                {cust.status}
-                              </span>
-                            </td>
-                            <td className="px-5 py-4 text-xs">
-                              <span className="font-bold text-cream">{cust.totalOrders} Orders</span>
-                              <p className="text-[0.65rem] text-cream/50">Last: {cust.lastOrderDate || "Recent"}</p>
-                            </td>
-                            <td className="px-5 py-4 font-display font-bold text-gold text-sm font-mono">
-                              {formatMoney(cust.totalSpend || 0)}
-                            </td>
-                            <td className="px-5 py-4 text-xs text-cream font-medium">
-                              {cust.favoriteProtein || "Signature Dum"}
-                            </td>
-                            <td className="px-5 py-4 text-xs">
-                              <span className="rounded-full bg-black/50 border border-gold/20 px-2.5 py-0.5 text-[0.7rem] text-cream/80">
-                                {cust.preferredFulfilment || "Pickup"}
-                              </span>
-                            </td>
-                            <td className="px-5 py-4 text-right">
-                              <Link
-                                to="/admin/customers"
-                                className="inline-flex items-center gap-1 text-xs text-gold hover:underline font-semibold"
-                              >
-                                Profile & CRM →
-                              </Link>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* ========================================================= */}
           {/* TAB 5: DELIVERY & ROUTING                                 */}
