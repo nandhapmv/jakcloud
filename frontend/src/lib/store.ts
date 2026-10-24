@@ -105,6 +105,7 @@ export interface KitchenSettings {
   announcementActive: boolean;
   salesTaxRate: number;
   dateLimits?: Record<string, number> | undefined;
+  blockedDates?: string[] | undefined;
 }
 
 export interface ProteinMatrixItem {
@@ -245,6 +246,7 @@ export const INITIAL_KITCHEN_SETTINGS: KitchenSettings = {
   heroAnnouncement: "🔥 Made-to-Order Authentic Hyderabadi Dum Biryani · 10 Handi Trays Daily Limit · Order by 3:00 PM",
   announcementActive: true,
   salesTaxRate: 0,
+  blockedDates: [],
 };
 
 export const INITIAL_PROTEINS: ProteinMatrixItem[] = [
@@ -1085,6 +1087,24 @@ export const jakloudStore = {
   getCapacityForDate(target: string | Date) {
     const settings = this.getSettings();
     const targetKey = normalizeDateKey(target);
+
+    // 1. Check if date is explicitly BLOCKED by admin
+    const isBlocked = Boolean(
+      targetKey && Array.isArray(settings.blockedDates) && settings.blockedDates.includes(targetKey)
+    );
+    if (isBlocked) {
+      return {
+        limit: 0,
+        bookedCount: 0,
+        remainingSlots: 0,
+        percent: 100,
+        status: "sold_out" as const,
+        statusLabel: "Order Not Available (Kitchen Closed / Blocked)",
+        statusColor: "#ef4444",
+        isSoldOut: true,
+        isBlocked: true,
+      };
+    }
 
     // Limit set by admin for this specific date, or global dailyTrayLimit, fallback 10
     const dateLimit = targetKey && settings.dateLimits ? settings.dateLimits[targetKey] : undefined;

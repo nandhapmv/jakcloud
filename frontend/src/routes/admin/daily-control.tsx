@@ -32,6 +32,7 @@ import logoImg from "@/assets/logo.png";
 import { useAuth } from "@/lib/auth";
 import { formatMoney, BUSINESS, ORDER_CUTOFF_HOUR, formatDate } from "@/lib/menu";
 import { useKitchenSettings, useDynamicOrders, normalizeDateKey } from "@/lib/store";
+import { KitchenCalendarControl } from "@/components/admin/kitchen-calendar-control";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -573,184 +574,14 @@ function DailyOrderControlPage() {
         {/* 2. AUTOMATION & CUSTOMER-FACING POPUP PREVIEW                 */}
         {/* ------------------------------------------------------------- */}
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Card: Open Tomorrow's Orders Automation */}
-          <div className="rounded-3xl border border-gold/25 bg-[#120c08]/90 p-6 shadow-xl backdrop-blur-xl space-y-5">
-            <div className="flex items-center justify-between border-b border-gold/15 pb-4">
-              <div>
-                <h3 className="font-display text-lg font-bold text-cream flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-gold" /> Tomorrow's Orders Automation
-                </h3>
-                <p className="text-xs text-cream/60">
-                  Automated rollover to next-day booking upon cutoff or capacity reach
-                </p>
-              </div>
-              <Switch
-                id="auto-roll-toggle"
-                checked={autoRollTomorrow}
-                onCheckedChange={setAutoRollTomorrow}
-                className="data-[state=checked]:bg-gold"
-              />
-            </div>
-
-            <div className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-gold/15 bg-black/40 p-3.5 space-y-1">
-                  <Label htmlFor="cutoff-time" className="text-xs text-gold font-semibold flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5 text-gold" /> Daily Cutoff Hour:
-                  </Label>
-                  <select
-                    id="cutoff-time"
-                    value={cutoffHour}
-                    onChange={(e) => setCutoffHour(parseInt(e.target.value, 10))}
-                    className="w-full h-8 rounded-lg border border-gold/25 bg-black/60 px-2 text-xs text-cream focus:outline-none cursor-pointer font-mono"
-                  >
-                    <option value={9}>9:00 AM (Morning Cutoff)</option>
-                    <option value={10}>10:00 AM</option>
-                    <option value={11}>11:00 AM</option>
-                    <option value={12}>12:00 PM (Noon Cutoff)</option>
-                    <option value={13}>1:00 PM</option>
-                    <option value={14}>2:00 PM (2:00 PM Cutoff)</option>
-                    <option value={15}>3:00 PM (Standard 3 PM Cutoff)</option>
-                    <option value={16}>4:00 PM</option>
-                    <option value={17}>5:00 PM</option>
-                    <option value={18}>6:00 PM (Evening Cutoff)</option>
-                    <option value={19}>7:00 PM</option>
-                    <option value={20}>8:00 PM</option>
-                    <option value={21}>9:00 PM (Night Cutoff)</option>
-                    <option value={22}>10:00 PM</option>
-                    <option value={23}>11:00 PM</option>
-                  </select>
-                </div>
-
-                <div className="rounded-2xl border border-gold/15 bg-black/40 p-3.5 space-y-1">
-                  <Label htmlFor="tmrw-limit" className="text-xs text-saffron font-semibold">
-                    Tomorrow's Capacity (Trays):
-                  </Label>
-                  <Input
-                    id="tmrw-limit"
-                    type="number"
-                    value={tomorrowLimit}
-                    onChange={(e) => setTomorrowLimit(parseInt(e.target.value, 10) || 10)}
-                    className="h-8 rounded-lg border-gold/25 bg-black/60 text-xs font-mono font-bold text-cream"
-                  />
-                </div>
-              </div>
-
-              {/* Dynamic Booking Slot Horizon Window */}
-              <div className="rounded-2xl border border-gold/30 bg-black/40 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="horizon-days-input" className="text-xs text-gold font-bold flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4 text-gold" /> Advance Slot Booking Horizon (Days):
-                  </Label>
-                  <span className="font-mono text-xs font-bold text-amber-300 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-md">
-                    {horizonDays} Days Open
-                  </span>
-                </div>
-
-                <p className="text-[0.68rem] text-cream/70 leading-relaxed">
-                  Controls the rolling advance booking window for diners (default 7 days). Diners can pick dates from today up to <strong className="text-amber-300">+{horizonDays} days</strong>. Every night at 12:00 AM midnight, the window automatically shifts forward by 1 day (1 day passes, 1 day adds).
-                </p>
-
-                {/* Direct Number Stepper & Input */}
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setHorizonDays((prev) => Math.max(1, prev - 1))}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-black/60 text-gold hover:bg-gold/20 text-lg font-bold transition-colors cursor-pointer"
-                    title="Decrease 1 day"
-                  >
-                    -
-                  </button>
-                  <Input
-                    id="horizon-days-input"
-                    type="number"
-                    min={1}
-                    max={90}
-                    value={horizonDays}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value, 10);
-                      setHorizonDays(isNaN(val) ? 7 : Math.max(1, Math.min(90, val)));
-                    }}
-                    className="h-10 text-center font-display text-lg font-bold text-cream rounded-xl border-gold/30 bg-black/60 focus:border-gold"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setHorizonDays((prev) => Math.min(90, prev + 1))}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-black/60 text-gold hover:bg-gold/20 text-lg font-bold transition-colors cursor-pointer"
-                    title="Increase 1 day"
-                  >
-                    +
-                  </button>
-
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => {
-                      updateSettings({ bookingHorizonDays: horizonDays });
-                      toast.success(`Booking horizon updated to ${horizonDays} rolling days!`);
-                    }}
-                    className="h-10 bg-gold text-black hover:bg-amber-400 font-bold text-xs px-3 shadow-md transition-all shrink-0 cursor-pointer"
-                  >
-                    Apply Horizon
-                  </Button>
-                </div>
-
-                {/* Quick Horizon Presets */}
-                <div className="space-y-1.5 pt-0.5">
-                  <span className="text-[0.65rem] text-cream/50 uppercase tracking-wider font-semibold block">
-                    Quick Horizon Presets:
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { label: "7 Days (Default - 1 Wk)", val: 7 },
-                      { label: "10 Days Window", val: 10 },
-                      { label: "14 Days (2 Weeks)", val: 14 },
-                      { label: "21 Days (3 Weeks)", val: 21 },
-                      { label: "30 Days (1 Month)", val: 30 },
-                    ].map((preset) => (
-                      <button
-                        key={preset.val}
-                        type="button"
-                        onClick={() => setHorizonDays(preset.val)}
-                        className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all cursor-pointer ${
-                          horizonDays === preset.val
-                            ? "bg-gold text-black font-bold shadow-md shadow-gold/30"
-                            : "border border-gold/20 bg-black/40 text-cream/70 hover:border-gold/40 hover:text-cream"
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Live Rolling Window Preview Badge */}
-                <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 p-2.5 text-xs text-amber-200/90 space-y-1">
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="flex items-center gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5 text-amber-400" /> Live Rolling Range:
-                    </span>
-                    <span className="font-mono text-[11px] text-amber-300">
-                      {formatDate(rollingWindowStart)} → {formatDate(rollingWindowEnd)}
-                    </span>
-                  </div>
-                  <p className="text-[0.65rem] text-cream/60 leading-relaxed">
-                    Diners visiting today can select dates up to <strong>{formatDate(rollingWindowEnd)}</strong>. Tomorrow morning, this range automatically rolls forward by 1 day.
-                  </p>
-                </div>
-              </div>
-
-              {/* 7-Day Operation Notice */}
-              <div className="rounded-2xl border border-gold/20 bg-black/40 p-4 space-y-1 text-xs">
-                <div className="flex items-center gap-2 text-gold font-semibold">
-                  <Sun className="h-4 w-4 text-emerald-400" /> 7-Day Continuous Handi Dum Operation
-                </div>
-                <p className="text-[0.7rem] text-cream/70 leading-relaxed">
-                  Kitchen operates all 7 days of the week (including Wednesdays). Diners can schedule Handi trays for any day within the active booking horizon window.
-                </p>
-              </div>
-
-              {/* Custom Announcement Message Editor */}
+          {/* Left Column: Calendar Control & Announcement Editor */}
+          <div className="space-y-6">
+            <KitchenCalendarControl />
+            <div className="rounded-3xl border border-gold/25 bg-[#120c08]/90 p-6 shadow-xl backdrop-blur-xl space-y-4">
+              <h3 className="font-display text-lg font-bold text-cream flex items-center gap-2">
+                Announcement Message Editor
+              </h3>
+{/* Custom Announcement Message Editor */}
               <div className="space-y-2 pt-1">
                 <Label htmlFor="banner-title-input" className="text-xs text-cream/80 font-semibold">
                   Announcement Header Text:

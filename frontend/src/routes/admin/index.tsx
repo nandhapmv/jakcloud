@@ -72,6 +72,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { DishIngredientsModal } from "@/components/dish-ingredients-modal";
+import { KitchenCalendarControl } from "@/components/admin/kitchen-calendar-control";
 
 import logoImg from "@/assets/logo.png";
 import heroImg from "@/assets/hero-biryani.jpg";
@@ -4137,114 +4138,8 @@ function AdminOverviewPage() {
 
               {/* 2. AUTOMATION & CUSTOMER-FACING POPUP PREVIEW */}
               <div className="grid gap-6 lg:grid-cols-2">
-                {/* Card: Open Tomorrow's Orders Automation */}
-                <div className="rounded-3xl border border-gold/25 bg-[#120c08]/90 p-6 shadow-xl backdrop-blur-xl space-y-5">
-                  <div className="flex items-center justify-between border-b border-gold/15 pb-4">
-                    <div>
-                      <h3 className="font-display text-lg font-bold text-cream flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-gold" /> Tomorrow's Orders Automation
-                      </h3>
-                      <p className="text-xs text-cream/60">
-                        Automated rollover to next-day booking upon cutoff or capacity reach
-                      </p>
-                    </div>
-                    <Switch
-                      id="dc-auto-roll-toggle"
-                      checked={dcAutoRollTomorrow}
-                      onCheckedChange={setDcAutoRollTomorrow}
-                      className="data-[state=checked]:bg-gold"
-                    />
-                  </div>
-
-                  <div className="space-y-4 text-xs">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-2xl border border-gold/15 bg-black/40 p-3.5 space-y-1">
-                        <Label htmlFor="dc-cutoff-time" className="text-xs text-gold font-semibold flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5 text-gold" /> Daily Cutoff Hour:
-                        </Label>
-                        <select
-                          id="dc-cutoff-time"
-                          value={dcCutoffHour}
-                          onChange={(e) => setDcCutoffHour(parseInt(e.target.value, 10))}
-                          className="w-full h-8 rounded-lg border border-gold/25 bg-black/60 px-2 text-xs text-cream focus:outline-none cursor-pointer font-mono"
-                        >
-                          <option value={9}>9:00 AM (Morning Cutoff)</option>
-                          <option value={10}>10:00 AM</option>
-                          <option value={11}>11:00 AM</option>
-                          <option value={12}>12:00 PM (Noon Cutoff)</option>
-                          <option value={13}>1:00 PM</option>
-                          <option value={14}>2:00 PM (2:00 PM Cutoff)</option>
-                          <option value={15}>3:00 PM (Standard 3 PM Cutoff)</option>
-                          <option value={16}>4:00 PM</option>
-                          <option value={17}>5:00 PM</option>
-                          <option value={18}>6:00 PM (Evening Cutoff)</option>
-                          <option value={19}>7:00 PM</option>
-                          <option value={20}>8:00 PM</option>
-                          <option value={21}>9:00 PM (Night Cutoff)</option>
-                          <option value={22}>10:00 PM</option>
-                          <option value={23}>11:00 PM</option>
-                        </select>
-                      </div>
-
-                      <div className="rounded-2xl border border-gold/15 bg-black/40 p-3.5 space-y-1">
-                        <Label htmlFor="dc-tmrw-limit" className="text-xs text-saffron font-semibold">
-                          Tomorrow's Capacity (Trays):
-                        </Label>
-                        <Input
-                          id="dc-tmrw-limit"
-                          type="number"
-                          value={dcTomorrowLimit}
-                          onChange={(e) => setDcTomorrowLimit(parseInt(e.target.value, 10) || 10)}
-                          className="h-8 rounded-lg border-gold/25 bg-black/60 text-xs font-mono font-bold text-cream"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Advance Slot Booking Horizon Window */}
-                    <div className="rounded-2xl border border-gold/30 bg-black/40 p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="dc-horizon-days-input" className="text-xs text-gold font-bold flex items-center gap-1.5">
-                          <Calendar className="h-4 w-4 text-gold" /> Advance Slot Booking Horizon (Days):
-                        </Label>
-                        <span className="font-mono text-xs font-bold text-amber-300 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-md">
-                          {dcHorizonDays} Days Open
-                        </span>
-                      </div>
-
-                      <p className="text-[0.68rem] text-cream/70 leading-relaxed">
-                        Controls the rolling advance booking window for diners (default 7 days). Diners can pick dates from today up to <strong className="text-amber-300">+{dcHorizonDays} days</strong>. Every night at 12:00 AM midnight, the window automatically shifts forward by 1 day.
-                      </p>
-
-                      <div className="flex items-center gap-3">
-                        <input
-                          id="dc-horizon-days-input"
-                          type="range"
-                          min={1}
-                          max={30}
-                          step={1}
-                          value={dcHorizonDays}
-                          onChange={(e) => setDcHorizonDays(Number(e.target.value))}
-                          className="w-full accent-amber-500 cursor-pointer"
-                        />
-                        <span className="font-mono text-xs text-cream/80 font-bold shrink-0 w-12 text-right">
-                          {dcHorizonDays} d
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-[0.62rem] text-cream/50 pt-1">
-                        <span>1 Day (Next-day only)</span>
-                        <span>7 Days (Default rolling week)</span>
-                        <span>14 Days</span>
-                        <span>30 Days (Full Month)</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between rounded-xl bg-gold/10 p-3 text-gold">
-                      <span className="font-semibold">Next Available Booking Date on Menu:</span>
-                      <strong className="font-mono">{tomorrowKey}</strong>
-                    </div>
-                  </div>
-                </div>
+                {/* Card: Kitchen Automation & Interactive Date Blocker Calendar */}
+                <KitchenCalendarControl />
 
                 {/* Card: Customer-Facing Closed Announcement Customizer */}
                 <div className="rounded-3xl border border-gold/25 bg-[#120c08]/90 p-6 shadow-xl backdrop-blur-xl space-y-4">

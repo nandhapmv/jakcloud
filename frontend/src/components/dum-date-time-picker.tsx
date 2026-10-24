@@ -186,7 +186,17 @@ export function DumDateTimePicker({
       };
     }
 
-    // 5. Capacity check: Sold out if booked count reaches dailyLimit
+    // 5. Admin Blocked Dates check
+    if (cap.isBlocked) {
+      return {
+        disabled: true,
+        reason: "Order Not Available for this date (Kitchen Closed / Blocked by Kitchen)",
+        isSoldOut: true,
+        capacity: cap,
+      };
+    }
+
+    // 6. Capacity check: Sold out if booked count reaches dailyLimit
     if (cap.isSoldOut) {
       return {
         disabled: true,
@@ -587,19 +597,29 @@ export function DumDateTimePicker({
                   onClick={() => handleSelectDay(cell.year, cell.month, cell.day)}
                   className={`relative flex flex-col items-center justify-center rounded-lg p-0.5 h-8 sm:h-8.5 text-xs transition-all ${
                     cell.disabled
-                      ? "opacity-30 cursor-not-allowed bg-zinc-100 text-zinc-400 border border-transparent"
+                      ? cell.capacity?.isBlocked
+                        ? "opacity-50 cursor-not-allowed bg-rose-50 border border-rose-200 text-rose-600 line-through font-medium"
+                        : "opacity-30 cursor-not-allowed bg-zinc-100 text-zinc-400 border border-transparent"
                       : isSelected
                       ? "bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-bold ring-2 ring-amber-400 shadow-md scale-105 z-10 cursor-pointer"
                       : cell.isCurrentMonth
                       ? "bg-white border border-zinc-200 text-zinc-800 hover:border-amber-400 hover:bg-amber-50 cursor-pointer shadow-xs"
                       : "bg-transparent text-zinc-400 hover:text-zinc-600 cursor-pointer"
                   }`}
-                  title={cell.reason || `${cell.dateStr} — ${cell.capacity.remainingSlots} slots left`}
+                  title={
+                    cell.capacity?.isBlocked
+                      ? "Order Not Available for this date (Kitchen Closed / Blocked by Kitchen)"
+                      : cell.reason || `${cell.dateStr} — ${cell.capacity.remainingSlots} slots left`
+                  }
                 >
                   <span className="text-[11px] font-semibold leading-none">{cell.day}</span>
 
                   {/* Badges / Dots for availability */}
-                  {cell.isSoldOut ? (
+                  {cell.capacity?.isBlocked ? (
+                    <span className="text-[6px] text-rose-600 font-extrabold uppercase leading-none mt-0.5">
+                      Closed
+                    </span>
+                  ) : cell.isSoldOut ? (
                     <span className="text-[6.5px] text-rose-600 font-bold leading-none mt-0.5">
                       Full
                     </span>

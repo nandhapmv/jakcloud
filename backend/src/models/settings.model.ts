@@ -24,6 +24,7 @@ export interface KitchenSettings {
   announcementActive: boolean;
   salesTaxRate: number;
   dateLimits?: Record<string, number>;
+  blockedDates?: string[];
 }
 
 const DEFAULT_SETTINGS: KitchenSettings = {
@@ -41,6 +42,7 @@ const DEFAULT_SETTINGS: KitchenSettings = {
   announcementActive: true,
   salesTaxRate: 0,
   dateLimits: {},
+  blockedDates: [],
 };
 
 let activeSettings: KitchenSettings = loadSettingsFromFile();
@@ -96,6 +98,11 @@ export async function syncSettingsFromDatabase(): Promise<KitchenSettings> {
             dbUpdates.heroAnnouncement = val;
           } else if (key === "emergencyPauseReason") {
             dbUpdates.emergencyPauseReason = val;
+          } else if (key === "blockedDates") {
+            try {
+              const parsed = typeof val === "string" ? JSON.parse(val) : val;
+              if (Array.isArray(parsed)) dbUpdates.blockedDates = parsed;
+            } catch {}
           }
         }
         activeSettings = { ...activeSettings, ...dbUpdates };
