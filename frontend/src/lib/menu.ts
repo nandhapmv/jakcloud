@@ -74,8 +74,10 @@ export const CATEGORIES = [
 
 export const CLOSED_WEEKDAY = -1; // All 7 days open (No forced weekday closure)
 
-export function formatMoney(value: number) {
-  return `$${value.toFixed(2)}`;
+export function formatMoney(value: number | string | undefined | null) {
+  if (value === undefined || value === null || value === "") return "$0.00";
+  const num = typeof value === "number" ? value : parseFloat(String(value));
+  return `$${(isNaN(num) ? 0 : num).toFixed(2)}`;
 }
 
 /** Next available fulfilment date: next day (or day-after if after cutoff), open 7 days a week. */

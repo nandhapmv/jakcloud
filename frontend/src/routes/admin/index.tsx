@@ -373,13 +373,15 @@ function AdminOverviewPage() {
   };
 
   const filteredMenuItems = useMemo(() => {
+    if (!Array.isArray(dynamicMenuItems)) return [];
     return dynamicMenuItems.filter((item) => {
+      if (!item) return false;
       if (menuCategoryFilter !== "all" && item.category !== menuCategoryFilter) return false;
       if (menuAvailFilter === "active" && !item.available) return false;
       if (menuAvailFilter === "inactive" && item.available) return false;
       if (menuSearchQuery.trim()) {
         const q = menuSearchQuery.toLowerCase().trim();
-        const matchName = item.name.toLowerCase().includes(q);
+        const matchName = (item.name || "").toLowerCase().includes(q);
         const matchDesc = (item.description || "").toLowerCase().includes(q);
         const matchCat = (item.category || "").toLowerCase().includes(q);
         const matchBadge = (item.badge || "").toLowerCase().includes(q);
@@ -2871,7 +2873,7 @@ function AdminOverviewPage() {
                     </h2>
                   </div>
                   <p className="text-xs text-cream/60 mt-0.5">
-                    Live database recipes ({dynamicMenuItems.length} dishes). Add new recipes, edit prices & portion specs, or delete items right here.
+                    Live database recipes ({dynamicMenuItems?.length || 0} dishes). Add new recipes, edit prices & portion specs, or delete items right here.
                   </p>
                 </div>
 
