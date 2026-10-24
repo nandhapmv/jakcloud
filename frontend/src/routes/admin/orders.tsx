@@ -97,7 +97,7 @@ export function OrderManagementPage() {
   const searchParams = Route.useSearch();
 
   // Dynamic Reactive Orders & Menu Store Hooks
-  const { orders, stats, createOrder, updateStatus, updateNotes, deleteOrder, reload } = useDynamicOrders();
+  const { orders, stats, createOrder, updateStatus, updateNotes, deleteOrder, purgeTestOrders, reload } = useDynamicOrders();
   const { items: menuItems } = useDynamicMenu();
   const { settings } = useKitchenSettings();
 
@@ -488,6 +488,22 @@ export function OrderManagementPage() {
           >
             <Plus className="h-4 w-4" />
             <span>Create Walk-in / Phone Order</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (confirm("Purge all test/mock orders and reset the kitchen queue?")) {
+                await purgeTestOrders();
+                toast.success("Test orders purged from database and local store.");
+              }
+            }}
+            className="border-rose-500/30 text-rose-300 hover:bg-rose-500/15 hover:text-rose-200 text-xs gap-1.5"
+            title="Purge legacy test orders"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Purge Test Orders</span>
           </Button>
 
           <Button

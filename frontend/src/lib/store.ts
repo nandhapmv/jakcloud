@@ -230,7 +230,7 @@ export const INITIAL_MENU_ITEMS: DynamicMenuItem[] = [
 export const INITIAL_ORDERS: DynamicOrder[] = [];
 
 export const INITIAL_KITCHEN_SETTINGS: KitchenSettings = {
-  dailyTrayLimit: 25, // Default 10 orders per day
+  dailyTrayLimit: 10, // Default 10 orders per day
   orderCutoffHour: 15, // 3:00 PM (15:00) cutoff
   orderCutoffTime: "15:00",
   strictCutoffEnforced: true,
@@ -332,10 +332,16 @@ function getStored<T>(key: string, defaultValue: T): T {
           o.id &&
           !o.id.startsWith("ord_10") &&
           !o.id.startsWith("ord_demo") &&
+          o.id !== "JK-20261016-001" &&
+          o.id !== "JK-20261014-001" &&
+          o.orderNumber !== "JK-20261016-001" &&
+          o.orderNumber !== "JK-20261014-001" &&
           o.customer?.name !== "Dr. Bradley Hayes" &&
           o.customer?.name !== "Marcus Vance" &&
           o.customer?.name !== "Sophia Martinez" &&
-          o.customer?.name !== "Chef Reception Sample"
+          o.customer?.name !== "Chef Reception Sample" &&
+          o.customer?.email !== "sairamadoddi@gmail.com" &&
+          o.customer?.email !== "prasannaofficial1712@gmail.com"
       );
       if (filtered.length !== parsed.length) {
         localStorage.setItem(key, JSON.stringify(filtered));
@@ -353,7 +359,9 @@ function getStored<T>(key: string, defaultValue: T): T {
           c.name !== "Dr. Bradley Hayes" &&
           c.name !== "Marcus Vance" &&
           c.name !== "Sophia Martinez" &&
-          c.name !== "Rajesh & Priya Sharma"
+          c.name !== "Rajesh & Priya Sharma" &&
+          c.email !== "sairamadoddi@gmail.com" &&
+          c.email !== "prasannaofficial1712@gmail.com"
       );
       if (filtered.length !== parsed.length) {
         localStorage.setItem(key, JSON.stringify(filtered));
@@ -663,6 +671,19 @@ export const jakloudStore = {
     // Deduplicate orders by id and orderNumber to eliminate any duplicate entries
     const seen = new Set<string>();
     const uniqueOrders = orders.filter((o) => {
+      if (
+        !o.id ||
+        o.id.startsWith("ord_10") ||
+        o.id.startsWith("ord_demo") ||
+        o.id === "JK-20261016-001" ||
+        o.id === "JK-20261014-001" ||
+        o.orderNumber === "JK-20261016-001" ||
+        o.orderNumber === "JK-20261014-001" ||
+        o.customer?.email === "sairamadoddi@gmail.com" ||
+        o.customer?.email === "prasannaofficial1712@gmail.com"
+      ) {
+        return false;
+      }
       const key = `${o.id || ""}_${o.orderNumber || ""}`;
       if (seen.has(key)) return false;
       seen.add(key);
@@ -859,12 +880,51 @@ export const jakloudStore = {
     return false;
   },
 
+  async purgeTestOrders(): Promise<void> {
+    const current = this.getOrders();
+    const next = current.filter(
+      (o: any) =>
+        o.id &&
+        !o.id.startsWith("ord_10") &&
+        !o.id.startsWith("ord_demo") &&
+        o.id !== "JK-20261016-001" &&
+        o.id !== "JK-20261014-001" &&
+        o.orderNumber !== "JK-20261016-001" &&
+        o.orderNumber !== "JK-20261014-001" &&
+        o.customer?.name !== "Dr. Bradley Hayes" &&
+        o.customer?.name !== "Marcus Vance" &&
+        o.customer?.name !== "Sophia Martinez" &&
+        o.customer?.name !== "Chef Reception Sample" &&
+        o.customer?.email !== "sairamadoddi@gmail.com" &&
+        o.customer?.email !== "prasannaofficial1712@gmail.com"
+    );
+    this.saveOrders(next);
+
+    const customers = this.getCustomers();
+    const nextCustomers = customers.filter(
+      (c: any) =>
+        c.email !== "sairamadoddi@gmail.com" &&
+        c.email !== "prasannaofficial1712@gmail.com"
+    );
+    this.saveCustomers(nextCustomers);
+
+    if (typeof window !== "undefined") {
+      try {
+        await fetch(`${API_BASE_URL}/api/orders/purge-test`, { method: "DELETE" });
+      } catch (e) {
+        console.warn("Failed to purge backend test orders:", e);
+      }
+    }
+    notifySync(KEYS.ORDERS);
+    notifySync(KEYS.CUSTOMERS);
+  },
+
   // KITCHEN & CAPACITY SETTINGS
   getSettings(): KitchenSettings {
     const s = getStored<KitchenSettings>(KEYS.SETTINGS, INITIAL_KITCHEN_SETTINGS);
     const merged = { ...INITIAL_KITCHEN_SETTINGS, ...s, salesTaxRate: 0 };
     if (!merged.dailyTrayLimit) {
-      merged.dailyTrayLimit = 25;
+      merged.dailyTrayLimit = 10;
       merged.orderCutoffHour = 15;
       merged.bookingHorizonDays = 7;
       setStored(KEYS.SETTINGS, merged);
@@ -920,7 +980,12 @@ export const jakloudStore = {
   },
 
   saveCustomers(customers: CustomerRecord[]) {
-    setStored(KEYS.CUSTOMERS, customers);
+    const filtered = customers.filter(
+      (c) =>
+        c.email !== "sairamadoddi@gmail.com" &&
+        c.email !== "prasannaofficial1712@gmail.com"
+    );
+    setStored(KEYS.CUSTOMERS, filtered);
   },
 
   recordCustomerOrder(order: DynamicOrder) {
@@ -1257,6 +1322,10 @@ export function useDynamicOrders() {
       const res = jakloudStore.deleteOrder(orderId);
       reload();
       return res;
+    },
+    purgeTestOrders: async () => {
+      await jakloudStore.purgeTestOrders();
+      reload();
     },
     reload,
   };

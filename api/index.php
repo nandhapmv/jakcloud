@@ -47,10 +47,12 @@ try {
         $pdo->exec("UPDATE `orders` SET `customer_email` = '' WHERE `customer_email` = 'customer@jakloud.com'");
     } catch (Exception $e) {}
 
-    // 3. Purge legacy test orders with 4-digit random numbers (>= 1000) so numbering strictly starts at 001
+    // 3. Purge legacy test orders and paneer/seafood
     try {
-        $pdo->exec("DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE order_number LIKE 'JK-%' AND CAST(SUBSTRING_INDEX(order_number, '-', -1) AS UNSIGNED) >= 1000)");
-        $pdo->exec("DELETE FROM orders WHERE order_number LIKE 'JK-%' AND CAST(SUBSTRING_INDEX(order_number, '-', -1) AS UNSIGNED) >= 1000");
+        $pdo->exec("DELETE FROM order_items WHERE order_id IN ('JK-20261016-001', 'JK-20261014-001') OR order_id IN (SELECT id FROM orders WHERE order_number IN ('JK-20261016-001', 'JK-20261014-001') OR customer_email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com'))");
+        $pdo->exec("DELETE FROM orders WHERE order_number IN ('JK-20261016-001', 'JK-20261014-001') OR customer_email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com')");
+        $pdo->exec("DELETE FROM customers WHERE email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com')");
+        $pdo->exec("DELETE FROM menu_items WHERE protein_id IN ('paneer', 'prawn', 'seafood')");
     } catch (Exception $e) {}
 
     // 4. Ensure menu_items table exists with all modern columns
@@ -250,25 +252,45 @@ if ($resource === 'orders') {
             $stmtTrays = $pdo->query("SELECT COALESCE(SUM(qty), 0) as total_trays FROM order_items");
             $trays = $stmtTrays->fetch()['total_trays'] ?? 0;
 
+            // Today's trays booked for capacity (date-wise)
+            $todayYMD = date('Y-m-d');
+            $stmtTodayTrays = $pdo->prepare("
+                SELECT COALESCE(SUM(oi.qty), 0) as today_trays 
+                FROM order_items oi 
+                JOIN orders o ON (o.id = oi.order_id OR o.order_number = oi.order_id)
+                WHERE o.status != 'cancelled' 
+                  AND (o.fulfilment_date LIKE ? OR o.fulfilment_date LIKE '%today%' OR DATE(o.created_at) = CURDATE())
+            ");
+            $stmtTodayTrays->execute(["%{$todayYMD}%"]);
+            $todayTrays = $stmtTodayTrays->fetch()['today_trays'] ?? 0;
+
             echo json_encode([
                 'totalRevenue' => (float)$summary['total_revenue'],
                 'totalTrays' => (int)$trays,
                 'totalOrders' => (int)$summary['total_orders'],
                 'activeOrders' => (int)$active,
                 'readyOrders' => (int)$ready,
-                'todayTraysBooked' => (int)$trays,
+                'todayTraysBooked' => (int)$todayTrays,
             ]);
             exit;
         }
 
         $allOrders = read_fallback_orders($orders_file);
+        $todayYMD = date('Y-m-d');
+        $todayOrders = array_filter($allOrders, function($o) use ($todayYMD) {
+            $f = strtolower($o['fulfilmentDate'] ?? '');
+            $c = substr($o['createdAt'] ?? '', 0, 10);
+            return ($o['status'] ?? '') !== 'cancelled' && (strpos($f, 'today') !== false || strpos($f, $todayYMD) !== false || $c === $todayYMD);
+        });
+        $todayTrays = array_reduce($todayOrders, fn($carry, $o) => $carry + array_reduce($o['items'] ?? [], fn($c, $i) => $c + ($i['qty'] ?? 1), 0), 0);
         $rev = array_reduce($allOrders, fn($carry, $o) => $carry + ($o['total'] ?? 0), 0);
         echo json_encode([
             'totalRevenue' => (float)$rev,
-            'totalTrays' => count($allOrders) * 2,
+            'totalTrays' => count($allOrders),
             'totalOrders' => count($allOrders),
             'activeOrders' => count($allOrders),
             'readyOrders' => 0,
+            'todayTraysBooked' => (int)$todayTrays,
         ]);
         exit;
     }
@@ -794,13 +816,32 @@ if ($resource === 'orders') {
     // DELETE /api/orders/{id}
     // ---------------------------------------------------------
     if ($method === 'DELETE' && !empty($id)) {
+        if ($id === 'purge-test' || $id === 'purge-all') {
+            if ($pdo) {
+                if ($id === 'purge-test') {
+                    $pdo->exec("DELETE FROM order_items WHERE order_id IN ('JK-20261016-001', 'JK-20261014-001') OR order_id IN (SELECT id FROM orders WHERE order_number IN ('JK-20261016-001', 'JK-20261014-001') OR customer_email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com'))");
+                    $pdo->exec("DELETE FROM orders WHERE order_number IN ('JK-20261016-001', 'JK-20261014-001') OR customer_email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com')");
+                    $pdo->exec("DELETE FROM customers WHERE email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com')");
+                } else {
+                    $pdo->exec("DELETE FROM order_items");
+                    $pdo->exec("DELETE FROM orders");
+                    $pdo->exec("DELETE FROM customers");
+                }
+            }
+            save_fallback_orders($orders_file, []);
+            echo json_encode(['message' => 'Orders purged successfully']);
+            exit;
+        }
+
         if ($pdo) {
+            $stmt = $pdo->prepare("DELETE FROM order_items WHERE order_id = ? OR order_id IN (SELECT id FROM orders WHERE order_number = ?)");
+            $stmt->execute([$id, $id]);
             $stmt = $pdo->prepare("DELETE FROM orders WHERE id = ? OR order_number = ?");
             $stmt->execute([$id, $id]);
         }
 
         $all = read_fallback_orders($orders_file);
-        $filtered = array_values(array_filter($all, fn($o) => $o['id'] !== $id && $o['orderNumber'] !== $id));
+        $filtered = array_values(array_filter($all, fn($o) => ($o['id'] ?? '') !== $id && ($o['orderNumber'] ?? '') !== $id));
         save_fallback_orders($orders_file, $filtered);
 
         echo json_encode(['message' => 'Order removed successfully']);

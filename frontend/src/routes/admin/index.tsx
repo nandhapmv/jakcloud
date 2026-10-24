@@ -57,6 +57,7 @@ import {
   Check,
   X,
   Send,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -75,6 +76,7 @@ import {
   useKitchenSettings,
   useDynamicMenu,
   useDynamicCustomers,
+  normalizeDateKey,
   type DynamicOrder,
 } from "@/lib/store";
 import {
@@ -132,7 +134,7 @@ function AdminOverviewPage() {
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
 
   // Live reactive store hooks
-  const { orders, stats: dynamicStats, updateStatus, reload } = useDynamicOrders();
+  const { orders, stats: dynamicStats, updateStatus, deleteOrder, purgeTestOrders, reload } = useDynamicOrders();
   const { settings, updateSettings } = useKitchenSettings();
   const { customers: dynamicCustomers } = useDynamicCustomers();
   const { items: dynamicMenuItems } = useDynamicMenu();
@@ -143,13 +145,22 @@ function AdminOverviewPage() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<OrderResponse | null>(null);
 
-  // Kitchen settings state directly bound to reactive store (defaults to 25 trays)
-  const dailyLimit = settings.dailyTrayLimit || 25;
+  // Today key for daily capacity tracking & rollover
+  const todayKey = useMemo(() => normalizeDateKey(new Date()), []);
+
+  // Kitchen settings state directly bound to reactive store (defaults to 10 trays)
+  const dailyLimit = settings.dailyTrayLimit || 10;
+  const activeDailyLimit = useMemo(() => {
+    if (settings?.dateLimits && settings.dateLimits[todayKey]) {
+      return Number(settings.dateLimits[todayKey]);
+    }
+    return Number(settings.dailyTrayLimit) || 10;
+  }, [settings, todayKey]);
   const kitchenOpen = settings.isKitchenOpen;
   const orderCutoffHour = settings.orderCutoffHour;
 
   // Editable settings inputs
-  const [dailyLimitInput, setDailyLimitInput] = useState<number>(settings.dailyTrayLimit || 25);
+  const [dailyLimitInput, setDailyLimitInput] = useState<number>(settings.dailyTrayLimit || 10);
   const [kitchenOpenInput, setKitchenOpenInput] = useState<boolean>(settings.isKitchenOpen);
   const [cutoffHourInput, setCutoffHourInput] = useState<number>(settings.orderCutoffHour || 15);
   const [deliveryFeeInput, setDeliveryFeeInput] = useState<number>(settings.deliveryFee !== undefined ? Number(settings.deliveryFee) : 10);
@@ -231,13 +242,20 @@ function AdminOverviewPage() {
   // Calculated stats object for backwards-compatibility
   const stats = dynamicStats;
 
-  // Calculated metrics from real database orders
-  // Calculated metrics from real database orders
-  const totalTraysBooked = useMemo(() => {
-    return orders.reduce((sum, o) => sum + (o.status !== "cancelled" ? o.items.reduce((s, i) => s + i.qty, 0) : 0), 0);
-  }, [orders]);
+  // Calculated metrics strictly for today's orders (resets automatically each new day)
+  const todayTraysBooked = useMemo(() => {
+    return orders.reduce((sum, o) => {
+      if (o.status === "cancelled") return sum;
+      const orderDateKey = normalizeDateKey(o.fulfilmentDate) || normalizeDateKey(o.createdAt);
+      if (orderDateKey === todayKey) {
+        return sum + (o.items || []).reduce((s, i) => s + (Number(i.qty) || 0), 0);
+      }
+      return sum;
+    }, 0);
+  }, [orders, todayKey]);
 
-  const capacityPercentage = dailyLimit > 0 ? Math.min(100, Math.round((totalTraysBooked / dailyLimit) * 100)) : 0;
+  const capacityPercentage = activeDailyLimit > 0 ? Math.min(100, Math.round((todayTraysBooked / activeDailyLimit) * 100)) : 0;
+  const totalTraysBooked = todayTraysBooked;
 
   // Real-time Date-Filtered Orders for Executive Analytics
   const dateFilteredOrders = useMemo(() => {
@@ -713,18 +731,18 @@ function AdminOverviewPage() {
                 </span>
               </div>
 
-              {/* Integrated Mini Capacity Gauge */}
+              {/* Integrated Mini Capacity Gauge (Per-Day Rollover) */}
               <Link
                 to="/admin/daily-control"
                 className="block pt-1.5 border-t border-white/[0.06] hover:opacity-90 transition-opacity group"
-                title="Manage Daily 25-Tray Limit & Capacity"
+                title={`Manage Daily ${activeDailyLimit}-Tray Limit & Capacity`}
               >
                 <div className="flex items-center justify-between text-[0.68rem] mb-1">
                   <span className="text-gold/80 flex items-center gap-1 group-hover:text-amber-300 font-medium">
                     <Flame className="h-3 w-3 text-chili" /> Capacity
                   </span>
                   <span className="font-mono font-bold text-cream">
-                    {totalTraysBooked} / {dailyLimit} Trays
+                    {todayTraysBooked} / {activeDailyLimit} Trays
                   </span>
                 </div>
                 <Progress
@@ -777,7 +795,7 @@ function AdminOverviewPage() {
               },
               {
                 link: "/admin/daily-control",
-                label: `Daily ${dailyLimit}-Tray Limit`,
+                label: `Daily ${activeDailyLimit}-Tray Limit`,
                 icon: Sliders,
               },
             ].map((item) => {
@@ -1242,9 +1260,9 @@ function AdminOverviewPage() {
                     <p className="mt-2 text-xs sm:text-sm text-cream/75 max-w-2xl leading-relaxed">
                       Springfield's slow-cooked Dum biryani operation is running on schedule.{" "}
                       <span className="text-gold font-medium">
-                        {Math.max(0, dailyLimit - totalTraysBooked)} trays remain
+                        {Math.max(0, activeDailyLimit - todayTraysBooked)} trays remain
                       </span>{" "}
-                      before reaching today's {dailyLimit}-tray capacity limit.
+                      before reaching today's {activeDailyLimit}-tray capacity limit.
                     </p>
                   </div>
 
@@ -1876,7 +1894,22 @@ function AdminOverviewPage() {
                     Realtime progress for Dum biryani production and delivery routes
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      if (confirm("Purge all test/mock orders and reset the kitchen queue?")) {
+                        await purgeTestOrders();
+                        toast.success("Test orders purged from database and local store.");
+                      }
+                    }}
+                    className="border-rose-500/30 text-rose-300 hover:bg-rose-500/15 hover:text-rose-200 text-xs"
+                    title="Purge legacy test orders"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Purge Test Orders
+                  </Button>
                   <Button asChild size="sm" className="bg-gold text-black font-bold hover:bg-gold/90 text-xs">
                     <Link to="/admin/orders">
                       Open Dedicated Order Manager →
@@ -2207,6 +2240,20 @@ function AdminOverviewPage() {
                                     Cancel
                                   </Button>
                                 )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (confirm(`Permanently delete order ${order.orderNumber || order.id}?`)) {
+                                      deleteOrder(order.id);
+                                      toast.success(`Order ${order.orderNumber || order.id} deleted.`);
+                                    }
+                                  }}
+                                  className="h-8 text-cream/40 hover:text-rose-400 hover:bg-rose-500/15 text-xs px-2"
+                                  title="Permanently Delete Order"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
                               </div>
                             </td>
                           </tr>

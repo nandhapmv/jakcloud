@@ -89,11 +89,17 @@ try {
         ('dish-chicken', 'chicken', 'Royal Chicken Dum Biryani', 'Signature Trays', 'Our house flagship slow-cooked Dum biryani. 1.6–1.8 kg marinated bone-in chicken thighs layered with saffron aged basmati rice, fried onions, and roasted cashews, sealed with whole wheat dough.', 101.99, 108.99, 'Top Seller', '', 1, 'Serves 4–5 Diners (Family Handi)', 'Serves 4–5', '1.6 kg Halal Marinated Chicken', '1.0 kg Raw Aged Basmati', 1714, 1871, 'Medium', 12, 48, 1),
         ('dish-mutton', 'mutton', 'Hyderabadi Shahi Mutton Dum Biryani', 'Royal & Occasion', 'The authentic Nizami celebration tray. Succulent bone-in baby goat mutton cuts slow-cooked on dum for 4 hours with heavy saffron, cloves, black cardamom, and pure desi ghee.', 157.99, 164.99, 'Chef Signature', '', 1, 'Serves 4–5 Diners (Feast Tray)', 'Serves 4–5', '1.8 kg Halal Baby Goat Cuts', '1.0 kg Raw Aged Basmati', 2054, 2211, 'Extra Spicy', 8, 34, 1),
         ('dish-beef', 'beef', 'Slow-Braised Spiced Beef Dum Biryani', 'Signature Trays', 'Prime tender beef cuts slow-cooked long and low until caramelized spiced juices settle deeply through every single fragrant basmati grain.', 122.99, 129.99, 'Bold & Hearty', '', 1, 'Serves 4–5 Diners (Family Handi)', 'Serves 4–5', '1.7 kg Halal Prime Beef Cuts', '1.0 kg Raw Aged Basmati', 1952, 2109, 'Medium', 8, 28, 1),
-        ('dish-paneer', 'paneer', 'Royal Shahi Paneer Dum Biryani (Veg)', 'Shahi Vegetarian', 'Fresh golden paneer cubes slow-simmered with aromatic saffron gravy, baby potatoes, roasted cashews, caramelized crispy onions, and fresh mint leaves.', 98.99, 105.99, 'Vegetarian Royal', '', 1, 'Serves 4–5 Diners (Veg Handi)', 'Serves 4–5', '1.2 kg Fresh Artisanal Paneer', '1.0 kg Raw Aged Basmati', 1540, 1697, 'Medium', 6, 21, 0),
-        ('dish-prawn', 'prawn', 'Jumbo King Tiger Prawn Dum Biryani', 'Seafood Specialties', 'Wild-caught jumbo king tiger prawns seared in coastal roasted spice ghee masala, layered over aromatic yellow basmati, finished with lime zest and star anise.', 139.99, 146.99, 'Coastal Specialty', '', 1, 'Serves 4–5 Diners (Deluxe Handi)', 'Serves 4–5', '1.5 kg Wild Tiger Prawns', '1.0 kg Raw Aged Basmati', 1620, 1777, 'Extra Spicy', 5, 16, 1),
         ('dish-pork', 'pork', 'Springfield Signature Pork Dum Biryani', 'Signature Trays', 'Slow-cooked succulent pork shoulder prepared in dedicated segregated vessels with a deep roasted masala base, desi ghee, fresh mint, and toasted spices.', 108.99, 115.99, 'Segregated Kitchen Vessel', '', 1, 'Serves 4–5 Diners (Family Handi)', 'Serves 4–5', '1.6 kg Pork Shoulder Cuts', '1.0 kg Raw Aged Basmati', 1952, 2109, 'Medium', 6, 19, 0);
     ");
     $response['tables_created'][] = 'menu_items';
+
+    // Purge paneer & seafood from existing DB
+    try {
+        $pdo->exec("DELETE FROM menu_items WHERE protein_id IN ('paneer', 'prawn', 'seafood')");
+        $pdo->exec("DELETE FROM order_items WHERE order_id IN ('JK-20261016-001', 'JK-20261014-001') OR order_id IN (SELECT id FROM orders WHERE order_number IN ('JK-20261016-001', 'JK-20261014-001') OR customer_email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com'))");
+        $pdo->exec("DELETE FROM orders WHERE order_number IN ('JK-20261016-001', 'JK-20261014-001') OR customer_email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com')");
+        $pdo->exec("DELETE FROM customers WHERE email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com')");
+    } catch (Exception $e) {}
 
     $checkStmt = $pdo->query("SELECT id, protein_id, name, available FROM menu_items");
     $allMenuItems = $checkStmt->fetchAll();

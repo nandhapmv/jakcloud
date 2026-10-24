@@ -52,7 +52,7 @@ export const Route = createFileRoute("/admin/daily-control")({
       { title: "Daily Order & Dum Capacity Control — JAKloud J Paradize" },
       {
         name: "description",
-        content: "Control daily 25-tray capacity limits, live ordering switches, close today's queue, and automated rollover.",
+        content: "Control daily 10-tray capacity limits, live ordering switches, close today's queue, and automated rollover.",
       },
     ],
   }),
@@ -96,14 +96,16 @@ function DailyOrderControlPage() {
   }, [orders, todayKey]);
 
   const pickupTrays = useMemo(() => {
-    return orders.filter((o) => o.fulfilmentType === "pickup" && o.status !== "cancelled")
-      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
-  }, [orders]);
+    return orders
+      .filter((o) => o.fulfilmentType === "pickup" && o.status !== "cancelled" && (normalizeDateKey(o.fulfilmentDate) || normalizeDateKey(o.createdAt)) === todayKey)
+      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + (Number(i.qty) || 1), 0), 0);
+  }, [orders, todayKey]);
 
   const deliveryTrays = useMemo(() => {
-    return orders.filter((o) => o.fulfilmentType === "delivery" && o.status !== "cancelled")
-      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.qty, 0), 0);
-  }, [orders]);
+    return orders
+      .filter((o) => o.fulfilmentType === "delivery" && o.status !== "cancelled" && (normalizeDateKey(o.fulfilmentDate) || normalizeDateKey(o.createdAt)) === todayKey)
+      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + (Number(i.qty) || 1), 0), 0);
+  }, [orders, todayKey]);
 
   // Closed Announcement Customization
   const [bannerTitle, setBannerTitle] = useState("Today's Dum Biryani Batch is Fully Booked!");
@@ -416,7 +418,7 @@ function DailyOrderControlPage() {
                 </div>
                 <div className="flex justify-between text-[0.65rem] text-cream/50">
                   <span>3625 S Bedford Ave</span>
-                  <span>~{Math.round((pickupTrays / bookedTraysToday) * 100)}% of today's total</span>
+                  <span>~{bookedTraysToday > 0 ? Math.round((pickupTrays / bookedTraysToday) * 100) : 0}% of today's total</span>
                 </div>
               </div>
 
@@ -431,7 +433,7 @@ function DailyOrderControlPage() {
                 </div>
                 <div className="flex justify-between text-[0.65rem] text-cream/50">
                   <span>10-Mile Radius Dispatch</span>
-                  <span>~{Math.round((deliveryTrays / bookedTraysToday) * 100)}% of today's total</span>
+                  <span>~{bookedTraysToday > 0 ? Math.round((deliveryTrays / bookedTraysToday) * 100) : 0}% of today's total</span>
                 </div>
               </div>
 

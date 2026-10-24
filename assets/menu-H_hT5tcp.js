@@ -1,0 +1,1 @@
+import{t as e}from"./biryani-CdkkQmUI.js";var t=e;export{t as component};

@@ -46,19 +46,65 @@ try {
             protein_id VARCHAR(64) NOT NULL UNIQUE,
             name VARCHAR(128) NOT NULL,
             category VARCHAR(64) NOT NULL DEFAULT 'Signature Trays',
+            description TEXT,
             price DECIMAL(10,2) NOT NULL,
             price_with_aloo DECIMAL(10,2) NOT NULL,
             badge VARCHAR(128) DEFAULT '',
-            description TEXT,
-            kcal INT DEFAULT 0,
-            kcal_aloo INT DEFAULT 0,
+            image_url LONGTEXT DEFAULT NULL,
             available TINYINT(1) DEFAULT 1,
-            image_url VARCHAR(255) DEFAULT '',
+            tray_size VARCHAR(128) DEFAULT 'Serves 4–5 Diners (Family Handi)',
+            serves VARCHAR(128) DEFAULT 'Serves 4–5',
+            meat_weight VARCHAR(128) DEFAULT '',
+            rice_weight VARCHAR(128) DEFAULT '1.0 kg Raw Aged Basmati',
+            kcal INT DEFAULT 1700,
+            kcal_aloo INT DEFAULT 1850,
+            spiciness VARCHAR(32) DEFAULT 'Medium',
+            daily_limit INT DEFAULT 10,
+            trays_sold_week INT DEFAULT 0,
+            is_halal_certified TINYINT(1) DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
+
+    $menuCols = [
+        "ALTER TABLE menu_items ADD COLUMN tray_size VARCHAR(128) DEFAULT 'Serves 4–5 Diners (Family Handi)'",
+        "ALTER TABLE menu_items ADD COLUMN serves VARCHAR(128) DEFAULT 'Serves 4–5'",
+        "ALTER TABLE menu_items ADD COLUMN meat_weight VARCHAR(128) DEFAULT ''",
+        "ALTER TABLE menu_items ADD COLUMN rice_weight VARCHAR(128) DEFAULT '1.0 kg Raw Aged Basmati'",
+        "ALTER TABLE menu_items ADD COLUMN spiciness VARCHAR(32) DEFAULT 'Medium'",
+        "ALTER TABLE menu_items ADD COLUMN daily_limit INT DEFAULT 10",
+        "ALTER TABLE menu_items ADD COLUMN trays_sold_week INT DEFAULT 0",
+        "ALTER TABLE menu_items ADD COLUMN is_halal_certified TINYINT(1) DEFAULT 1",
+        "ALTER TABLE menu_items MODIFY COLUMN image_url LONGTEXT DEFAULT NULL",
+    ];
+    foreach ($menuCols as $cSql) {
+        try { $pdo->exec($cSql); } catch (Exception $e) {}
+    }
+
+    $pdo->exec("
+        INSERT IGNORE INTO menu_items 
+        (id, protein_id, name, category, description, price, price_with_aloo, badge, image_url, available, tray_size, serves, meat_weight, rice_weight, kcal, kcal_aloo, spiciness, daily_limit, trays_sold_week, is_halal_certified)
+        VALUES
+        ('dish-chicken', 'chicken', 'Royal Chicken Dum Biryani', 'Signature Trays', 'Our house flagship slow-cooked Dum biryani. 1.6–1.8 kg marinated bone-in chicken thighs layered with saffron aged basmati rice, fried onions, and roasted cashews, sealed with whole wheat dough.', 101.99, 108.99, 'Top Seller', '', 1, 'Serves 4–5 Diners (Family Handi)', 'Serves 4–5', '1.6 kg Halal Marinated Chicken', '1.0 kg Raw Aged Basmati', 1714, 1871, 'Medium', 12, 48, 1),
+        ('dish-mutton', 'mutton', 'Hyderabadi Shahi Mutton Dum Biryani', 'Royal & Occasion', 'The authentic Nizami celebration tray. Succulent bone-in baby goat mutton cuts slow-cooked on dum for 4 hours with heavy saffron, cloves, black cardamom, and pure desi ghee.', 157.99, 164.99, 'Chef Signature', '', 1, 'Serves 4–5 Diners (Feast Tray)', 'Serves 4–5', '1.8 kg Halal Baby Goat Cuts', '1.0 kg Raw Aged Basmati', 2054, 2211, 'Extra Spicy', 8, 34, 1),
+        ('dish-beef', 'beef', 'Slow-Braised Spiced Beef Dum Biryani', 'Signature Trays', 'Prime tender beef cuts slow-cooked long and low until caramelized spiced juices settle deeply through every single fragrant basmati grain.', 122.99, 129.99, 'Bold & Hearty', '', 1, 'Serves 4–5 Diners (Family Handi)', 'Serves 4–5', '1.7 kg Halal Prime Beef Cuts', '1.0 kg Raw Aged Basmati', 1952, 2109, 'Medium', 8, 28, 1),
+        ('dish-pork', 'pork', 'Springfield Signature Pork Dum Biryani', 'Signature Trays', 'Slow-cooked succulent pork shoulder prepared in dedicated segregated vessels with a deep roasted masala base, desi ghee, fresh mint, and toasted spices.', 108.99, 115.99, 'Segregated Kitchen Vessel', '', 1, 'Serves 4–5 Diners (Family Handi)', 'Serves 4–5', '1.6 kg Pork Shoulder Cuts', '1.0 kg Raw Aged Basmati', 1952, 2109, 'Medium', 6, 19, 0);
+    ");
     $response['tables_created'][] = 'menu_items';
+
+    // Purge paneer & seafood from existing DB
+    try {
+        $pdo->exec("DELETE FROM menu_items WHERE protein_id IN ('paneer', 'prawn', 'seafood')");
+        $pdo->exec("DELETE FROM order_items WHERE order_id IN ('JK-20261016-001', 'JK-20261014-001') OR order_id IN (SELECT id FROM orders WHERE order_number IN ('JK-20261016-001', 'JK-20261014-001') OR customer_email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com'))");
+        $pdo->exec("DELETE FROM orders WHERE order_number IN ('JK-20261016-001', 'JK-20261014-001') OR customer_email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com')");
+        $pdo->exec("DELETE FROM customers WHERE email IN ('sairamadoddi@gmail.com', 'prasannaofficial1712@gmail.com')");
+    } catch (Exception $e) {}
+
+    $checkStmt = $pdo->query("SELECT id, protein_id, name, available FROM menu_items");
+    $allMenuItems = $checkStmt->fetchAll();
+    $response['menu_items_count'] = count($allMenuItems);
+    $response['menu_items_sample'] = $allMenuItems;
 
     // 3. Customers Table
     $pdo->exec("
@@ -82,6 +128,7 @@ try {
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS orders (
             id VARCHAR(64) PRIMARY KEY,
+            order_id VARCHAR(64) DEFAULT NULL,
             order_number VARCHAR(64) NOT NULL UNIQUE,
             status ENUM('pending', 'confirmed', 'dum_cooking', 'preparing', 'ready', 'completed', 'cancelled') DEFAULT 'confirmed',
             fulfilment_type ENUM('pickup', 'delivery') NOT NULL DEFAULT 'pickup',
@@ -100,6 +147,7 @@ try {
             total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
             payment_method VARCHAR(128) DEFAULT 'Instant UPI QR',
             payment_status VARCHAR(64) DEFAULT 'pending',
+            payment_id VARCHAR(128) DEFAULT NULL,
             special_instructions TEXT,
             staff_notes TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
