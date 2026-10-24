@@ -140,6 +140,12 @@ export function OrderManagementPage() {
     return Number(settings.dailyTrayLimit) || 10;
   }, [settings, tomorrowKey]);
 
+  // Client mount state to ensure 100% hydration match with server
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Search & Filters (Default to "today" so past orders are kept hidden by default)
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(() => searchParams.status || "all");
@@ -651,6 +657,19 @@ export function OrderManagementPage() {
         return "bg-zinc-900 border-zinc-700 text-zinc-300";
     }
   };
+
+  if (!isMounted || authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0d0906] text-cream">
+        <div className="text-center space-y-3">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+          <p className="font-display text-sm tracking-widest uppercase text-gold">
+            Loading Live Orders Queue...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#080503] font-sans text-cream selection:bg-gold/30 selection:text-gold pb-28">

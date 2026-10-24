@@ -132,6 +132,12 @@ function AdminOverviewPage() {
   const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  // Client mount state to ensure 100% hydration match with server
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Navigation & UI state
   const [activeSection, setActiveSection] = useState<NavSection>("dashboard");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -1020,7 +1026,7 @@ function AdminOverviewPage() {
     }
   };
 
-  if (authLoading || (!isAuthenticated && isLoading)) {
+  if (!isMounted || authLoading || (!isAuthenticated && isLoading)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0d0906] text-cream">
         <div className="text-center space-y-3">

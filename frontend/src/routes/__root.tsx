@@ -40,33 +40,48 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
+  console.error("Root Error Boundary Caught:", error);
   const router = useRouter();
 
+  // Auto-recover if error was due to SSR hydration mismatch (e.g. Minified React error #418)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const msg = error?.message || "";
+      if (msg.includes("418") || msg.toLowerCase().includes("hydration")) {
+        console.warn("Auto-recovering from SSR hydration mismatch...");
+        const t = setTimeout(() => {
+          router.invalidate();
+          reset();
+        }, 100);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [error, reset, router]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+    <div className="flex min-h-screen items-center justify-center bg-[#080503] font-sans text-cream px-4">
+      <div className="max-w-md text-center space-y-4">
+        <h1 className="text-xl font-display font-semibold tracking-tight text-gold">
+          Refreshing Kitchen Console...
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+        <p className="text-xs text-cream/70">
+          Syncing latest recipes and live kitchen orders.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-xl bg-gold px-4 py-2 text-xs font-bold text-black transition-colors hover:bg-gold/90 cursor-pointer"
           >
-            Try again
+            Reload Page
           </button>
           <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            href="/admin"
+            className="inline-flex items-center justify-center rounded-xl border border-gold/30 bg-black/40 px-4 py-2 text-xs font-medium text-cream hover:bg-gold/15 transition-colors"
           >
-            Go home
+            Go to Admin
           </a>
         </div>
       </div>
