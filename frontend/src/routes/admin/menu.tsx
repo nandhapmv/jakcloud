@@ -40,6 +40,7 @@ import heroBiryaniImg from "@/assets/hero-biryani.jpg";
 import { useAuth } from "@/lib/auth";
 import { formatMoney } from "@/lib/menu";
 import { useDynamicMenu, type DynamicMenuItem as BiryaniMenuCard } from "@/lib/store";
+import { DishIngredientsModal } from "@/components/dish-ingredients-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -220,6 +221,13 @@ function MenuManagementPage() {
   // Delete Dialog State
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<BiryaniMenuCard | null>(null);
+
+  // Ingredients & Nutrition Preview State
+  const [nutritionPreviewDish, setNutritionPreviewDish] = useState<{
+    name: string;
+    proteinId: string;
+    image?: string;
+  } | null>(null);
 
   // Auth protection
   useEffect(() => {
@@ -760,6 +768,23 @@ function MenuManagementPage() {
 
                     <div className="flex items-center gap-2 pt-1">
                       <Button
+                        type="button"
+                        onClick={() => {
+                          setNutritionPreviewDish({
+                            name: dish.name,
+                            proteinId: (dish as any).proteinId || dish.id,
+                            image: dish.image,
+                          });
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black text-xs font-semibold gap-1.5 cursor-pointer"
+                        title="View 38-Ingredient Master & Nutrition Breakdown"
+                      >
+                        <Scale className="h-3.5 w-3.5" /> Specs
+                      </Button>
+
+                      <Button
                         onClick={() => handleOpenEditModal(dish)}
                         variant="outline"
                         size="sm"
@@ -1101,6 +1126,15 @@ function MenuManagementPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Ingredients & Nutrition Master Popup */}
+      <DishIngredientsModal
+        open={!!nutritionPreviewDish}
+        onOpenChange={(open) => !open && setNutritionPreviewDish(null)}
+        dishName={nutritionPreviewDish?.name || ""}
+        proteinId={nutritionPreviewDish?.proteinId}
+        dishImage={nutritionPreviewDish?.image}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Minus, Check, Flame, Sparkles, Shield, X } from "lucide-react";
+import { Plus, Minus, Check, Flame, Sparkles, Shield, X, UtensilsCrossed } from "lucide-react";
 import { toast } from "sonner";
 
 import heroImg from "@/assets/hero-biryani.jpg";
@@ -21,6 +21,7 @@ import {
 import { useCart } from "@/lib/cart";
 import { formatMoney, MENU, type ProteinId } from "@/lib/menu";
 import { useDynamicMenu, useKitchenSettings } from "@/lib/store";
+import { DishIngredientsModal } from "@/components/dish-ingredients-modal";
 
 const DISH_IMAGES: Record<string, string> = {
   chicken: chickenImg,
@@ -87,6 +88,13 @@ export function MenuSection() {
   const [modalExtraSpicy, setModalExtraSpicy] = useState(false);
   const [modalNotes, setModalNotes] = useState("");
   const [modalQty, setModalQty] = useState(1);
+
+  // Ingredients & Nutrition popup state
+  const [nutritionModalDish, setNutritionModalDish] = useState<{
+    name: string;
+    proteinId: string;
+    image?: string;
+  } | null>(null);
 
   // Standardize menu items (Core 4 signature meats)
   const menuList = useMemo(() => {
@@ -267,6 +275,25 @@ export function MenuSection() {
                       </span>
                     )}
                   </div>
+
+                  {/* Ingredients & Nutrition trigger button */}
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setNutritionModalDish({
+                          name: dish.name,
+                          proteinId: dish.id,
+                          image: dish.image,
+                        });
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-300/80 px-2.5 py-1 text-[10.5px] font-bold transition-all cursor-pointer shadow-2xs group"
+                    >
+                      <UtensilsCrossed className="h-3 w-3 text-amber-600 group-hover:scale-110 transition-transform" />
+                      <span>Ingredients & Nutrition (38 Items)</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -366,6 +393,20 @@ export function MenuSection() {
                     <DialogDescription className="text-xs text-zinc-500 font-normal">
                       Handi Party Tray · Serves 4–5 adults
                     </DialogDescription>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNutritionModalDish({
+                          name: activeDish.name,
+                          proteinId: activeDish.id,
+                          image: activeDish.image,
+                        });
+                      }}
+                      className="inline-flex items-center gap-1 text-[10.5px] font-bold text-amber-700 hover:text-amber-800 underline mt-1 cursor-pointer"
+                    >
+                      <UtensilsCrossed className="h-3 w-3" />
+                      <span>View 38 Ingredients & Nutrition Breakdown →</span>
+                    </button>
                   </div>
                 </div>
               </DialogHeader>
@@ -523,6 +564,15 @@ export function MenuSection() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Full 38-Ingredient Master & USDA Nutrition Estimates Popup */}
+      <DishIngredientsModal
+        open={!!nutritionModalDish}
+        onOpenChange={(open) => !open && setNutritionModalDish(null)}
+        dishName={nutritionModalDish?.name || ""}
+        proteinId={nutritionModalDish?.proteinId}
+        dishImage={nutritionModalDish?.image}
+      />
     </section>
   );
 }

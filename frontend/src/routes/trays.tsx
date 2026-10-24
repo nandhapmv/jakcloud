@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/lib/cart";
 import { useKitchenSettings } from "@/lib/store";
 import { BUSINESS, formatDate, nextAvailableDate, formatMoney, ALOO_CHARGE, type ProteinId } from "@/lib/menu";
+import { DishIngredientsModal } from "@/components/dish-ingredients-modal";
 
 export const Route = createFileRoute("/trays")({
   head: () => ({
@@ -185,6 +186,7 @@ export function TraySelectionPage() {
   const [extraDessert, setExtraDessert] = useState(false);
   const [specialNotes, setSpecialNotes] = useState("");
   const [orderType, setOrderType] = useState<"pickup" | "delivery">("pickup");
+  const [showNutritionModal, setShowNutritionModal] = useState(false);
 
   const calculatedPricing = useMemo(() => {
     const base = selectedTier.basePrice;
@@ -387,14 +389,24 @@ export function TraySelectionPage() {
 
             {/* 2. PROTEIN SELECTION */}
             <div className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm">
-              <div className="border-b border-zinc-100 pb-3">
-                <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                  <Flame className="h-4 w-4 text-amber-600" />
-                  <span>Step 2: Select Protein Cut ({selectedTier.qty} {selectedTier.qty === 1 ? "Tray" : "Trays"})</span>
-                </h2>
-                <p className="text-xs text-zinc-500 mt-1 font-normal">
-                  100% Zabiha Halal chicken, mutton, and beef cuts marinated in roasted spices and pure desi ghee.
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-100 pb-3">
+                <div>
+                  <h2 className="font-display text-base sm:text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                    <Flame className="h-4 w-4 text-amber-600" />
+                    <span>Step 2: Select Protein Cut ({selectedTier.qty} {selectedTier.qty === 1 ? "Tray" : "Trays"})</span>
+                  </h2>
+                  <p className="text-xs text-zinc-500 mt-1 font-normal">
+                    100% Zabiha Halal chicken, mutton, and beef cuts marinated in roasted spices and pure desi ghee.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowNutritionModal(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-2xs self-start sm:self-auto shrink-0"
+                >
+                  <UtensilsCrossed className="h-3.5 w-3.5 text-amber-600" />
+                  <span>38 Ingredients & Nutrition Specs</span>
+                </button>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -744,6 +756,15 @@ export function TraySelectionPage() {
           </div>
         </div>
       </div>
+
+      {/* 38 Ingredients & Nutrition Modal */}
+      <DishIngredientsModal
+        open={showNutritionModal}
+        onOpenChange={setShowNutritionModal}
+        dishName={`${currentProtein.name} Handi Tray`}
+        proteinId={selectedProtein}
+        dishImage={currentProtein.img}
+      />
     </div>
   );
 }

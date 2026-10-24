@@ -62,8 +62,10 @@ import {
   History,
   Store,
   Plus,
+  Scale,
 } from "lucide-react";
 import { toast } from "sonner";
+import { DishIngredientsModal } from "@/components/dish-ingredients-modal";
 
 import logoImg from "@/assets/logo.png";
 import heroImg from "@/assets/hero-biryani.jpg";
@@ -261,6 +263,13 @@ function AdminOverviewPage() {
   const [menuDeleteOpen, setMenuDeleteOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<DynamicMenuItem | null>(null);
   const [isDeletingDish, setIsDeletingDish] = useState(false);
+
+  // Ingredients & Nutrition Preview State
+  const [nutritionPreviewDish, setNutritionPreviewDish] = useState<{
+    name: string;
+    proteinId: string;
+    image?: string;
+  } | null>(null);
 
   // Handlers for Add / Edit / Delete
   const handleOpenAddDishModal = () => {
@@ -3104,6 +3113,24 @@ function AdminOverviewPage() {
                           <Button
                             variant="outline"
                             size="sm"
+                            type="button"
+                            onClick={() => {
+                              setNutritionPreviewDish({
+                                name: item.name,
+                                proteinId: item.proteinId || item.id,
+                                image: item.image,
+                              });
+                            }}
+                            className="border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black font-semibold text-xs h-8 gap-1 cursor-pointer"
+                            title="View 38-Ingredient Master & Nutrition Breakdown"
+                          >
+                            <Scale className="h-3 w-3" />
+                            <span>38 Ingredients & Macros</span>
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleOpenEditDishModal(item)}
                             className="border-gold/30 bg-gold/10 text-gold hover:bg-gold hover:text-black font-semibold text-xs h-8 gap-1 cursor-pointer"
                           >
@@ -3143,6 +3170,33 @@ function AdminOverviewPage() {
                         ? "Update portion weights, pricing, aloo rate, and chef tags in database."
                         : "Enter fresh details for this new recipe. All inputs are clean and ready for your custom data."}
                     </DialogDescription>
+
+                    {/* Master Recipe & USDA Nutrition Preview Helper */}
+                    <div className="mt-3 flex items-center justify-between rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3">
+                      <div>
+                        <p className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                          <Scale className="h-3.5 w-3.5" />
+                          <span>Standard 38 Ingredients & USDA Nutrition Profile</span>
+                        </p>
+                        <p className="text-[11px] text-cream/70 mt-0.5">
+                          5 Servings · 6.5–7.0 lb Cooked Net Weight · 100% Peanut-Free & Gluten-Free
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          setNutritionPreviewDish({
+                            name: mFormName || "Handi Dum Biryani Tray",
+                            proteinId: mFormCategory.toLowerCase().includes("mutton") ? "mutton" : "chicken",
+                            image: mFormImage,
+                          });
+                        }}
+                        className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-7 px-2.5 cursor-pointer shrink-0"
+                      >
+                        Preview Popup
+                      </Button>
+                    </div>
                   </DialogHeader>
 
                   <form onSubmit={handleSaveDish} className="space-y-4 pt-2 text-xs">
@@ -4077,6 +4131,15 @@ function AdminOverviewPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* 5. INGREDIENTS & NUTRITION MASTER MODAL */}
+      <DishIngredientsModal
+        open={!!nutritionPreviewDish}
+        onOpenChange={(open) => !open && setNutritionPreviewDish(null)}
+        dishName={nutritionPreviewDish?.name || ""}
+        proteinId={nutritionPreviewDish?.proteinId}
+        dishImage={nutritionPreviewDish?.image}
+      />
     </div>
   );
 }
